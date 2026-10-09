@@ -4,8 +4,8 @@ Target for this guide:
 
 | Setting            | Value                                               |
 | ------------------ | --------------------------------------------------- |
-| Domain             | `album.magicframes.nokkoo.in`                       |
-| Doc root           | `/home/uddjzwrz/album.magicframes.nokkoo.in`        |
+| Domain             | `album-magicframes.nokkoo.in`                       |
+| Doc root           | `/home/uddjzwrz/album-magicframes.nokkoo.in`        |
 | Database name      | `uddjzwrz_albummagicframes`                         |
 | cPanel user        | `uddjzwrz`                                          |
 
@@ -14,7 +14,7 @@ from the doc root, and the Laravel API runs under `/api` on the **same domain**.
 No CORS configuration is needed.
 
 ```
-Browser ──► album.magicframes.nokkoo.in
+Browser ──► album-magicframes.nokkoo.in
               ├── /api/*   ──► Laravel (PHP)
               └── /*       ──► React SPA (index.html)
 ```
@@ -46,10 +46,10 @@ the SPA live in the doc root.
 
 ```
 /home/uddjzwrz/
-├── laravel/magicframes/          ← Laravel app (git clone of backend/)
+├── laravel/album-magicframes/          ← Laravel app (git clone of backend/)
 │   ├── app/ bootstrap/ config/ routes/ vendor/ storage/ ...
 │   └── .env                       ← secrets live here only
-└── album.magicframes.nokkoo.in/   ← DOC ROOT
+└── album-magicframes.nokkoo.in/   ← DOC ROOT
     ├── index.php                  ← repointed front controller
     ├── .htaccess                  ← SPA + /api routing
     ├── index.html assets/ ...     ← React build output
@@ -66,14 +66,14 @@ the SPA live in the doc root.
 cd ~
 mkdir -p laravel
 git clone -b feat/wedding-album-app https://github.com/importerbrocom/album-magicframes.git tmp-mf
-mv tmp-mf/backend laravel/magicframes
+mv tmp-mf/backend laravel/album-magicframes
 # keep tmp-mf/frontend for building the SPA (Step 4)
 ```
 
 ### Without SSH
 
 Download the repo ZIP from GitHub, upload via **cPanel → File Manager**, and
-extract so that `backend/` ends up at `~/laravel/magicframes`.
+extract so that `backend/` ends up at `~/laravel/album-magicframes`.
 
 ---
 
@@ -82,7 +82,7 @@ extract so that `backend/` ends up at `~/laravel/magicframes`.
 With SSH:
 
 ```bash
-cd ~/laravel/magicframes
+cd ~/laravel/album-magicframes
 composer install --no-dev --optimize-autoloader
 ```
 
@@ -95,7 +95,7 @@ with the code. (Set your local PHP to 8.3/8.4 so the autoloader matches.)
 ## Step 3 — Configure the backend `.env`
 
 ```bash
-cd ~/laravel/magicframes
+cd ~/laravel/album-magicframes
 cp deploy/cpanel/backend.env.example .env   # template prefilled for this domain
 nano .env
 ```
@@ -138,7 +138,7 @@ npm run build                           # outputs frontend/dist/
 ```
 
 Upload the **contents of `frontend/dist/`** into the doc root
-`/home/uddjzwrz/album.magicframes.nokkoo.in/` (so `index.html` sits at the doc
+`/home/uddjzwrz/album-magicframes.nokkoo.in/` (so `index.html` sits at the doc
 root, with `assets/` beside it).
 
 > If your host has Node (via SSH or cPanel's "Setup Node.js App"), you can run
@@ -151,14 +151,14 @@ root, with `assets/` beside it).
 Copy the two deploy files into the doc root:
 
 ```bash
-cp ~/laravel/magicframes/deploy/cpanel/index.php          /home/uddjzwrz/album.magicframes.nokkoo.in/index.php
-cp ~/laravel/magicframes/deploy/cpanel/htaccess-docroot.txt /home/uddjzwrz/album.magicframes.nokkoo.in/.htaccess
+cp ~/laravel/album-magicframes/deploy/cpanel/index.php          /home/uddjzwrz/album-magicframes.nokkoo.in/index.php
+cp ~/laravel/album-magicframes/deploy/cpanel/htaccess-docroot.txt /home/uddjzwrz/album-magicframes.nokkoo.in/.htaccess
 # Laravel's static public assets:
-cp ~/laravel/magicframes/public/favicon.ico ~/laravel/magicframes/public/robots.txt /home/uddjzwrz/album.magicframes.nokkoo.in/
+cp ~/laravel/album-magicframes/public/favicon.ico ~/laravel/album-magicframes/public/robots.txt /home/uddjzwrz/album-magicframes.nokkoo.in/
 ```
 
 - `index.php` is a copy of Laravel's front controller with `$APP_BASE` pointing
-  at `~/laravel/magicframes`. Edit that constant if you installed elsewhere.
+  at `~/laravel/album-magicframes`. Edit that constant if you installed elsewhere.
 - `.htaccess` forces HTTPS, routes `/api/*` and `/up` to Laravel, serves real
   files directly, and falls back to `index.html` for SPA routes.
 
@@ -170,7 +170,7 @@ Album synchronization runs as a queued job. Pick ONE:
 
 - **Cron worker (recommended)** — cPanel → Cron Jobs, every minute:
   ```
-  /usr/local/bin/php /home/uddjzwrz/laravel/magicframes/artisan queue:work --stop-when-empty --tries=2 --timeout=600 >> /home/uddjzwrz/laravel/magicframes/storage/logs/worker.log 2>&1
+  /usr/local/bin/php /home/uddjzwrz/laravel/album-magicframes/artisan queue:work --stop-when-empty --tries=2 --timeout=600 >> /home/uddjzwrz/laravel/album-magicframes/storage/logs/worker.log 2>&1
   ```
   (Confirm the PHP binary path in cPanel → Select PHP Version → "command line".)
 
@@ -185,18 +185,18 @@ Album synchronization runs as a queued job. Pick ONE:
    `.htaccess` already forces HTTPS).
 2. Smoke-test:
    ```bash
-   curl -s https://album.magicframes.nokkoo.in/up          # Laravel health -> "OK"
-   curl -s https://album.magicframes.nokkoo.in/api/public/albums/rahul-anjali-demo01/landing
+   curl -s https://album-magicframes.nokkoo.in/up          # Laravel health -> "OK"
+   curl -s https://album-magicframes.nokkoo.in/api/public/albums/rahul-anjali-demo01/landing
    ```
 3. In a browser:
-   - **Admin:** `https://album.magicframes.nokkoo.in/admin/login`
-   - **Demo album:** `https://album.magicframes.nokkoo.in/album/rahul-anjali-demo01` (password `RA2026`)
+   - **Admin:** `https://album-magicframes.nokkoo.in/admin/login`
+   - **Demo album:** `https://album-magicframes.nokkoo.in/album/rahul-anjali-demo01` (password `RA2026`)
 
 ---
 
 ## Step 8 — Go live with real Google Drive
 
-In `~/laravel/magicframes/.env`:
+In `~/laravel/album-magicframes/.env`:
 
 - **API-key mode** (folders shared "anyone with the link can view"):
   ```
@@ -222,7 +222,7 @@ Then `php artisan config:cache`. Create a real album in the admin panel and pres
 
 ```bash
 # backend
-cd ~/laravel/magicframes && git pull
+cd ~/laravel/album-magicframes && git pull
 composer install --no-dev --optimize-autoloader
 php artisan migrate --force
 php artisan config:cache && php artisan route:cache
@@ -244,7 +244,7 @@ sets permissions, runs migrations and caches config/routes. It is idempotent —
 run it for first deploy and every redeploy.
 
 ```bash
-cd ~/laravel/magicframes
+cd ~/laravel/album-magicframes
 # first deploy (also seeds the admin + demo album):
 SEED=1 bash deploy/cpanel/setup.sh
 # later redeploys:
@@ -254,7 +254,7 @@ PHP_BIN=/usr/local/bin/ea-php83 bash deploy/cpanel/setup.sh
 ```
 
 It auto-detects `APP_BASE` and defaults `DOC_ROOT` to
-`~/album.magicframes.nokkoo.in`; override either via env vars if your paths
+`~/album-magicframes.nokkoo.in`; override either via env vars if your paths
 differ. You still upload the React `dist/` into the doc root (Step 4) — the
 script handles everything else.
 
@@ -276,8 +276,8 @@ credentials. To enable automatic FTPS deploys, in the GitHub repo:
 - **Settings → Secrets and variables → Actions → Variables:**
   `DEPLOY_ENABLED = true`.
 
-The deploy pushes `release/docroot/` → `/album.magicframes.nokkoo.in/` and
-`release/app/` → `/laravel/magicframes/` (never touching the server `.env` or
+The deploy pushes `release/docroot/` → `/album-magicframes.nokkoo.in/` and
+`release/app/` → `/laravel/album-magicframes/` (never touching the server `.env` or
 local DB). Because FTP can't run PHP, finish each deploy by running
 `bash deploy/cpanel/setup.sh` (or at least `php artisan migrate --force &&
 php artisan config:cache`) via cPanel Terminal / cron.
@@ -292,7 +292,7 @@ php artisan config:cache`) via cPanel Terminal / cron.
 
 | Symptom | Fix |
 | --- | --- |
-| 500 on every page | Check `~/laravel/magicframes/storage/logs/laravel.log`; ensure `storage` and `bootstrap/cache` are writable (775) and `$APP_BASE` in doc-root `index.php` is correct. |
+| 500 on every page | Check `~/laravel/album-magicframes/storage/logs/laravel.log`; ensure `storage` and `bootstrap/cache` are writable (775) and `$APP_BASE` in doc-root `index.php` is correct. |
 | API 404 / returns the SPA HTML | `.htaccess` not applied or `mod_rewrite` off — confirm the doc-root `.htaccess` is present and the `/api/` rule precedes the SPA fallback. |
 | DB connection refused | Verify `DB_USERNAME`/`DB_PASSWORD` and that the user is attached to the DB with privileges. |
 | Config changes ignored | Re-run `php artisan config:cache` (and `php artisan config:clear` if needed). |

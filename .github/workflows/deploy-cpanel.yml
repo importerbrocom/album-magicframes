@@ -54,7 +54,7 @@ jobs:
 
       # ---- Assemble the upload-ready release bundle ----
       # Mirrors the cPanel layout:
-      #   release/app/      -> Laravel app (goes to ~/laravel/magicframes)
+      #   release/app/      -> Laravel app (goes to ~/laravel/album-magicframes)
       #   release/docroot/  -> doc-root contents (SPA + front controller + .htaccess)
       - name: Assemble release bundle
         run: |
@@ -134,7 +134,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           local-dir: ./release/app/
-          server-dir: /laravel/magicframes/
+          server-dir: /laravel/album-magicframes/
           # Never overwrite the server's secrets or local DB.
           exclude: |
             **/.env

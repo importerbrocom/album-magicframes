@@ -1,14 +1,14 @@
 # =============================================================================
 # Magic Frames — single-origin cPanel .htaccess
-# Place this file as:  /home/uddjzwrz/album.magicframes.nokkoo.in/.htaccess
+# Place this file as:  /home/uddjzwrz/album-magicframes.nokkoo.in/.htaccess
 #
 # Layout assumed:
-#   DOC ROOT  = /home/uddjzwrz/album.magicframes.nokkoo.in
+#   DOC ROOT  = /home/uddjzwrz/album-magicframes.nokkoo.in
 #     ├── index.html, assets/, favicon.svg, manifest.webmanifest   (React build)
 #     ├── index.php, favicon.ico, robots.txt                       (Laravel public/)
 #     └── .htaccess                                                (this file)
 #   Laravel app (code + vendor + .env) lives OUTSIDE the doc root at:
-#     /home/uddjzwrz/laravel/magicframes
+#     /home/uddjzwrz/laravel/album-magicframes/backend
 #
 # Behaviour:
 #   /api/*            -> handled by Laravel (index.php)
