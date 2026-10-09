@@ -11,6 +11,7 @@
 #     /home/uddjzwrz/laravel/album-magicframes/backend
 #
 # Behaviour:
+#   /.well-known/acme-challenge/* -> served over HTTP for AutoSSL validation
 #   /api/*            -> handled by Laravel (index.php)
 #   /up               -> Laravel health check
 #   everything else   -> React SPA (index.html) for client-side routing
@@ -19,6 +20,12 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
+
+    # ---- Let's Encrypt / AutoSSL HTTP-01 validation ----
+    # Allow ACME challenge files to be served over plain HTTP (served as real
+    # files from the doc root) BEFORE the HTTPS redirect, so AutoSSL can issue
+    # and renew the certificate even with the force-HTTPS rule below.
+    RewriteRule ^\.well-known/acme-challenge/ - [L]
 
     # ---- Force HTTPS (recommended) ----
     RewriteCond %{HTTPS} off
