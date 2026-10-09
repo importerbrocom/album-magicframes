@@ -7,7 +7,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
-        "endroid/qr-code": "^6.1",
+        "endroid/qr-code": "~6.0.0",
         "firebase/php-jwt": "^7.2",
         "guzzlehttp/guzzle": "^7.15",
         "laravel/framework": "^11.31",
@@ -62,6 +62,9 @@
         }
     },
     "config": {
+        "platform": {
+            "php": "8.3.0"
+        },
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true,
