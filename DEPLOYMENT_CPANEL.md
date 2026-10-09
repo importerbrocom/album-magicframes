@@ -233,6 +233,61 @@ cd frontend && npm ci && npm run build
 
 ---
 
+## Automated deployment
+
+Two helpers are included to make this repeatable.
+
+### A. Server-side setup script (`deploy/cpanel/setup.sh`)
+
+After the app code and `.env` are on the server, this script wires the doc root,
+sets permissions, runs migrations and caches config/routes. It is idempotent —
+run it for first deploy and every redeploy.
+
+```bash
+cd ~/laravel/magicframes
+# first deploy (also seeds the admin + demo album):
+SEED=1 bash deploy/cpanel/setup.sh
+# later redeploys:
+bash deploy/cpanel/setup.sh
+# if your PHP CLI isn't just "php":
+PHP_BIN=/usr/local/bin/ea-php83 bash deploy/cpanel/setup.sh
+```
+
+It auto-detects `APP_BASE` and defaults `DOC_ROOT` to
+`~/album.magicframes.nokkoo.in`; override either via env vars if your paths
+differ. You still upload the React `dist/` into the doc root (Step 4) — the
+script handles everything else.
+
+### B. GitHub Actions CI/CD (`.github/workflows/deploy-cpanel.yml`)
+
+On every push to `main` (or this feature branch) the workflow:
+
+1. Installs backend deps (`composer install --no-dev`) and builds the SPA.
+2. Assembles an upload-ready `release/` bundle (`release/app/` = Laravel app,
+   `release/docroot/` = SPA + front controller + `.htaccess`) and uploads it as
+   a downloadable CI artifact.
+3. **Optionally** deploys over FTPS — but only if you opt in.
+
+The build always runs; the deploy step is gated so it never fails without
+credentials. To enable automatic FTPS deploys, in the GitHub repo:
+
+- **Settings → Secrets and variables → Actions → Secrets:**
+  `FTP_SERVER`, `FTP_USERNAME`, `FTP_PASSWORD` (a cPanel FTP account).
+- **Settings → Secrets and variables → Actions → Variables:**
+  `DEPLOY_ENABLED = true`.
+
+The deploy pushes `release/docroot/` → `/album.magicframes.nokkoo.in/` and
+`release/app/` → `/laravel/magicframes/` (never touching the server `.env` or
+local DB). Because FTP can't run PHP, finish each deploy by running
+`bash deploy/cpanel/setup.sh` (or at least `php artisan migrate --force &&
+php artisan config:cache`) via cPanel Terminal / cron.
+
+> Prefer not to store FTP credentials in GitHub? Leave `DEPLOY_ENABLED` unset,
+> download the `magicframes-release` artifact from the Actions run, and upload
+> the two folders through cPanel File Manager.
+
+---
+
 ## Troubleshooting
 
 | Symptom | Fix |

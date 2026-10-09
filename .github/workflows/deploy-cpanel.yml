@@ -1,0 +1,141 @@
+name: Build & Deploy (cPanel)
+
+# Builds the backend + frontend, assembles an upload-ready release bundle, and
+# (optionally) deploys it to cPanel over FTPS.
+#
+# The build/bundle jobs always run. The deploy job runs ONLY when the FTP
+# secrets below are configured, so the workflow never fails for lack of
+# credentials. Add these under: Settings -> Secrets and variables -> Actions
+#   FTP_SERVER     e.g. ftp.magicframes.nokkoo.in
+#   FTP_USERNAME   cPanel / FTP account username
+#   FTP_PASSWORD   cPanel / FTP account password
+# And this repository Variable (Settings -> Variables):
+#   DEPLOY_ENABLED = true     (acts as a safety switch)
+
+on:
+  push:
+    branches: [main, feat/wedding-album-app]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ---- Backend (Laravel) ----
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, openssl, tokenizer, xml, ctype, bcmath, fileinfo, curl, gd, zip
+          tools: composer:v2
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: composer install --no-dev --optimize-autoloader --no-interaction
+
+      # ---- Frontend (React/Vite) ----
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install & build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      # ---- Assemble the upload-ready release bundle ----
+      # Mirrors the cPanel layout:
+      #   release/app/      -> Laravel app (goes to ~/laravel/magicframes)
+      #   release/docroot/  -> doc-root contents (SPA + front controller + .htaccess)
+      - name: Assemble release bundle
+        run: |
+          set -e
+          mkdir -p release/app release/docroot
+
+          # Laravel app (exclude dev-only + local artifacts)
+          rsync -a --delete \
+            --exclude '.git' --exclude 'tests' --exclude '.env' \
+            --exclude 'database/database.sqlite' \
+            --exclude 'storage/logs/*' \
+            backend/ release/app/
+
+          # Ensure runtime dirs exist on target
+          mkdir -p release/app/storage/framework/{cache,sessions,views} release/app/storage/logs
+
+          # Doc root: React build output
+          cp -r frontend/dist/. release/docroot/
+
+          # Doc root: Laravel front controller + routing + static assets
+          cp deploy/cpanel/index.php            release/docroot/index.php
+          cp deploy/cpanel/htaccess-docroot.txt release/docroot/.htaccess
+          cp backend/public/favicon.ico         release/docroot/favicon.ico || true
+          cp backend/public/robots.txt          release/docroot/robots.txt  || true
+
+          echo "Release bundle contents:"
+          find release -maxdepth 2 -type d | sort
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: magicframes-release
+          path: release/
+          retention-days: 7
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    # Only deploy when explicitly enabled AND credentials are present.
+    if: vars.DEPLOY_ENABLED == 'true'
+    steps:
+      - name: Download release artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: magicframes-release
+          path: release
+
+      - name: Guard — require FTP secrets
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+        run: |
+          if [ -z "$FTP_SERVER" ]; then
+            echo "DEPLOY_ENABLED=true but FTP_SERVER secret is missing. Skipping deploy."
+            exit 1
+          fi
+
+      # Deploy the SPA + doc-root files to the public doc root.
+      - name: Deploy doc root (SPA + front controller)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./release/docroot/
+          server-dir: /album.magicframes.nokkoo.in/
+
+      # Deploy the Laravel application outside the doc root.
+      # NOTE: run `php artisan migrate --force && config:cache && route:cache`
+      # on the server after this (cPanel Terminal or the Step 6 cron), since
+      # FTP cannot run PHP. deploy/cpanel/setup.sh does exactly that.
+      - name: Deploy Laravel app
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./release/app/
+          server-dir: /laravel/magicframes/
+          # Never overwrite the server's secrets or local DB.
+          exclude: |
+            **/.env
+            **/database/database.sqlite
