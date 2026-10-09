@@ -22,13 +22,17 @@
     RewriteBase /
 
     # ---- Let's Encrypt / AutoSSL HTTP-01 validation ----
-    # Allow ACME challenge files to be served over plain HTTP (served as real
-    # files from the doc root) BEFORE the HTTPS redirect, so AutoSSL can issue
-    # and renew the certificate even with the force-HTTPS rule below.
-    RewriteRule ^\.well-known/acme-challenge/ - [L]
+    # Serve ACME challenge files over plain HTTP (as real files) and STOP all
+    # further rewrite processing so the HTTPS redirect below can't intercept
+    # them. [END] fully halts the rewrite engine on LiteSpeed/Apache 2.4
+    # (plain [L] can be re-entered and still hit the redirect on LiteSpeed).
+    RewriteRule ^\.well-known/acme-challenge/ - [END]
 
     # ---- Force HTTPS (recommended) ----
+    # Exclude the ACME path as a belt-and-braces guard in case [END] is not
+    # honored by the server's LiteSpeed rewrite compatibility mode.
     RewriteCond %{HTTPS} off
+    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
     RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
     # ---- Laravel: API + health check go to the PHP front controller ----
