@@ -23,8 +23,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'album.access' => EnsureAlbumAccess::class,
         ]);
 
-        // Sanctum stateful API support for the admin SPA when same-site.
-        $middleware->statefulApi();
+        // NOTE: We intentionally do NOT enable statefulApi(). Admin auth is
+        // purely token-based (Sanctum personal access tokens sent as a Bearer
+        // header), and public album access uses its own JWT. Enabling the
+        // stateful (cookie + CSRF) guard caused "CSRF token mismatch" on login
+        // when the SPA is served from the same origin as the API, because the
+        // SPA never fetches a CSRF cookie. Keeping the API stateless avoids it.
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Return clean JSON for API errors; never leak raw PHP exceptions.
