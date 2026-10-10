@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePageMeta } from '../hooks/usePageMeta';
+import Logo from '../components/Logo';
 
 export default function AdminLogin() {
   const { login } = useAuth();
@@ -31,8 +32,13 @@ export default function AdminLogin() {
   return (
     <div data-theme="modern" className="flex min-h-screen items-center justify-center bg-[var(--bg)] p-6">
       <div className="themed-surface w-full max-w-sm p-8">
-        <h1 className="font-heading text-3xl font-semibold">Magic Frames</h1>
-        <p className="mb-6 text-sm" style={{ color: 'var(--muted)' }}>Studio admin sign in</p>
+        <div className="mb-4 flex items-center gap-3">
+          <Logo className="h-12 w-12" />
+          <div>
+            <h1 className="font-heading text-2xl font-semibold leading-none">Magic Frames</h1>
+            <p className="text-sm" style={{ color: 'var(--muted)' }}>Studio admin sign in</p>
+          </div>
+        </div>
         <form onSubmit={submit} className="space-y-4">
           <div>
             <label className="mb-1 block text-sm">Email</label>

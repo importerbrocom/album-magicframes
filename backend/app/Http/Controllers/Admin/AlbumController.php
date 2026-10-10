@@ -188,4 +188,24 @@ class AlbumController extends Controller
 
         return response()->json($this->albums->sharePayload($album));
     }
+
+    /** Enquiries submitted from this album (admin view). */
+    public function enquiries(Album $album): JsonResponse
+    {
+        $this->authorize('view', $album);
+
+        return response()->json(
+            $album->enquiries()->orderByDesc('created_at')->paginate(25)
+        );
+    }
+
+    /** Comments left on this album (admin view). */
+    public function comments(Album $album): JsonResponse
+    {
+        $this->authorize('view', $album);
+
+        return response()->json(
+            $album->comments()->orderByDesc('created_at')->paginate(25)
+        );
+    }
 }

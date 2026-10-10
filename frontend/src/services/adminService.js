@@ -27,6 +27,8 @@ export const adminService = {
   syncStatus: (id) => api.get(`/admin/albums/${id}/sync-status`).then((r) => r.data),
   analytics: (id) => api.get(`/admin/albums/${id}/analytics`).then((r) => r.data),
   share: (id) => api.get(`/admin/albums/${id}/share`).then((r) => r.data),
+  enquiries: (id) => api.get(`/admin/albums/${id}/enquiries`).then((r) => r.data),
+  comments: (id) => api.get(`/admin/albums/${id}/comments`).then((r) => r.data),
 
   getStoredUser: () => {
     try {

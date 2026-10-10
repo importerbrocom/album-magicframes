@@ -26,6 +26,9 @@ class CreateAlbumRequest extends FormRequest
             'status' => ['nullable', Rule::in(['active', 'disabled', 'draft'])],
             'allow_download' => ['nullable', 'boolean'],
             'allow_share' => ['nullable', 'boolean'],
+            'allow_comments' => ['nullable', 'boolean'],
+            'allow_enquiries' => ['nullable', 'boolean'],
+            'google_review_url' => ['nullable', 'url', 'max:1000'],
             'expires_at' => ['nullable', 'date'],
         ];
     }

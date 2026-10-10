@@ -27,6 +27,9 @@ class UpdateAlbumRequest extends FormRequest
             'status' => ['sometimes', Rule::in(['active', 'disabled', 'draft'])],
             'allow_download' => ['sometimes', 'boolean'],
             'allow_share' => ['sometimes', 'boolean'],
+            'allow_comments' => ['sometimes', 'boolean'],
+            'allow_enquiries' => ['sometimes', 'boolean'],
+            'google_review_url' => ['nullable', 'url', 'max:1000'],
             'expires_at' => ['nullable', 'date'],
         ];
     }

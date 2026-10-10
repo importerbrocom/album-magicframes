@@ -5,6 +5,8 @@ use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\PublicAlbum\AlbumAccessController;
 use App\Http\Controllers\PublicAlbum\AnalyticsController;
+use App\Http\Controllers\PublicAlbum\CommentController;
+use App\Http\Controllers\PublicAlbum\EnquiryController;
 use App\Http\Controllers\PublicAlbum\PhotoController;
 use App\Http\Controllers\PublicAlbum\QrController;
 use Illuminate\Support\Facades\Route;
@@ -33,6 +35,8 @@ Route::prefix('admin')->group(function () {
         Route::get('albums/{album}/sync-status', [AlbumController::class, 'syncStatus']);
         Route::get('albums/{album}/analytics', [AlbumController::class, 'analytics']);
         Route::get('albums/{album}/share', [AlbumController::class, 'share']);
+        Route::get('albums/{album}/enquiries', [AlbumController::class, 'enquiries']);
+        Route::get('albums/{album}/comments', [AlbumController::class, 'comments']);
     });
 });
 
@@ -52,6 +56,13 @@ Route::prefix('public')->group(function () {
 
     // QR code image (public; encodes the already-public share URL).
     Route::get('albums/{slug}/qr', [QrController::class, 'show'])->middleware('throttle:60,1');
+
+    // Engagement features — intentionally OPEN (no album token) so anyone with
+    // the shared/reshared link (friends, family) can comment and enquire.
+    // Rate limited + honeypot protected against spam.
+    Route::get('albums/{slug}/comments', [CommentController::class, 'index'])->middleware('throttle:120,1');
+    Route::post('albums/{slug}/comments', [CommentController::class, 'store'])->middleware('throttle:20,1');
+    Route::post('albums/{slug}/enquiries', [EnquiryController::class, 'store'])->middleware('throttle:15,1');
 
     // Token-protected content.
     Route::middleware('album.access')->group(function () {

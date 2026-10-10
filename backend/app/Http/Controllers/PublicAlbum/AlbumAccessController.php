@@ -48,6 +48,9 @@ class AlbumAccessController extends Controller
             'cover_image_url' => $album->cover_image_url,
             'theme' => $album->theme,
             'allow_share' => $album->allow_share,
+            'allow_comments' => $album->allow_comments,
+            'allow_enquiries' => $album->allow_enquiries,
+            'google_review_url' => $album->google_review_url ?: config('services.album.google_review_url'),
             'requires_password' => true,
         ]);
     }

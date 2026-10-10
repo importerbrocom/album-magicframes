@@ -5,6 +5,10 @@ import AlbumHeader from '../components/AlbumHeader';
 import EventCard from '../components/EventCard';
 import { CardSkeleton } from '../components/LoadingSkeleton';
 import EmptyState from '../components/EmptyState';
+import CommentBox from '../components/CommentBox';
+import EnquiryForm from '../components/EnquiryForm';
+import GoogleReviewButton from '../components/GoogleReviewButton';
+import Logo from '../components/Logo';
 
 /**
  * Album home: cover + event cards (spec section 13).
@@ -64,6 +68,23 @@ export default function AlbumHome() {
             ))}
           </div>
         )}
+
+        {/* ---- Engagement: comments, enquiry, Google review ---- */}
+        <div className="mt-12 space-y-6">
+          {album.allow_comments && <CommentBox slug={slug} />}
+
+          {album.allow_enquiries && <EnquiryForm slug={slug} />}
+
+          <GoogleReviewButton slug={slug} url={album.google_review_url} />
+        </div>
+
+        {/* Studio footer branding */}
+        <footer className="mt-12 flex flex-col items-center gap-2 pb-4 text-center">
+          <Logo className="h-12 w-12 opacity-90" />
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>
+            Captured by <span className="font-medium">Magic Frames™</span>
+          </p>
+        </footer>
       </main>
     </div>
   );

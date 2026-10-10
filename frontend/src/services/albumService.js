@@ -85,4 +85,14 @@ export const albumService = {
     api.post(`/public/albums/${slug}/analytics`, payload, { headers: albumAuth(slug) }).catch(() => {}),
 
   qrUrl: (slug) => `${api.defaults.baseURL}/public/albums/${slug}/qr`,
+
+  // --- Engagement (open to anyone with the shared/reshared link) ---
+  comments: (slug, page = 1) =>
+    api.get(`/public/albums/${slug}/comments`, { params: { page } }).then((r) => r.data),
+
+  addComment: (slug, payload) =>
+    api.post(`/public/albums/${slug}/comments`, payload).then((r) => r.data),
+
+  submitEnquiry: (slug, payload) =>
+    api.post(`/public/albums/${slug}/enquiries`, payload).then((r) => r.data),
 };

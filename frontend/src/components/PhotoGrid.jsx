@@ -26,8 +26,44 @@ export default function PhotoGrid({ photos, view, onOpen, onLoadMore, hasMore, i
       <span className="absolute right-2 top-2 text-sm drop-shadow">❤️</span>
     ) : null;
 
+  // Classify orientation from stored dimensions (falls back to square).
+  const orientation = (p) => {
+    if (!p.width || !p.height) return 'square';
+    const r = p.width / p.height;
+    if (r >= 1.3) return 'wide';   // landscape / panorama
+    if (r <= 0.8) return 'tall';   // portrait
+    return 'square';
+  };
+
   return (
     <>
+      {view === 'auto' && (
+        // Orientation-aware layout: wide images span 2 columns, tall images
+        // span 2 rows, so each photo displays in a shape suited to it.
+        <div className="grid auto-rows-[11rem] grid-cols-2 gap-2 sm:auto-rows-[12rem] sm:grid-cols-4 lg:grid-cols-6">
+          {photos.map((p, i) => {
+            const o = orientation(p);
+            const span =
+              o === 'wide'
+                ? 'col-span-2 row-span-1'
+                : o === 'tall'
+                  ? 'col-span-1 row-span-2'
+                  : 'col-span-1 row-span-1';
+            return (
+              <div key={p.id} className={`relative ${span}`}>
+                <LazyImage
+                  src={p.thumbnail_url}
+                  alt={p.file_name}
+                  className="h-full w-full rounded-lg"
+                  onClick={() => onOpen(i)}
+                />
+                {favBadge(p)}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {view === 'grid' && (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
           {photos.map((p, i) => (

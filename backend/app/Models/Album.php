@@ -28,6 +28,9 @@ class Album extends Model
         'theme',
         'allow_download',
         'allow_share',
+        'google_review_url',
+        'allow_comments',
+        'allow_enquiries',
         'sync_status',
         'sync_progress',
         'sync_message',
@@ -44,6 +47,8 @@ class Album extends Model
     protected $casts = [
         'allow_download' => 'boolean',
         'allow_share' => 'boolean',
+        'allow_comments' => 'boolean',
+        'allow_enquiries' => 'boolean',
         'last_synced_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
@@ -77,6 +82,16 @@ class Album extends Model
     public function analyticsEvents(): HasMany
     {
         return $this->hasMany(AnalyticsEvent::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function enquiries(): HasMany
+    {
+        return $this->hasMany(Enquiry::class);
     }
 
     public function isExpired(): bool

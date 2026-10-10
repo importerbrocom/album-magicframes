@@ -7,6 +7,7 @@ import { GallerySkeleton } from './LoadingSkeleton';
 import EmptyState from './EmptyState';
 
 const VIEWS = [
+  { id: 'auto', label: 'Auto', icon: '▣' },
   { id: 'masonry', label: 'Masonry', icon: '▦' },
   { id: 'grid', label: 'Grid', icon: '▤' },
   { id: 'filmstrip', label: 'Film', icon: '▭' },
@@ -19,7 +20,7 @@ const VIEWS = [
  * full-screen viewer. Filters select the event/folder scope.
  */
 export default function Gallery({ slug, filters, album }) {
-  const [view, setView] = useState('masonry');
+  const [view, setView] = useState('auto');
   const [viewerIndex, setViewerIndex] = useState(null);
   const { photos, loading, loadMore, hasMore, total, error } = useInfinitePhotos(slug, filters);
   const { isFavorite, toggle } = useFavorites(slug);

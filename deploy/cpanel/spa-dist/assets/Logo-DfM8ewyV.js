@@ -1,0 +1,1 @@
+import{r as e}from"./rolldown-runtime-hePW80VL.js";import{r as t,t as n}from"./react-CnLdV24q.js";var r=e(t(),1),i=n();function a({className:e=`h-10 w-10`,rounded:t=!0}){let[n,a]=(0,r.useState)(`/logo.jpg`);return(0,i.jsx)(`img`,{src:n,onError:()=>n!==`/logo.svg`&&a(`/logo.svg`),alt:`Magic Frames`,className:`${e} object-cover ${t?`rounded-full`:``}`})}export{a as t};

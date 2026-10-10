@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240" role="img" aria-label="Magic Frames">
+  <rect width="240" height="240" rx="28" fill="#0a0a0a"/>
+  <g fill="#b9b9b9">
+    <text x="120" y="110" text-anchor="middle" dominant-baseline="middle"
+          font-family="'Brush Script MT','Segoe Script','Snell Roundhand',cursive"
+          font-style="italic" font-size="72">Magic</text>
+    <text x="120" y="170" text-anchor="middle" dominant-baseline="middle"
+          font-family="'Brush Script MT','Segoe Script','Snell Roundhand',cursive"
+          font-style="italic" font-size="72">Frames</text>
+    <text x="196" y="78" font-family="Arial, sans-serif" font-size="18">™</text>
+  </g>
+</svg>

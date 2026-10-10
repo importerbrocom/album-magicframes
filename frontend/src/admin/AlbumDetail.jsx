@@ -10,6 +10,8 @@ export default function AlbumDetail() {
   const [album, setAlbum] = useState(null);
   const [share, setShare] = useState(null);
   const [analytics, setAnalytics] = useState(null);
+  const [enquiries, setEnquiries] = useState(null);
+  const [comments, setComments] = useState(null);
   const [syncing, setSyncing] = useState(null);
   const poll = useRef(null);
 
@@ -21,6 +23,8 @@ export default function AlbumDetail() {
     loadAlbum();
     adminService.share(id).then(setShare).catch(() => {});
     adminService.analytics(id).then(setAnalytics).catch(() => {});
+    adminService.enquiries(id).then((r) => setEnquiries(r.data || [])).catch(() => {});
+    adminService.comments(id).then((r) => setComments(r.data || [])).catch(() => {});
     return () => clearInterval(poll.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
@@ -146,6 +150,50 @@ export default function AlbumDetail() {
               )}
             </div>
           )}
+
+          {/* Enquiries from the album (forwarded to CRN) */}
+          <div className="themed-surface p-5">
+            <h3 className="font-heading mb-3 text-xl">Enquiries {enquiries ? `(${enquiries.length})` : ''}</h3>
+            {!enquiries ? (
+              <div className="skeleton h-16 w-full rounded" />
+            ) : enquiries.length === 0 ? (
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>No enquiries yet.</p>
+            ) : (
+              <ul className="space-y-3 text-sm">
+                {enquiries.slice(0, 10).map((e) => (
+                  <li key={e.id} className="border-b border-black/10 pb-2">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{e.name}</span>
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] ${e.crn_status === 'sent' ? 'bg-green-100 text-green-700' : e.crn_status === 'failed' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600'}`}>
+                        CRN: {e.crn_status}
+                      </span>
+                    </div>
+                    <p style={{ color: 'var(--muted)' }}>{[e.phone, e.email].filter(Boolean).join(' · ')}</p>
+                    {e.message && <p className="mt-1">{e.message}</p>}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Comments left on the album */}
+          <div className="themed-surface p-5">
+            <h3 className="font-heading mb-3 text-xl">Comments {comments ? `(${comments.length})` : ''}</h3>
+            {!comments ? (
+              <div className="skeleton h-16 w-full rounded" />
+            ) : comments.length === 0 ? (
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>No comments yet.</p>
+            ) : (
+              <ul className="space-y-3 text-sm">
+                {comments.slice(0, 10).map((c) => (
+                  <li key={c.id} className="border-b border-black/10 pb-2">
+                    <span className="font-medium">{c.name}</span>
+                    <p className="mt-0.5">{c.body}</p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
     </div>

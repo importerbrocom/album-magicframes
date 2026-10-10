@@ -27,6 +27,9 @@ export default function EditAlbum() {
         status: a.status || 'active',
         allow_download: !!a.allow_download,
         allow_share: !!a.allow_share,
+        allow_comments: a.allow_comments !== false,
+        allow_enquiries: a.allow_enquiries !== false,
+        google_review_url: a.google_review_url || '',
       }),
     );
   }, [id]);
@@ -62,6 +65,7 @@ export default function EditAlbum() {
           ['google_drive_url', 'Google Drive Folder Link'],
           ['tagline', 'Tagline'],
           ['cover_image_url', 'Cover Image URL'],
+          ['google_review_url', 'Google Review Link (optional)'],
         ].map(([k, label]) => (
           <div key={k}>
             <label className="mb-1 block text-sm font-medium">{label}</label>
@@ -91,7 +95,7 @@ export default function EditAlbum() {
             </select>
           </div>
         </div>
-        <div className="flex gap-6 border-t border-black/10 pt-4">
+        <div className="grid grid-cols-2 gap-3 border-t border-black/10 pt-4">
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.allow_download} onChange={(e) => setForm((f) => ({ ...f, allow_download: e.target.checked }))} />
             Allow Downloads
@@ -99,6 +103,14 @@ export default function EditAlbum() {
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={form.allow_share} onChange={(e) => setForm((f) => ({ ...f, allow_share: e.target.checked }))} />
             Allow Sharing
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.allow_comments} onChange={(e) => setForm((f) => ({ ...f, allow_comments: e.target.checked }))} />
+            Allow Comments
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.allow_enquiries} onChange={(e) => setForm((f) => ({ ...f, allow_enquiries: e.target.checked }))} />
+            Allow Enquiries
           </label>
         </div>
         <button disabled={saving} className="btn-accent w-full !rounded-lg disabled:opacity-50">
