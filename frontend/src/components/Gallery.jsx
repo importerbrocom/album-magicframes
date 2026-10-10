@@ -63,6 +63,8 @@ export default function Gallery({ slug, filters, album }) {
         onLoadMore={loadMore}
         hasMore={hasMore}
         isFavorite={isFavorite}
+        slug={slug}
+        allowDownload={album?.allow_download}
       />
 
       {viewerIndex !== null && (
