@@ -4,8 +4,13 @@ import { albumService } from '../services/albumService';
  * Google Review call-to-action. Shown below the comment/enquiry sections.
  * Uses the album's google_review_url (or the global default from the backend).
  */
+// Fallback Google review search link used when no explicit review URL is set
+// on the album (admin can set a precise g.page/r/... link later).
+const FALLBACK_REVIEW_URL =
+  'https://www.google.com/search?q=Magic+Frames+photography#lrd=,1,,,';
+
 export default function GoogleReviewButton({ slug, url }) {
-  if (!url) return null;
+  const reviewUrl = url || FALLBACK_REVIEW_URL;
 
   const onClick = () => {
     albumService.trackAnalytics(slug, { type: 'share', meta: { channel: 'google_review' } });
@@ -21,7 +26,7 @@ export default function GoogleReviewButton({ slug, url }) {
         A quick Google review means the world to us.
       </p>
       <a
-        href={url}
+        href={reviewUrl}
         target="_blank"
         rel="noreferrer"
         onClick={onClick}

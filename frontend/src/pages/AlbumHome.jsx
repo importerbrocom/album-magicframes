@@ -69,11 +69,13 @@ export default function AlbumHome() {
           </div>
         )}
 
-        {/* ---- Engagement: comments, enquiry, Google review ---- */}
+        {/* ---- Engagement: comments, enquiry, Google review ----
+            Default-on: show unless the album explicitly disables the feature
+            (older album rows may return null/undefined for these flags). */}
         <div className="mt-12 space-y-6">
-          {album.allow_comments && <CommentBox slug={slug} />}
+          {album.allow_comments !== false && <CommentBox slug={slug} />}
 
-          {album.allow_enquiries && <EnquiryForm slug={slug} />}
+          {album.allow_enquiries !== false && <EnquiryForm slug={slug} />}
 
           <GoogleReviewButton slug={slug} url={album.google_review_url} />
         </div>
