@@ -36,6 +36,11 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
     public int $timeout = 1800;
     public int $tries = 2;
 
+    /** @var array<int,string> Drive folder ids of events seen this run. */
+    private array $seenEventDriveIds = [];
+    /** @var array<int,string> Drive folder ids of sub-folders seen this run. */
+    private array $seenFolderDriveIds = [];
+
     public function __construct(public int $albumId)
     {
     }
@@ -49,8 +54,10 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
 
         $this->setStatus($album, 'syncing', 1, 'Starting synchronization...');
 
-        // Track which Drive file IDs are seen this run to mark the rest unavailable.
+        // Track which Drive IDs are seen this run so the rest can be pruned.
         $seenFileIds = [];
+        $this->seenEventDriveIds = [];
+        $this->seenFolderDriveIds = [];
         $folderCount = 0;
         $photoCount = 0;
 
@@ -64,10 +71,23 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                 [$folderCount, $photoCount] = $this->syncDrive($album, $drive, $seenFileIds);
             }
 
-            // Mark photos not seen this run as unavailable (deleted in Drive).
+            // Prune events/folders no longer present in the source (this also
+            // removes leftover demo data when an album switches to real Drive).
+            // Deleting an event cascades to its folders + photos via FK.
+            Event::where('album_id', $album->id)
+                ->when(! empty($this->seenEventDriveIds),
+                    fn ($q) => $q->whereNotIn('google_drive_folder_id', $this->seenEventDriveIds))
+                ->delete();
+
+            Folder::where('album_id', $album->id)
+                ->when(! empty($this->seenFolderDriveIds),
+                    fn ($q) => $q->whereNotIn('google_drive_folder_id', $this->seenFolderDriveIds))
+                ->delete();
+
+            // Remove photos not seen this run (deleted in Drive / stale demo).
             Photo::where('album_id', $album->id)
                 ->when(! empty($seenFileIds), fn ($q) => $q->whereNotIn('google_drive_file_id', $seenFileIds))
-                ->update(['is_available' => false]);
+                ->delete();
 
             $this->recountAndFinalize($album, $folderCount, $photoCount);
 
@@ -103,11 +123,12 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                 ['album_id' => $album->id, 'google_drive_folder_id' => $ef['id']],
                 [
                     'name' => $ef['name'],
-                    'slug' => $this->uniqueEventSlug($album, $ef['name']),
+                    'slug' => $this->uniqueEventSlug($album, $ef['name'], $ef['id']),
                     'sort_order' => $eventSort++,
                     'is_available' => true,
                 ],
             );
+            $this->seenEventDriveIds[] = $ef['id'];
 
             // Photos directly inside the event folder (no sub-folder).
             $directImages = $drive->listImageFiles($ef['id']);
@@ -123,11 +144,12 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                     [
                         'album_id' => $album->id,
                         'name' => $cf['name'],
-                        'slug' => Str::slug($cf['name']) ?: 'folder-' . $folderSort,
+                        'slug' => $this->uniqueFolderSlug($event, $cf['name'], $cf['id'], $folderSort),
                         'sort_order' => $folderSort++,
                         'is_available' => true,
                     ],
                 );
+                $this->seenFolderDriveIds[] = $cf['id'];
 
                 $images = $drive->listImageFiles($cf['id']);
                 $photoCount += $this->storePhotos($album, $event, $folder, $images, $seenFileIds, $drive);
@@ -160,11 +182,12 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                 ['album_id' => $album->id, 'google_drive_folder_id' => $driveId],
                 [
                     'name' => $eventName,
-                    'slug' => $this->uniqueEventSlug($album, $eventName),
+                    'slug' => $this->uniqueEventSlug($album, $eventName, $driveId),
                     'sort_order' => $eventSort++,
                     'is_available' => true,
                 ],
             );
+            $this->seenEventDriveIds[] = $driveId;
 
             if (empty($folderNames)) {
                 // Event with photos directly inside it.
@@ -181,11 +204,12 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                         [
                             'album_id' => $album->id,
                             'name' => $folderName,
-                            'slug' => Str::slug($folderName) ?: 'folder-' . $folderSort,
+                            'slug' => $this->uniqueFolderSlug($event, $folderName, $driveFolderId, $folderSort),
                             'sort_order' => $folderSort++,
                             'is_available' => true,
                         ],
                     );
+                    $this->seenFolderDriveIds[] = $driveFolderId;
 
                     $seed = $eventName . '/' . $folderName;
                     $count = DemoDriveData::photoCount($seed);
@@ -276,14 +300,38 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
         return count($photos);
     }
 
-    private function uniqueEventSlug(Album $album, string $name): string
+    /**
+     * Produce a slug unique within the album, ignoring the event that owns the
+     * given Drive folder id (so re-syncing the same folder keeps its slug).
+     * Collisions against OTHER events get a numeric suffix.
+     */
+    private function uniqueEventSlug(Album $album, string $name, string $driveFolderId): string
     {
         $base = Str::slug($name) ?: 'event';
         $slug = $base;
         $n = 1;
         while (Event::where('album_id', $album->id)
             ->where('slug', $slug)
-            ->where('name', '!=', $name)
+            ->where('google_drive_folder_id', '!=', $driveFolderId)
+            ->exists()) {
+            $slug = $base . '-' . (++$n);
+        }
+
+        return $slug;
+    }
+
+    /**
+     * Slug unique within an event, ignoring the folder that owns the given
+     * Drive folder id.
+     */
+    private function uniqueFolderSlug(Event $event, string $name, string $driveFolderId, int $fallback): string
+    {
+        $base = Str::slug($name) ?: ('folder-' . $fallback);
+        $slug = $base;
+        $n = 1;
+        while (Folder::where('event_id', $event->id)
+            ->where('slug', $slug)
+            ->where('google_drive_folder_id', '!=', $driveFolderId)
             ->exists()) {
             $slug = $base . '-' . (++$n);
         }
