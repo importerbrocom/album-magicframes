@@ -7,6 +7,7 @@ use App\Http\Controllers\PublicAlbum\AlbumAccessController;
 use App\Http\Controllers\PublicAlbum\AnalyticsController;
 use App\Http\Controllers\PublicAlbum\CommentController;
 use App\Http\Controllers\PublicAlbum\EnquiryController;
+use App\Http\Controllers\PublicAlbum\ImageController;
 use App\Http\Controllers\PublicAlbum\PhotoController;
 use App\Http\Controllers\PublicAlbum\QrController;
 use Illuminate\Support\Facades\Route;
@@ -56,6 +57,13 @@ Route::prefix('public')->group(function () {
 
     // QR code image (public; encodes the already-public share URL).
     Route::get('albums/{slug}/qr', [QrController::class, 'show'])->middleware('throttle:60,1');
+
+    // Authenticated image proxy (open so <img> tags load for shared links).
+    // Serves private Drive thumbnails/previews through our own domain.
+    Route::get('albums/{slug}/photos/{id}/thumb', [ImageController::class, 'thumb'])
+        ->name('public.photos.thumb')->middleware('throttle:600,1');
+    Route::get('albums/{slug}/photos/{id}/preview', [ImageController::class, 'preview'])
+        ->name('public.photos.preview')->middleware('throttle:600,1');
 
     // Engagement features — intentionally OPEN (no album token) so anyone with
     // the shared/reshared link (friends, family) can comment and enquire.

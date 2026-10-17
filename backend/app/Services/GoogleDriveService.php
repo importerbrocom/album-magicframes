@@ -225,6 +225,45 @@ class GoogleDriveService
         return $this->thumbnailUrl($thumbnailLink, $size);
     }
 
+    /**
+     * Fetch the raw bytes of a resized thumbnail for a file, authenticated
+     * server-side. Used by the image proxy so private Drive photos render in
+     * the browser (their googleusercontent thumbnail links are auth-gated and
+     * won't load in an anonymous <img> tag).
+     *
+     * @return array{0:string,1:string} [binary body, content-type]
+     */
+    public function fetchThumbnailBytes(string $fileId, int $size = 400): array
+    {
+        // Ask the Drive API for a fresh thumbnailLink, then download it with auth.
+        $meta = $this->request('GET', "/files/{$fileId}", [
+            'query' => array_filter([
+                'fields' => 'thumbnailLink',
+                'supportsAllDrives' => 'true',
+            ]),
+        ]);
+
+        $link = $this->thumbnailUrl($meta['thumbnailLink'] ?? null, $size);
+        if (! $link) {
+            // No thumbnail available (e.g. HEIC); fall back to the original media.
+            $resp = $this->rawRequest('GET', "/files/{$fileId}", [
+                'query' => array_filter(['alt' => 'media', 'supportsAllDrives' => 'true']),
+            ]);
+
+            return [(string) $resp->getBody(), $resp->getHeaderLine('Content-Type') ?: 'image/jpeg'];
+        }
+
+        // googleusercontent thumbnail links accept the OAuth bearer token.
+        $options = $this->applyAuth([]);
+        try {
+            $resp = $this->http->request('GET', $link, $options);
+
+            return [(string) $resp->getBody(), $resp->getHeaderLine('Content-Type') ?: 'image/jpeg'];
+        } catch (GuzzleException $e) {
+            throw GoogleDriveException::cannotConnect('Thumbnail fetch failed: ' . $e->getMessage());
+        }
+    }
+
     // --- HTTP plumbing ----------------------------------------------------------
 
     private function request(string $method, string $path, array $options = []): array

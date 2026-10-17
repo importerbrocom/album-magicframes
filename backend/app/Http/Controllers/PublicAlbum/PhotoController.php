@@ -49,7 +49,7 @@ class PhotoController extends Controller
             ->paginate(min((int) $request->integer('per_page', 40), 100));
 
         return PhotoResource::collection($photos)
-            ->additional(['allow_download' => $album->allow_download, 'album_slug' => $album->slug])
+            ->additional(['allow_download' => $album->allow_download, 'album_slug' => $album->slug, 'drive_auth_mode' => $album->drive_auth_mode])
             ->response();
     }
 
@@ -67,7 +67,7 @@ class PhotoController extends Controller
         ], $request);
 
         return (new PhotoResource($photo))
-            ->additional(['allow_download' => $album->allow_download, 'album_slug' => $album->slug])
+            ->additional(['allow_download' => $album->allow_download, 'album_slug' => $album->slug, 'drive_auth_mode' => $album->drive_auth_mode])
             ->response();
     }
 

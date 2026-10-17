@@ -250,11 +250,12 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                     'file_size' => isset($file['size']) ? (int) $file['size'] : null,
                     'width' => $meta['width'] ?? null,
                     'height' => $meta['height'] ?? null,
-                    'thumbnail_url' => $drive->thumbnailUrl($file['thumbnailLink'] ?? null, 400),
-                    'preview_url' => $drive->previewUrl($file['thumbnailLink'] ?? null, 1600),
-                    // Originals are streamed through the Laravel download proxy
-                    // (route resolved from the DB id at serialization time),
-                    // never a raw Drive link, so no original_url is stored here.
+                    // Image URLs are served by our authenticated image proxy
+                    // (resolved from the photo id + album slug at serialization
+                    // time) — private Drive thumbnail links are auth-gated and
+                    // expire, so we never store them.
+                    'thumbnail_url' => null,
+                    'preview_url' => null,
                     'original_url' => null,
                     'sort_order' => $sort++,
                     'is_available' => true,
@@ -345,13 +346,13 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
         foreach ($album->events as $event) {
             $event->photo_count = Photo::where('event_id', $event->id)->where('is_available', true)->count();
             $cover = Photo::where('event_id', $event->id)->where('is_available', true)->orderBy('sort_order')->first();
-            $event->cover_image_url = $cover?->thumbnail_url;
+            $event->cover_image_url = $this->coverUrl($album, $cover, 'thumb');
             $event->save();
 
             foreach ($event->folders as $folder) {
                 $folder->photo_count = Photo::where('folder_id', $folder->id)->where('is_available', true)->count();
                 $fcover = Photo::where('folder_id', $folder->id)->where('is_available', true)->orderBy('sort_order')->first();
-                $folder->cover_image_url = $fcover?->thumbnail_url;
+                $folder->cover_image_url = $this->coverUrl($album, $fcover, 'thumb');
                 $folder->save();
             }
         }
@@ -366,14 +367,29 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
         $album->sync_message = 'Sync completed.';
         $album->last_synced_at = now();
 
-        // Default album cover: first photo of first event, if none set.
-        if (! $album->cover_image_url) {
-            $firstPhoto = Photo::where('album_id', $album->id)->where('is_available', true)->orderBy('id')->first();
-            $album->cover_image_url = $firstPhoto?->preview_url;
-            $album->cover_photo_id = $firstPhoto?->id;
-        }
+        // Default album cover: first photo, preview size.
+        $firstPhoto = Photo::where('album_id', $album->id)->where('is_available', true)->orderBy('id')->first();
+        $album->cover_image_url = $this->coverUrl($album, $firstPhoto, 'preview');
+        $album->cover_photo_id = $firstPhoto?->id;
 
         $album->save();
+    }
+
+    /**
+     * Build a cover image URL for a photo. Demo albums use the stored public
+     * placeholder URL; real albums use the authenticated image proxy route.
+     */
+    private function coverUrl(Album $album, ?Photo $photo, string $kind): ?string
+    {
+        if (! $photo) {
+            return null;
+        }
+
+        if ($album->drive_auth_mode === 'demo') {
+            return $kind === 'preview' ? $photo->preview_url : $photo->thumbnail_url;
+        }
+
+        return route("public.photos.{$kind}", ['slug' => $album->slug, 'id' => $photo->id], false);
     }
 
     private function setStatus(Album $album, string $status, int $progress, string $message): void
