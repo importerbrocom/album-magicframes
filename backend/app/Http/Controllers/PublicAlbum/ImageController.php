@@ -4,19 +4,18 @@ namespace App\Http\Controllers\PublicAlbum;
 
 use App\Http\Controllers\Controller;
 use App\Models\Album;
-use App\Models\Photo;
 use App\Services\GoogleDriveException;
 use App\Services\GoogleDriveService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Authenticated image proxy. Private Google Drive thumbnails can't be loaded
  * directly in an <img> tag (their googleusercontent links are auth-gated and
  * expire). This proxy fetches the resized image server-side using the Drive
- * credentials and caches the bytes, so the browser just loads a stable URL on
- * our own domain.
+ * credentials and caches the BYTES ON DISK (never in the database cache, which
+ * can't safely hold large binaries), then serves them from our own domain.
  *
  * Open (no album token) so images render for anyone with the shared link; the
  * photo is still scoped to its album + must be available.
@@ -44,21 +43,45 @@ class ImageController extends Controller
         // Demo photos use public placeholder URLs — just redirect to them.
         if ($album->drive_auth_mode === 'demo') {
             $url = $kind === 'thumb' ? $photo->thumbnail_url : $photo->preview_url;
+
             return $url ? redirect()->away($url) : abort(404);
         }
 
-        $cacheKey = "img.{$kind}.{$photo->id}.{$size}";
+        // On-disk cache: storage/app/imgcache/{kind}/{photoId}_{size}.bin (+ .ct)
+        $dir = storage_path("app/imgcache/{$kind}");
+        $base = "{$dir}/{$photo->id}_{$size}";
+        $binFile = "{$base}.bin";
+        $ctFile = "{$base}.ct";
 
-        try {
-            [$body, $contentType] = Cache::remember(
-                $cacheKey,
-                now()->addSeconds($ttl),
-                fn () => $drive->fetchThumbnailBytes($photo->google_drive_file_id, $size),
-            );
-        } catch (GoogleDriveException $e) {
-            abort(502, $e->userMessage);
+        $fresh = is_file($binFile) && (time() - filemtime($binFile) < $ttl);
+
+        if (! $fresh) {
+            try {
+                [$body, $contentType] = $drive->fetchThumbnailBytes($photo->google_drive_file_id, $size);
+            } catch (GoogleDriveException $e) {
+                // If we have a stale cached copy, serve it rather than erroring.
+                if (is_file($binFile)) {
+                    $body = (string) file_get_contents($binFile);
+                    $contentType = is_file($ctFile) ? trim((string) file_get_contents($ctFile)) : 'image/jpeg';
+
+                    return $this->imageResponse($body, $contentType, $ttl);
+                }
+                abort(502, $e->userMessage);
+            }
+
+            File::ensureDirectoryExists($dir);
+            @file_put_contents($binFile, $body);
+            @file_put_contents($ctFile, $contentType ?: 'image/jpeg');
+        } else {
+            $body = (string) file_get_contents($binFile);
+            $contentType = is_file($ctFile) ? trim((string) file_get_contents($ctFile)) : 'image/jpeg';
         }
 
+        return $this->imageResponse($body, $contentType, $ttl);
+    }
+
+    private function imageResponse(string $body, string $contentType, int $ttl): Response
+    {
         return response($body, 200, [
             'Content-Type' => $contentType ?: 'image/jpeg',
             'Cache-Control' => "public, max-age={$ttl}",
