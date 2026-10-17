@@ -367,10 +367,34 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
         $album->sync_message = 'Sync completed.';
         $album->last_synced_at = now();
 
-        // Default album cover: first photo, preview size.
-        $firstPhoto = Photo::where('album_id', $album->id)->where('is_available', true)->orderBy('id')->first();
-        $album->cover_image_url = $this->coverUrl($album, $firstPhoto, 'preview');
-        $album->cover_photo_id = $firstPhoto?->id;
+        // Album cover: prefer the admin's explicit cover photo if they picked
+        // one that still exists; otherwise fall back to the first photo. Always
+        // emit a renderable URL (proxy for real albums) — never a raw Drive
+        // "…/view" page link, which can't load in an <img>.
+        $coverPhoto = null;
+        if ($album->cover_photo_id) {
+            $coverPhoto = Photo::where('album_id', $album->id)
+                ->where('id', $album->cover_photo_id)
+                ->where('is_available', true)
+                ->first();
+        }
+        $coverPhoto ??= Photo::where('album_id', $album->id)
+            ->where('is_available', true)
+            ->orderBy('id')
+            ->first();
+
+        // If the current cover isn't a usable image URL (e.g. a pasted Drive
+        // "/file/d/.../view" link, or now stale), replace it with a real one.
+        $current = (string) $album->cover_image_url;
+        $looksBad = $current === ''
+            || str_contains($current, 'drive.google.com/file/')
+            || str_contains($current, 'drive.google.com/open')
+            || str_contains($current, '/view');
+
+        if ($looksBad || $album->drive_auth_mode !== 'demo') {
+            $album->cover_image_url = $this->coverUrl($album, $coverPhoto, 'preview');
+            $album->cover_photo_id = $coverPhoto?->id;
+        }
 
         $album->save();
     }

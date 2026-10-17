@@ -79,11 +79,14 @@ class AlbumController extends Controller
             'drive_auth_mode' => $authMode,
             'description' => $data['description'] ?? null,
             'tagline' => $data['tagline'] ?? null,
-            'cover_image_url' => $data['cover_image_url'] ?? null,
+            'cover_image_url' => $this->sanitizeCover($data['cover_image_url'] ?? null),
             'theme' => $data['theme'] ?? 'classic',
             'status' => $data['status'] ?? 'active',
             'allow_download' => $data['allow_download'] ?? true,
             'allow_share' => $data['allow_share'] ?? true,
+            'allow_comments' => $data['allow_comments'] ?? true,
+            'allow_enquiries' => $data['allow_enquiries'] ?? true,
+            'google_review_url' => $data['google_review_url'] ?? null,
             'expires_at' => $data['expires_at'] ?? null,
             'sync_status' => 'pending',
         ]);
@@ -95,6 +98,25 @@ class AlbumController extends Controller
             'album' => new AdminAlbumResource($album),
             'share' => $this->albums->sharePayload($album, $plainPassword),
         ], 201);
+    }
+
+    /**
+     * A Google Drive "/file/d/.../view" or "open?id=" link is a web page, not
+     * an image, and can't render in an <img>. Reject those so the sync picks a
+     * real photo as the cover instead. A plain image URL is kept as-is.
+     */
+    private function sanitizeCover(?string $url): ?string
+    {
+        if (! $url) {
+            return null;
+        }
+        if (str_contains($url, 'drive.google.com/file/')
+            || str_contains($url, 'drive.google.com/open')
+            || str_ends_with($url, '/view')) {
+            return null;
+        }
+
+        return $url;
     }
 
     public function show(Album $album): JsonResponse
@@ -124,6 +146,10 @@ class AlbumController extends Controller
                     return response()->json(['message' => $e->userMessage], 422);
                 }
             }
+        }
+
+        if (array_key_exists('cover_image_url', $data)) {
+            $data['cover_image_url'] = $this->sanitizeCover($data['cover_image_url']);
         }
 
         $album->fill($data)->save();
