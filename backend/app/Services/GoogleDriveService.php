@@ -235,33 +235,54 @@ class GoogleDriveService
      */
     public function fetchThumbnailBytes(string $fileId, int $size = 400): array
     {
-        // Ask the Drive API for a fresh thumbnailLink, then download it with auth.
-        $meta = $this->request('GET', "/files/{$fileId}", [
-            'query' => array_filter([
-                'fields' => 'thumbnailLink',
-                'supportsAllDrives' => 'true',
-            ]),
+        // 1) Ask the Drive API for a fresh thumbnailLink (links expire).
+        $link = null;
+        try {
+            $meta = $this->request('GET', "/files/{$fileId}", [
+                'query' => array_filter([
+                    'fields' => 'thumbnailLink',
+                    'supportsAllDrives' => 'true',
+                ]),
+            ]);
+            $link = $this->thumbnailUrl($meta['thumbnailLink'] ?? null, $size);
+        } catch (\Throwable $e) {
+            Log::warning('thumbnailLink lookup failed', ['file' => $fileId, 'err' => $e->getMessage()]);
+        }
+
+        // 2) Try the googleusercontent thumbnail with ONLY a bearer header
+        //    (no Drive-API query params — those break the CDN host). Follow
+        //    redirects. This is the fast path for sized thumbnails.
+        if ($link) {
+            $headers = [];
+            if ($this->authMode() === 'oauth') {
+                $headers['Authorization'] = 'Bearer ' . $this->accessToken();
+            }
+            try {
+                $resp = $this->http->request('GET', $link, [
+                    'headers' => $headers,
+                    'allow_redirects' => true,
+                    'http_errors' => true,
+                ]);
+                $ct = $resp->getHeaderLine('Content-Type') ?: 'image/jpeg';
+                $body = (string) $resp->getBody();
+                // Guard: sometimes the CDN returns an HTML sign-in page instead
+                // of image bytes. If so, fall through to the API media path.
+                if ($body !== '' && ! str_starts_with(strtolower($ct), 'text/html')) {
+                    return [$body, $ct];
+                }
+            } catch (GuzzleException $e) {
+                Log::warning('thumbnail CDN fetch failed, falling back to media', ['file' => $fileId, 'err' => $e->getMessage()]);
+            }
+        }
+
+        // 3) Fallback: download the original media through the Drive API itself
+        //    (always works for files the account can read). Heavier, but used
+        //    only when the thumbnail path is unavailable; the proxy caches it.
+        $resp = $this->rawRequest('GET', "/files/{$fileId}", [
+            'query' => array_filter(['alt' => 'media', 'supportsAllDrives' => 'true']),
         ]);
 
-        $link = $this->thumbnailUrl($meta['thumbnailLink'] ?? null, $size);
-        if (! $link) {
-            // No thumbnail available (e.g. HEIC); fall back to the original media.
-            $resp = $this->rawRequest('GET', "/files/{$fileId}", [
-                'query' => array_filter(['alt' => 'media', 'supportsAllDrives' => 'true']),
-            ]);
-
-            return [(string) $resp->getBody(), $resp->getHeaderLine('Content-Type') ?: 'image/jpeg'];
-        }
-
-        // googleusercontent thumbnail links accept the OAuth bearer token.
-        $options = $this->applyAuth([]);
-        try {
-            $resp = $this->http->request('GET', $link, $options);
-
-            return [(string) $resp->getBody(), $resp->getHeaderLine('Content-Type') ?: 'image/jpeg'];
-        } catch (GuzzleException $e) {
-            throw GoogleDriveException::cannotConnect('Thumbnail fetch failed: ' . $e->getMessage());
-        }
+        return [(string) $resp->getBody(), $resp->getHeaderLine('Content-Type') ?: 'image/jpeg'];
     }
 
     // --- HTTP plumbing ----------------------------------------------------------
