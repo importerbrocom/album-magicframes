@@ -3,7 +3,7 @@ import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
 import SharePanel from './SharePanel';
 
-const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional'];
+const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'];
 
 const Toggle = ({ checked, onChange, label }) => (
   <label className="flex cursor-pointer items-center justify-between gap-3">

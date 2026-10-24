@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Great+Vibes&family=Inter:wght@300;400;500;600&family=Montserrat:wght@300;400;500;600&family=Playfair+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -55,6 +55,25 @@
   --heading-font: 'Cormorant Garamond', serif; --heading-weight: 600;
   --card-shadow: 0 10px 30px -12px rgba(90, 42, 39, 0.25);
 }
+/* "Akhila S Photography" — cinematic dark + gold wedding theme */
+[data-theme='akhila'] {
+  --bg: #080a09; --surface: #17130d; --text: #f6f0e7; --muted: #c9c2b8;
+  --accent: #d9ad60; --accent-contrast: #15110b; --card-radius: 0;
+  --heading-font: 'Cormorant Garamond', serif; --heading-weight: 500;
+  --body-font: 'Montserrat', Arial, sans-serif; --letter-spacing: 0.01em;
+  --script-font: 'Great Vibes', cursive;
+  --card-shadow: 0 16px 50px -14px rgba(0, 0, 0, 0.7);
+}
+[data-theme='akhila'] body { font-weight: 300; }
+[data-theme='akhila'] .btn-accent { border-radius: 0; letter-spacing: 0.18em; font-size: 0.75rem; text-transform: uppercase; }
+/* Script display headings (brand/thank-you flourishes) */
+.font-script { font-family: var(--script-font, var(--heading-font)); }
+
+/* Hero gold rule + title — subtle by default, expressive on the Akhila theme */
+.hero-title { font-family: var(--heading-font); font-weight: var(--heading-weight); }
+.hero-rule { display: none; width: 55px; height: 1px; margin: 16px auto 0; background: var(--accent); }
+[data-theme='akhila'] .hero-title { font-family: var(--script-font); font-weight: 400; line-height: 0.95; }
+[data-theme='akhila'] .hero-rule { display: block; }
 
 @layer base {
   html { scroll-behavior: smooth; }
