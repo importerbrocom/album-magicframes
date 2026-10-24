@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 320" role="img" aria-label="Magic Frames">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&amp;display=swap');
+    .mf-script { font-family: 'Great Vibes', cursive; fill: currentColor; }
+    .mf-tm { font-family: 'Montserrat', Arial, sans-serif; fill: currentColor; font-weight: 500; }
+  </style>
+  <text class="mf-script" x="260" y="150" font-size="132" text-anchor="middle">Magic</text>
+  <text class="mf-script" x="260" y="268" font-size="132" text-anchor="middle">Frames</text>
+  <text class="mf-tm" x="470" y="78" font-size="30" text-anchor="middle">™</text>
+</svg>
