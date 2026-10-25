@@ -112,3 +112,145 @@
 /* Hide scrollbars on filmstrip */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* =========================================================================
+   AKHILA — cinematic dark + gold album-viewing treatment
+   Everything below is scoped to [data-theme='akhila'] so the other themes
+   are untouched. Mirrors the reference index.html: animated hero zoom,
+   gold-shaded gallery cards, hover image motion, ambient floating leaves,
+   scroll reveals and an elegant lightbox.
+   ========================================================================= */
+
+@keyframes mf-hero-zoom { from { transform: scale(1.04); } to { transform: scale(1.14); } }
+@keyframes mf-float-leaf {
+  0%   { opacity: 0; transform: translateY(70px) rotate(0); }
+  15%  { opacity: .6; }
+  85%  { opacity: .5; }
+  100% { opacity: 0; transform: translateY(-90vh) rotate(250deg); }
+}
+@keyframes mf-reveal-up { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+[data-theme='akhila'] {
+  /* richer type rhythm for the cinematic look */
+  --letter-spacing: 0.02em;
+}
+
+/* ---- Global background: deep ink with a subtle gold vignette ---- */
+[data-theme='akhila'] body {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(217,173,96,0.10), transparent 60%),
+    var(--bg);
+  letter-spacing: 0.3px;
+}
+
+/* ---- Eyebrows / small-caps labels in gold ---- */
+[data-theme='akhila'] .text-xs.uppercase,
+[data-theme='akhila'] .text-\[0\.65rem\].uppercase { color: var(--accent) !important; opacity: .9; }
+
+/* ---- Hero: cinematic gradient + slow zoom on the cover image ---- */
+[data-theme='akhila'] section.relative > .relative.h-72,
+[data-theme='akhila'] section.relative > .relative.sm\:h-96 { background: #17130d; }
+[data-theme='akhila'] .hero-title {
+  text-shadow: 0 2px 24px rgba(0,0,0,.65);
+  font-size: clamp(3rem, 7vw, 4.75rem);
+  letter-spacing: 0;
+}
+/* slow Ken-Burns zoom on any full-bleed cover image inside a hero section */
+[data-theme='akhila'] section.relative img.object-cover {
+  animation: mf-hero-zoom 18s ease-in-out infinite alternate;
+  transform-origin: center 42%;
+}
+/* darker, more directional cinematic shade over the hero */
+[data-theme='akhila'] section.relative .bg-gradient-to-t {
+  background-image:
+    linear-gradient(0deg, rgba(0,0,0,.80), transparent 55%),
+    linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,.08) 50%, rgba(0,0,0,.35)) !important;
+}
+
+/* ---- Section headings: thin gold rule motif under "Gallery"/"The Events" ---- */
+[data-theme='akhila'] main h2.font-heading {
+  font-size: clamp(2.4rem, 4.3vw, 3.2rem);
+  line-height: 1;
+}
+
+/* ---- Gallery / Event / Folder cards: gold shade, hover zoom, gold frame ---- */
+[data-theme='akhila'] .themed-surface {
+  border: 1px solid rgba(217,173,96,0.14);
+  background: #171713;
+  position: relative;
+  isolation: isolate;
+}
+/* warm directional overlay reminiscent of the reference card shades */
+[data-theme='akhila'] a.group.themed-surface .relative::after,
+[data-theme='akhila'] a.group.themed-surface > .relative::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(18,12,4,.55), rgba(18,12,4,.12) 55%, transparent);
+  transition: opacity .6s ease;
+}
+[data-theme='akhila'] a.group.themed-surface:hover .relative::after { opacity: .75; }
+/* stronger, slower image zoom on hover (reference uses ~0.9s) */
+[data-theme='akhila'] .group:hover img.object-cover,
+[data-theme='akhila'] .group:focus-visible img.object-cover {
+  transform: scale(1.07);
+  transition: transform .9s cubic-bezier(.2,.7,.2,1);
+}
+/* card titles pick up the serif display weight */
+[data-theme='akhila'] .themed-surface h3.font-heading,
+[data-theme='akhila'] .themed-surface .font-heading {
+  letter-spacing: .5px;
+}
+/* gold focus ring for keyboard users, matching the reference */
+[data-theme='akhila'] a.group:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+
+/* ---- Sticky header: translucent ink + gold hairline ---- */
+[data-theme='akhila'] header.sticky {
+  background: color-mix(in srgb, #0b0d0c 82%, transparent) !important;
+  border-bottom: 1px solid rgba(217,173,96,0.18);
+}
+
+/* ---- Neutralise hardcoded dark borders so they read on gold-on-black ---- */
+[data-theme='akhila'] .border-black\/10,
+[data-theme='akhila'] .border-black\/15 { border-color: rgba(217,173,96,0.22) !important; }
+
+/* ---- View-switcher pills + round nav buttons ---- */
+[data-theme='akhila'] .rounded-full.border { border-color: rgba(217,173,96,0.30); }
+
+/* ---- Buttons: squared gold with uppercase tracking (set earlier), add hover lift ---- */
+[data-theme='akhila'] .btn-accent { box-shadow: 0 6px 22px -10px rgba(217,173,96,.6); }
+[data-theme='akhila'] .btn-accent:hover { transform: translateY(-1px); opacity: 1; }
+
+/* ---- Lightbox / PhotoViewer: deep blurred ink + gold-bordered controls ---- */
+[data-theme='akhila'] .fixed.inset-0.z-\[60\] { background: rgba(4,5,4,0.97) !important; backdrop-filter: blur(18px); }
+[data-theme='akhila'] .fixed.inset-0.z-\[60\] button.rounded-full,
+[data-theme='akhila'] .fixed.inset-0.z-\[60\] .bg-white\/10 {
+  border: 1px solid rgba(217,173,96,0.65);
+  background: rgba(17,17,17,0.55) !important;
+  color: #fff;
+  transition: background .25s ease, color .25s ease;
+}
+[data-theme='akhila'] .fixed.inset-0.z-\[60\] button.rounded-full:hover { background: var(--accent) !important; color: #15110b; }
+
+/* ---- Skeletons on dark ---- */
+[data-theme='akhila'] .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 37%, rgba(255,255,255,0.04) 63%);
+  background-size: 1000px 100%;
+}
+
+/* ---- Scroll reveal (opt-in via .mf-reveal, activated by .mf-in) ---- */
+[data-theme='akhila'] .mf-reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s ease, transform .8s ease; }
+[data-theme='akhila'] .mf-reveal.mf-in { opacity: 1; transform: translateY(0); }
+
+/* ---- Ambient floating gold "leaves" (decorative, injected by AlbumLayout) ---- */
+.mf-ambient { position: fixed; pointer-events: none; z-index: 8; width: 9px; height: 18px;
+  border-radius: 90% 0 90% 0; background: linear-gradient(135deg, #b78643, #e7c28a);
+  filter: blur(1px); opacity: 0; display: none; }
+[data-theme='akhila'] .mf-ambient { display: block; animation: mf-float-leaf 13s linear infinite; }
+.mf-ambient.one { left: 8%; top: 55%; }
+.mf-ambient.two { right: 10%; top: 76%; animation-delay: 5s; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='akhila'] section.relative img.object-cover,
+  [data-theme='akhila'] .mf-ambient { animation: none; }
+  [data-theme='akhila'] .mf-reveal { opacity: 1; transform: none; transition: none; }
+}

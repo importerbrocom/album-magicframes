@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { Navigate, Outlet, useParams } from 'react-router-dom';
 import { albumService, getAlbumToken } from '../services/albumService';
 import ThemeScope from '../components/ThemeScope';
+import AmbientFx from '../components/AmbientFx';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { HeroSkeleton } from '../components/LoadingSkeleton';
 
@@ -70,6 +71,7 @@ export default function AlbumLayout() {
   return (
     <ThemeScope theme={album.theme}>
       <AlbumContext.Provider value={{ album, slug }}>
+        <AmbientFx />
         <Outlet />
       </AlbumContext.Provider>
     </ThemeScope>

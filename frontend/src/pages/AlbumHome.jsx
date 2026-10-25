@@ -45,7 +45,7 @@ export default function AlbumHome() {
       </section>
 
       <main className="mx-auto max-w-6xl px-4 pt-8">
-        <div className="mb-5 text-center">
+        <div className="mf-reveal mb-5 text-center">
           <p className="text-xs uppercase tracking-[0.3em]" style={{ color: 'var(--muted)' }}>
             Welcome to our memories
           </p>
@@ -64,7 +64,7 @@ export default function AlbumHome() {
         ) : events.length === 0 ? (
           <EmptyState icon="📸" title="No photos available yet." message="Your album is being prepared. Please check back soon." />
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mf-reveal grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {events.map((ev, i) => (
               <EventCard key={ev.id} slug={slug} event={ev} index={i} />
             ))}
