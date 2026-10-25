@@ -35,8 +35,10 @@ export default function AlbumHome() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-white">
-            <h1 className="font-heading text-4xl sm:text-5xl animate-fadeUp">{album.client_name}</h1>
+            <p className="mb-2 text-[0.65rem] uppercase tracking-[0.4em] opacity-80">A story in every frame</p>
+            <h1 className="hero-title text-4xl sm:text-5xl animate-fadeUp">{album.client_name}</h1>
             <p className="font-heading mt-1 text-xl opacity-90">{album.title}</p>
+            <span className="hero-rule" aria-hidden="true" />
             {album.tagline && <p className="mt-2 text-sm italic opacity-80">“{album.tagline}”</p>}
           </div>
         </div>

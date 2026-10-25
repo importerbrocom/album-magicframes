@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
 
-const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional'];
+const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'];
 
 export default function EditAlbum() {
   const { id } = useParams();
