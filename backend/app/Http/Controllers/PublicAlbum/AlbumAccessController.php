@@ -46,6 +46,7 @@ class AlbumAccessController extends Controller
             'tagline' => $album->tagline,
             'description' => $album->description,
             'cover_image_url' => $album->cover_image_url,
+            'film_url' => $album->film_url,
             'theme' => $album->theme,
             'allow_share' => $album->allow_share,
             'allow_comments' => $album->allow_comments,

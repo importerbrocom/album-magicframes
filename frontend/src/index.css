@@ -282,6 +282,17 @@
 .hero-play-active { display: grid; }
 .hero-play-active:hover { background: var(--accent); color: #111; transform: scale(1.08); }
 
+/* "Watch the Film" text CTA — gold outline pill, works on every theme */
+.hero-film-cta {
+  color: #fff; border: 1px solid rgba(255,255,255,.7); border-radius: 999px;
+  padding: 0.55rem 1.25rem; font-weight: 500; backdrop-filter: blur(4px);
+  background: rgba(0,0,0,.25); transition: background .25s ease, color .25s ease, border-color .25s ease;
+}
+.hero-film-cta:hover { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+.hero-film-cta span { font-size: 0.7em; }
+[data-theme='akhila'] .hero-film-cta { border-radius: 0; border-color: var(--accent); color: var(--accent); }
+[data-theme='akhila'] .hero-film-cta:hover { color: var(--accent-contrast); }
+
 /* Decorative note + decorative play span: akhila only */
 [data-theme='akhila'] .hero-note {
   display: block; position: absolute; right: 6%; top: 42%;

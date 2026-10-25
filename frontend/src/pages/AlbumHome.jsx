@@ -58,6 +58,15 @@ export default function AlbumHome() {
             <p className="font-heading mt-1 text-xl opacity-90">{album.title}</p>
             <span className="hero-rule" aria-hidden="true" />
             {album.tagline && <p className="mt-2 text-sm italic opacity-80">“{album.tagline}”</p>}
+            {hasFilm && (
+              <button
+                type="button"
+                onClick={() => setFilmOpen(true)}
+                className="hero-film-cta mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em]"
+              >
+                <span aria-hidden="true">▶</span> Watch the Film
+              </button>
+            )}
           </div>
         </div>
       </section>

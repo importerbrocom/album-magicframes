@@ -4,6 +4,8 @@ import { albumService, getAlbumToken } from '../services/albumService';
 import ThemeScope from '../components/ThemeScope';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { HeroSkeleton } from '../components/LoadingSkeleton';
+import FilmModal from '../components/FilmModal';
+import { parseFilm } from '../components/parseFilm';
 
 /**
  * Public album cover + password screen (spec section 11/44).
@@ -16,6 +18,8 @@ export default function AlbumLogin() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [notFound, setNotFound] = useState(false);
+  const [filmOpen, setFilmOpen] = useState(false);
+  const hasFilm = !!parseFilm(landing?.film_url);
 
   usePageMeta({
     title: landing ? `${landing.client_name} | ${landing.title}` : 'Wedding Album',
@@ -93,6 +97,16 @@ export default function AlbumLogin() {
             <p className="mt-4 max-w-sm text-sm italic opacity-80 animate-fadeIn">“{landing.tagline}”</p>
           )}
 
+          {hasFilm && (
+            <button
+              type="button"
+              onClick={() => setFilmOpen(true)}
+              className="hero-film-cta mt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em] animate-fadeIn"
+            >
+              <span aria-hidden="true">▶</span> Watch the Film
+            </button>
+          )}
+
           <form onSubmit={submit} className="mt-10 w-full max-w-xs animate-fadeUp">
             <input
               type="password"
@@ -112,6 +126,8 @@ export default function AlbumLogin() {
             </button>
           </form>
         </div>
+
+        {filmOpen && <FilmModal url={landing.film_url} onClose={() => setFilmOpen(false)} />}
       </div>
     </ThemeScope>
   );
