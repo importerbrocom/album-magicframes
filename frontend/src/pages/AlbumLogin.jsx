@@ -81,9 +81,13 @@ export default function AlbumLogin() {
           <div className="absolute inset-0 bg-black/45" />
         </div>
 
+        <span className="mf-ambient one" aria-hidden="true" />
+        <span className="mf-ambient two" aria-hidden="true" />
+
         <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center text-white">
-          <p className="mb-3 text-xs uppercase tracking-[0.3em] opacity-80 animate-fadeIn">The Wedding of</p>
-          <h1 className="font-heading text-5xl leading-tight sm:text-6xl animate-fadeUp">{landing.client_name}</h1>
+          <p className="login-eyebrow mb-3 text-xs uppercase tracking-[0.3em] opacity-80 animate-fadeIn">The Wedding of</p>
+          <h1 className="hero-title text-5xl leading-tight sm:text-6xl animate-fadeUp">{landing.client_name}</h1>
+          <span className="hero-rule" aria-hidden="true" />
           <p className="font-heading mt-3 text-2xl opacity-90 animate-fadeUp">{landing.title}</p>
           {landing.tagline && (
             <p className="mt-4 max-w-sm text-sm italic opacity-80 animate-fadeIn">“{landing.tagline}”</p>

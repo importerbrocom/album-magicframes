@@ -34,6 +34,9 @@ export default function AlbumHome() {
             <img src={album.cover_image_url} alt="" className="h-full w-full object-cover" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          {/* Cinematic flourishes — shown only on the akhila theme (CSS-gated) */}
+          <span className="hero-note" aria-hidden="true">Love<br />Laugh<br />Forever ♡</span>
+          <span className="hero-play" aria-hidden="true"><span>▶</span></span>
           <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-white">
             <p className="mb-2 text-[0.65rem] uppercase tracking-[0.4em] opacity-80">A story in every frame</p>
             <h1 className="hero-title text-4xl sm:text-5xl animate-fadeUp">{album.client_name}</h1>

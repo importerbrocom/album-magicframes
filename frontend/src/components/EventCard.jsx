@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import LazyImage from './LazyImage';
+import categoryIcon from './categoryIcon';
 
 export default function EventCard({ slug, event, index = 0 }) {
   return (
@@ -17,6 +18,7 @@ export default function EventCard({ slug, event, index = 0 }) {
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-4 text-white">
+          <span className="card-cat-icon" aria-hidden="true">{categoryIcon(event.name)}</span>
           <h3 className="font-heading text-2xl leading-tight">{event.name}</h3>
           <p className="text-sm opacity-90">{event.photo_count} Photos</p>
         </div>
