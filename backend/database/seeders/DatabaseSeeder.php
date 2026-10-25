@@ -38,7 +38,7 @@ class DatabaseSeeder extends Seeder
                 'drive_auth_mode' => $albumService->resolveAuthMode(),
                 'description' => 'A collection of memories from our wedding celebrations.',
                 'tagline' => 'Memories that last forever.',
-                'theme' => 'classic',
+                'theme' => 'akhila',
                 'status' => 'active',
                 'allow_download' => true,
                 'allow_share' => true,
