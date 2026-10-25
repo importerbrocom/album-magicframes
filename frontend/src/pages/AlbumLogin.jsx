@@ -19,7 +19,8 @@ export default function AlbumLogin() {
   const [submitting, setSubmitting] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [filmOpen, setFilmOpen] = useState(false);
-  const hasFilm = !!parseFilm(landing?.film_url);
+  const filmSrc = landing?.film_src || landing?.film_url;
+  const hasFilm = !!parseFilm(filmSrc);
 
   usePageMeta({
     title: landing ? `${landing.client_name} | ${landing.title}` : 'Wedding Album',
@@ -127,7 +128,7 @@ export default function AlbumLogin() {
           </form>
         </div>
 
-        {filmOpen && <FilmModal url={landing.film_url} onClose={() => setFilmOpen(false)} />}
+        {filmOpen && <FilmModal url={filmSrc} onClose={() => setFilmOpen(false)} />}
       </div>
     </ThemeScope>
   );

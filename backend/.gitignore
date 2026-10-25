@@ -23,3 +23,4 @@ yarn-error.log
 /.zed
 /database/database.sqlite
 /storage/app/imgcache
+/storage/app/filmcache

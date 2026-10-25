@@ -19,7 +19,8 @@ export default function AlbumHome() {
   const { album, slug } = useAlbum();
   const [events, setEvents] = useState(null);
   const [filmOpen, setFilmOpen] = useState(false);
-  const hasFilm = !!parseFilm(album.film_url);
+  const filmSrc = album.film_src || album.film_url;
+  const hasFilm = !!parseFilm(filmSrc);
 
   useEffect(() => {
     albumService.events(slug).then(setEvents).catch(() => setEvents([]));
@@ -118,7 +119,7 @@ export default function AlbumHome() {
         </footer>
       </main>
 
-      {filmOpen && <FilmModal url={album.film_url} onClose={() => setFilmOpen(false)} />}
+      {filmOpen && <FilmModal url={filmSrc} onClose={() => setFilmOpen(false)} />}
     </div>
   );
 }

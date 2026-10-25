@@ -21,9 +21,22 @@ export function parseFilm(url) {
     return { kind: 'iframe', src: `https://player.vimeo.com/video/${vimeo[1]}?autoplay=1` };
   }
 
+  // Our own Drive-film streaming proxy (relative or absolute) — play inline.
+  if (/\/api\/public\/albums\/[^/]+\/film(\?.*)?$/.test(u)) {
+    return { kind: 'video', src: u };
+  }
+
   // Direct video file
   if (/\.(mp4|webm|ogg|mov|m4v)(\?.*)?$/i.test(u)) {
     return { kind: 'video', src: u };
+  }
+
+  // A raw Google Drive file link that wasn't resolved to our proxy — fall back
+  // to Drive's own embeddable preview player so it still plays.
+  const drive = u.match(/drive\.google\.com\/(?:file\/d\/([A-Za-z0-9_-]+)|[^?]*[?&]id=([A-Za-z0-9_-]+))/);
+  if (drive) {
+    const id = drive[1] || drive[2];
+    return { kind: 'iframe', src: `https://drive.google.com/file/d/${id}/preview` };
   }
 
   // Unknown host — try an iframe as a best effort (e.g. a hosted player page).

@@ -203,6 +203,55 @@ class GoogleDriveService
         return $response->getBody();
     }
 
+    /**
+     * Extract a Drive FILE ID from the common share shapes used for videos:
+     *   https://drive.google.com/file/d/<ID>/view?usp=sharing
+     *   https://drive.google.com/open?id=<ID>
+     *   https://drive.google.com/uc?id=<ID>&export=download
+     * A bare ID is also accepted. Returns null if nothing recognisable.
+     */
+    public function extractFileId(string $input): ?string
+    {
+        $input = trim($input);
+        if ($input === '') {
+            return null;
+        }
+
+        if (preg_match('#/file/d/([A-Za-z0-9_-]+)#', $input, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#[?&]id=([A-Za-z0-9_-]+)#', $input, $m)) {
+            return $m[1];
+        }
+        // Bare ID (URL-safe, >= 20 chars to avoid matching short words).
+        if (preg_match('/^[A-Za-z0-9_-]{20,}$/', $input)) {
+            return $input;
+        }
+
+        return null;
+    }
+
+    /**
+     * Fetch lightweight metadata (mimeType, size, name) for a file.
+     *
+     * @return array{mimeType:?string,size:?int,name:?string}
+     */
+    public function fileMeta(string $fileId): array
+    {
+        $data = $this->request('GET', "/files/{$fileId}", [
+            'query' => [
+                'fields' => 'mimeType,size,name',
+                'supportsAllDrives' => 'true',
+            ],
+        ]);
+
+        return [
+            'mimeType' => $data['mimeType'] ?? null,
+            'size' => isset($data['size']) ? (int) $data['size'] : null,
+            'name' => $data['name'] ?? null,
+        ];
+    }
+
     // --- URL derivation helpers -------------------------------------------------
 
     /**

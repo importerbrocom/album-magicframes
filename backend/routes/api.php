@@ -7,6 +7,7 @@ use App\Http\Controllers\PublicAlbum\AlbumAccessController;
 use App\Http\Controllers\PublicAlbum\AnalyticsController;
 use App\Http\Controllers\PublicAlbum\CommentController;
 use App\Http\Controllers\PublicAlbum\EnquiryController;
+use App\Http\Controllers\PublicAlbum\FilmController;
 use App\Http\Controllers\PublicAlbum\ImageController;
 use App\Http\Controllers\PublicAlbum\PhotoController;
 use App\Http\Controllers\PublicAlbum\QrController;
@@ -64,6 +65,11 @@ Route::prefix('public')->group(function () {
         ->name('public.photos.thumb')->middleware('throttle:600,1');
     Route::get('albums/{slug}/photos/{id}/preview', [ImageController::class, 'preview'])
         ->name('public.photos.preview')->middleware('throttle:600,1');
+
+    // Wedding-film proxy for Drive-hosted videos (open, like the image proxy,
+    // so the <video> element loads — including on the pre-auth cover screen).
+    Route::get('albums/{slug}/film', [FilmController::class, 'stream'])
+        ->name('public.albums.film')->middleware('throttle:300,1');
 
     // Engagement features — intentionally OPEN (no album token) so anyone with
     // the shared/reshared link (friends, family) can comment and enquire.

@@ -95,6 +95,29 @@ class Album extends Model
         return $this->hasMany(Enquiry::class);
     }
 
+    /**
+     * Resolve the playable film source for the public UI:
+     *  - a Google Drive file link  -> our streaming proxy route
+     *  - any other URL (YouTube/Vimeo/direct mp4) -> passed through as-is
+     *  - demo albums                -> the raw link (proxy just redirects)
+     * Returns null when the album has no film.
+     */
+    public function filmSrc(): ?string
+    {
+        if (! $this->film_url) {
+            return null;
+        }
+
+        /** @var \App\Services\GoogleDriveService $drive */
+        $drive = app(\App\Services\GoogleDriveService::class);
+
+        if ($this->drive_auth_mode !== 'demo' && $drive->extractFileId($this->film_url)) {
+            return route('public.albums.film', ['slug' => $this->slug], false);
+        }
+
+        return $this->film_url;
+    }
+
     public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
