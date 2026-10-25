@@ -28,6 +28,7 @@ export default function CreateAlbum() {
     description: '',
     tagline: '',
     cover_image_url: '',
+    film_url: '',
     theme: 'classic',
     allow_download: true,
     allow_share: true,
@@ -46,6 +47,7 @@ export default function CreateAlbum() {
     try {
       const payload = { ...form };
       if (!payload.expires_at) delete payload.expires_at;
+      if (!payload.film_url) delete payload.film_url;
       const res = await adminService.createAlbum(payload);
       setCreated(res);
     } catch (err) {
@@ -100,6 +102,9 @@ export default function CreateAlbum() {
         </Field>
         <Field label="Cover Image URL (optional)" error={err('cover_image_url')}>
           <input value={form.cover_image_url} onChange={set('cover_image_url')} placeholder="https://…" className="inp" />
+        </Field>
+        <Field label="Wedding Film URL (optional)" error={err('film_url')}>
+          <input value={form.film_url} onChange={set('film_url')} placeholder="https://youtu.be/… · Vimeo · or .mp4 link" className="inp" />
         </Field>
 
         <Field label="Theme">

@@ -97,6 +97,7 @@ export default function AlbumDetail() {
               <Meta label="Photos" value={album.photo_count} />
               <Meta label="Events" value={album.event_count} />
               <Meta label="Theme" value={album.theme} />
+              <Meta label="Film" value={album.film_url ? 'Linked' : '—'} />
               <Meta label="Drive" value={album.drive_auth_mode === 'demo' ? 'Demo' : 'Connected'} />
             </div>
             <p className="mt-3 text-xs" style={{ color: 'var(--muted)' }}>

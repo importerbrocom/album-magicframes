@@ -23,6 +23,7 @@ export default function EditAlbum() {
         description: a.description || '',
         tagline: a.tagline || '',
         cover_image_url: a.cover_image_url || '',
+        film_url: a.film_url || '',
         theme: a.theme || 'classic',
         status: a.status || 'active',
         allow_download: !!a.allow_download,
@@ -65,6 +66,7 @@ export default function EditAlbum() {
           ['google_drive_url', 'Google Drive Folder Link'],
           ['tagline', 'Tagline'],
           ['cover_image_url', 'Cover Image URL'],
+          ['film_url', 'Wedding Film URL (YouTube / Vimeo / .mp4)'],
           ['google_review_url', 'Google Review Link (optional)'],
         ].map(([k, label]) => (
           <div key={k}>

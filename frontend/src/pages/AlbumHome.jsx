@@ -9,6 +9,8 @@ import CommentBox from '../components/CommentBox';
 import EnquiryForm from '../components/EnquiryForm';
 import GoogleReviewButton from '../components/GoogleReviewButton';
 import Logo from '../components/Logo';
+import FilmModal from '../components/FilmModal';
+import { parseFilm } from '../components/parseFilm';
 
 /**
  * Album home: cover + event cards (spec section 13).
@@ -16,6 +18,8 @@ import Logo from '../components/Logo';
 export default function AlbumHome() {
   const { album, slug } = useAlbum();
   const [events, setEvents] = useState(null);
+  const [filmOpen, setFilmOpen] = useState(false);
+  const hasFilm = !!parseFilm(album.film_url);
 
   useEffect(() => {
     albumService.events(slug).then(setEvents).catch(() => setEvents([]));
@@ -36,7 +40,18 @@ export default function AlbumHome() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
           {/* Cinematic flourishes — shown only on the akhila theme (CSS-gated) */}
           <span className="hero-note" aria-hidden="true">Love<br />Laugh<br />Forever ♡</span>
-          <span className="hero-play" aria-hidden="true"><span>▶</span></span>
+          {hasFilm ? (
+            <button
+              type="button"
+              className="hero-play hero-play-active"
+              aria-label="Play wedding film"
+              onClick={() => setFilmOpen(true)}
+            >
+              <span>▶</span>
+            </button>
+          ) : (
+            <span className="hero-play" aria-hidden="true"><span>▶</span></span>
+          )}
           <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-white">
             <p className="mb-2 text-[0.65rem] uppercase tracking-[0.4em] opacity-80">A story in every frame</p>
             <h1 className="hero-title text-4xl sm:text-5xl animate-fadeUp">{album.client_name}</h1>
@@ -93,6 +108,8 @@ export default function AlbumHome() {
           </p>
         </footer>
       </main>
+
+      {filmOpen && <FilmModal url={album.film_url} onClose={() => setFilmOpen(false)} />}
     </div>
   );
 }

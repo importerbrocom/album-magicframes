@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
                 'drive_auth_mode' => $albumService->resolveAuthMode(),
                 'description' => 'A collection of memories from our wedding celebrations.',
                 'tagline' => 'Memories that last forever.',
+                'film_url' => 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
                 'theme' => 'akhila',
                 'status' => 'active',
                 'allow_download' => true,

@@ -22,6 +22,7 @@ class Album extends Model
         'drive_auth_mode',
         'cover_photo_id',
         'cover_image_url',
+        'film_url',
         'description',
         'tagline',
         'status',

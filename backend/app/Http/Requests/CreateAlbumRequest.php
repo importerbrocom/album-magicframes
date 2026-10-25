@@ -22,6 +22,7 @@ class CreateAlbumRequest extends FormRequest
             'description' => ['nullable', 'string', 'max:2000'],
             'tagline' => ['nullable', 'string', 'max:200'],
             'cover_image_url' => ['nullable', 'string', 'max:1000'],
+            'film_url' => ['nullable', 'url', 'max:1000'],
             'theme' => ['nullable', Rule::in(['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'])],
             'status' => ['nullable', Rule::in(['active', 'disabled', 'draft'])],
             'allow_download' => ['nullable', 'boolean'],

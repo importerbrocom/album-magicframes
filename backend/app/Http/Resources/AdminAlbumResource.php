@@ -22,6 +22,7 @@ class AdminAlbumResource extends JsonResource
             'google_drive_folder_id' => $this->google_drive_folder_id,
             'drive_auth_mode' => $this->drive_auth_mode,
             'cover_image_url' => $this->cover_image_url,
+            'film_url' => $this->film_url,
             'description' => $this->description,
             'tagline' => $this->tagline,
             'status' => $this->status,
