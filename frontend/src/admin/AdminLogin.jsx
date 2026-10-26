@@ -39,8 +39,8 @@ export default function AdminLogin() {
         <span className="pointer-events-none absolute bottom-[-60px] right-10 h-64 w-64 rounded-full bg-white/5" />
         <span className="pointer-events-none absolute bottom-24 left-24 h-24 w-24 rounded-full bg-white/5" />
         <div className="relative z-10 text-center">
-          <img src="/logo.png" alt="Magic Frames" className="mx-auto h-36 w-auto object-contain"
-            onError={(e) => { e.currentTarget.src = '/logo.svg'; }} />
+          {/* Transparent wordmark (no black box) so it blends into the panel */}
+          <img src="/logo.svg" alt="Magic Frames" className="mx-auto h-40 w-auto object-contain" />
           <p className="mt-2 text-[0.7rem] uppercase tracking-[0.35em] text-white/70">magicframes.co.in</p>
         </div>
       </div>
