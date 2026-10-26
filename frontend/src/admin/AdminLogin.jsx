@@ -40,9 +40,11 @@ export default function AdminLogin() {
         <span className="pointer-events-none absolute bottom-[-60px] right-10 h-64 w-64 rounded-full bg-gray-100/70" />
         <span className="pointer-events-none absolute bottom-24 left-24 h-24 w-24 rounded-full bg-gray-100/70" />
         <div className="relative z-10 text-center">
-          {/* Black script wordmark (/logo.svg) */}
-          <Logo className="mx-auto h-40 w-auto" />
-          <p className="mt-2 text-[0.7rem] uppercase tracking-[0.35em] text-gray-400">magicframes.co.in</p>
+          {/* Logo on a grey background tile */}
+          <div className="mx-auto flex h-52 w-52 items-center justify-center rounded-2xl bg-gray-200 shadow-sm">
+            <Logo className="h-40 w-auto" />
+          </div>
+          <p className="mt-4 text-[0.7rem] uppercase tracking-[0.35em] text-gray-400">magicframes.co.in</p>
         </div>
       </div>
 
