@@ -41,8 +41,11 @@ export const albumService = {
       return r.data;
     }),
 
+  // The show endpoint returns a Laravel resource wrapped in { data: {...} }.
+  // Unwrap it (fall back to the raw body if an envelope isn't present) so
+  // callers get the flat album object with theme/client_name/etc.
   show: (slug) =>
-    api.get(`/public/albums/${slug}`, { headers: albumAuth(slug) }).then((r) => r.data),
+    api.get(`/public/albums/${slug}`, { headers: albumAuth(slug) }).then((r) => r.data?.data ?? r.data),
 
   events: (slug) =>
     api.get(`/public/albums/${slug}/events`, { headers: albumAuth(slug) }).then((r) => r.data.data),
