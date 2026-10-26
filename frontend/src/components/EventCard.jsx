@@ -9,7 +9,7 @@ export default function EventCard({ slug, event, index = 0 }) {
       className="group themed-surface block overflow-hidden opacity-0 animate-fadeUp"
       style={{ animationDelay: `${index * 70}ms` }}
     >
-      <div className="relative">
+      <div className="relative bg-black/20">
         <LazyImage
           src={event.cover_image_url}
           alt={event.name}
