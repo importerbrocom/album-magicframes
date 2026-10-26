@@ -3,12 +3,12 @@ import { useState } from 'react';
 /**
  * Magic Frames logo — the black script wordmark on a transparent background.
  *
- * Source order: /logo.svg (bundled transparent vector) → /logo.png → /logo.jpg.
+ * Source order: /logo.png (the real uploaded file) → /logo.jpg → /logo.svg fallback.
  * The black wordmark needs a light surface to be visible.
  *
  * `object-contain` keeps the whole wordmark visible; `rounded` → circular badge.
  */
-const SOURCES = ['/logo.svg', '/logo.png', '/logo.jpg'];
+const SOURCES = ['/logo.png', '/logo.jpg', '/logo.svg'];
 
 export default function Logo({ className = 'h-12 w-auto', rounded = false }) {
   const [i, setI] = useState(0);
