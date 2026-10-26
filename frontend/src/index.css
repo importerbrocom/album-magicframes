@@ -383,7 +383,11 @@
   transition: background .3s ease, color .3s ease, transform .3s ease;
 }
 .card-play span { font-size: 17px; margin-left: 3px; }
-.card-play:hover { background: var(--accent, #d9ad60); color: #111; transform: translate(-50%, -50%) scale(1.1); animation: none; }
+/* On section cards the cue is non-interactive (whole card is a link); light
+   it up when the card is hovered so it reads as "open to watch". */
+.card-play:hover,
+.event-card:hover .card-play,
+.group:hover .card-play { background: var(--accent, #d9ad60); color: #111; transform: translate(-50%, -50%) scale(1.1); animation: none; }
 @keyframes mf-play-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(217,173,96,.5); }
   70%  { box-shadow: 0 0 0 16px rgba(217,173,96,0); }
