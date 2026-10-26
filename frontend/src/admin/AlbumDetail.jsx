@@ -96,6 +96,7 @@ export default function AlbumDetail() {
             <div className="mt-5 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
               <Meta label="Photos" value={album.photo_count} />
               <Meta label="Events" value={album.event_count} />
+              <Meta label="Category" value={album.category || '—'} />
               <Meta label="Theme" value={album.theme} />
               <Meta label="Film" value={album.film_url ? 'Linked' : '—'} />
               <Meta label="Drive" value={album.drive_auth_mode === 'demo' ? 'Demo' : 'Connected'} />

@@ -11,9 +11,11 @@ import GoogleReviewButton from '../components/GoogleReviewButton';
 import Logo from '../components/Logo';
 import FilmModal from '../components/FilmModal';
 import { parseFilm } from '../components/parseFilm';
+import { heroEyebrow, galleryHeading, formatEventDate } from '../components/albumCopy';
 
 /**
- * Album home: cover + event cards (spec section 13).
+ * Album home: cinematic hero + gallery section cards. All copy is driven by the
+ * album's own data (title, tagline, category, date). No event-type is assumed.
  */
 export default function AlbumHome() {
   const { album, slug } = useAlbum();
@@ -21,6 +23,7 @@ export default function AlbumHome() {
   const [filmOpen, setFilmOpen] = useState(false);
   const filmSrc = album.film_src || album.film_url;
   const hasFilm = !!parseFilm(filmSrc);
+  const eventDate = formatEventDate(album.event_date);
 
   useEffect(() => {
     albumService.events(slug).then(setEvents).catch(() => setEvents([]));
@@ -39,13 +42,12 @@ export default function AlbumHome() {
             <img src={album.cover_image_url} alt="" className="h-full w-full object-cover" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-          {/* Cinematic flourishes — shown only on the akhila theme (CSS-gated) */}
-          <span className="hero-note" aria-hidden="true">Love<br />Laugh<br />Forever ♡</span>
+          {/* Play the film (shown only when the album actually has a video) */}
           {hasFilm ? (
             <button
               type="button"
               className="hero-play hero-play-active"
-              aria-label="Play wedding film"
+              aria-label="Play film"
               onClick={() => setFilmOpen(true)}
             >
               <span>▶</span>
@@ -54,11 +56,14 @@ export default function AlbumHome() {
             <span className="hero-play" aria-hidden="true"><span>▶</span></span>
           )}
           <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-white">
-            <p className="mb-2 text-[0.65rem] uppercase tracking-[0.4em] opacity-80">A story in every frame</p>
+            <p className="mb-2 text-[0.65rem] uppercase tracking-[0.4em] opacity-80">{heroEyebrow(album)}</p>
             <h1 className="hero-title text-4xl sm:text-5xl animate-fadeUp">{album.client_name}</h1>
-            <p className="font-heading mt-1 text-xl opacity-90">{album.title}</p>
+            {album.title && <p className="font-heading mt-1 text-xl opacity-90">{album.title}</p>}
             <span className="hero-rule" aria-hidden="true" />
             {album.tagline && <p className="mt-2 text-sm italic opacity-80">“{album.tagline}”</p>}
+            {eventDate && (
+              <p className="mt-2 text-[0.7rem] uppercase tracking-[0.3em] opacity-70">{eventDate}</p>
+            )}
             {hasFilm && (
               <button
                 type="button"
@@ -75,9 +80,14 @@ export default function AlbumHome() {
       <main className="mx-auto max-w-6xl px-4 pt-8">
         <div className="mf-reveal mb-5 text-center">
           <p className="text-xs uppercase tracking-[0.3em]" style={{ color: 'var(--muted)' }}>
-            Welcome to our memories
+            Explore the collection
           </p>
-          <h2 className="font-heading mt-1 text-3xl">The Events</h2>
+          <h2 className="font-heading mt-1 text-3xl">{galleryHeading(album)}</h2>
+          {album.description && (
+            <p className="mx-auto mt-3 max-w-2xl text-sm" style={{ color: 'var(--muted)' }}>
+              {album.description}
+            </p>
+          )}
         </div>
 
         {syncing && (

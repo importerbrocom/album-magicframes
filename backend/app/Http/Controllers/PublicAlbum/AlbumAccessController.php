@@ -43,6 +43,8 @@ class AlbumAccessController extends Controller
             'slug' => $album->slug,
             'client_name' => $album->client_name,
             'title' => $album->title,
+            'category' => $album->category,
+            'event_date' => $album->event_date?->toDateString(),
             'tagline' => $album->tagline,
             'description' => $album->description,
             'cover_image_url' => $album->cover_image_url,

@@ -261,10 +261,9 @@
 }
 
 /* ---- Hero cinematic flourishes: handwritten note + film play button ----
-   The handwritten note and the DECORATIVE play span are akhila-only. A REAL
-   film button (.hero-play-active) is shown on every theme so clients can play
-   the wedding film regardless of the chosen look. */
-.hero-note { display: none; }
+   The DECORATIVE play span is akhila-only. A REAL film button
+   (.hero-play-active) is shown on every theme so clients can play the film
+   regardless of the chosen look. */
 .hero-play { display: none; }
 .hero-play-active { cursor: pointer; }
 
@@ -293,17 +292,10 @@
 [data-theme='akhila'] .hero-film-cta { border-radius: 0; border-color: var(--accent); color: var(--accent); }
 [data-theme='akhila'] .hero-film-cta:hover { color: var(--accent-contrast); }
 
-/* Decorative note + decorative play span: akhila only */
-[data-theme='akhila'] .hero-note {
-  display: block; position: absolute; right: 6%; top: 42%;
-  font-family: var(--script-font); font-size: 1.35rem; line-height: 1.2;
-  color: #d5c1a1; transform: rotate(-8deg); opacity: .85; text-align: center;
-  pointer-events: none; z-index: 2;
-}
+/* Decorative play span: akhila only */
 [data-theme='akhila'] .hero-play { display: grid; }
 [data-theme='akhila'] section.relative:hover .hero-play { background: var(--accent); color: #111; transform: scale(1.08); }
 @media (max-width: 640px) {
-  [data-theme='akhila'] .hero-note { right: 5%; top: 24%; font-size: 1.1rem; }
   .hero-play { top: 36%; }
 }
 

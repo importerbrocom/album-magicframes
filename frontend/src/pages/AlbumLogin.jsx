@@ -6,9 +6,11 @@ import { usePageMeta } from '../hooks/usePageMeta';
 import { HeroSkeleton } from '../components/LoadingSkeleton';
 import FilmModal from '../components/FilmModal';
 import { parseFilm } from '../components/parseFilm';
+import { heroEyebrow, formatEventDate } from '../components/albumCopy';
 
 /**
- * Public album cover + password screen (spec section 11/44).
+ * Public album cover + password screen. Copy is driven by the album's own
+ * data (name, title, tagline, category, date) — no event-type is assumed.
  */
 export default function AlbumLogin() {
   const { slug } = useParams();
@@ -23,8 +25,8 @@ export default function AlbumLogin() {
   const hasFilm = !!parseFilm(filmSrc);
 
   usePageMeta({
-    title: landing ? `${landing.client_name} | ${landing.title}` : 'Wedding Album',
-    description: landing?.description || 'A private collection of wedding memories.',
+    title: landing ? `${landing.client_name} | ${landing.title}` : 'Private Album',
+    description: landing?.description || 'A private collection of memories.',
     noindex: true,
   });
 
@@ -90,12 +92,15 @@ export default function AlbumLogin() {
         <span className="mf-ambient two" aria-hidden="true" />
 
         <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center text-white">
-          <p className="login-eyebrow mb-3 text-xs uppercase tracking-[0.3em] opacity-80 animate-fadeIn">The Wedding of</p>
+          <p className="login-eyebrow mb-3 text-xs uppercase tracking-[0.3em] opacity-80 animate-fadeIn">{heroEyebrow(landing)}</p>
           <h1 className="hero-title text-5xl leading-tight sm:text-6xl animate-fadeUp">{landing.client_name}</h1>
           <span className="hero-rule" aria-hidden="true" />
-          <p className="font-heading mt-3 text-2xl opacity-90 animate-fadeUp">{landing.title}</p>
+          {landing.title && <p className="font-heading mt-3 text-2xl opacity-90 animate-fadeUp">{landing.title}</p>}
           {landing.tagline && (
             <p className="mt-4 max-w-sm text-sm italic opacity-80 animate-fadeIn">“{landing.tagline}”</p>
+          )}
+          {formatEventDate(landing.event_date) && (
+            <p className="mt-3 text-[0.7rem] uppercase tracking-[0.3em] opacity-70 animate-fadeIn">{formatEventDate(landing.event_date)}</p>
           )}
 
           {hasFilm && (

@@ -17,6 +17,8 @@ class PublicAlbumResource extends JsonResource
             'slug' => $this->slug,
             'client_name' => $this->client_name,
             'title' => $this->title,
+            'category' => $this->category,
+            'event_date' => $this->event_date?->toDateString(),
             'description' => $this->description,
             'tagline' => $this->tagline,
             'cover_image_url' => $this->cover_image_url,

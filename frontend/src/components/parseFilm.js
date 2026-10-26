@@ -1,7 +1,8 @@
 /**
- * Parse a wedding-film URL into an embeddable form.
- * Supports YouTube, Vimeo and direct video files. Returns null if the URL is
- * empty/invalid, so callers can use it as a "has a playable film?" check.
+ * Parse an album film URL into an embeddable form.
+ * Supports YouTube, Vimeo, the Drive streaming proxy and direct video files.
+ * Returns null if the URL is empty/invalid, so callers can use it as a
+ * "has a playable film?" check.
  */
 export function parseFilm(url) {
   if (!url || typeof url !== 'string') return null;

@@ -15,6 +15,8 @@ class Album extends Model
         'user_id',
         'client_name',
         'title',
+        'category',
+        'event_date',
         'slug',
         'password_hash',
         'google_drive_folder_id',
@@ -50,6 +52,7 @@ class Album extends Model
         'allow_share' => 'boolean',
         'allow_comments' => 'boolean',
         'allow_enquiries' => 'boolean',
+        'event_date' => 'date',
         'last_synced_at' => 'datetime',
         'expires_at' => 'datetime',
     ];

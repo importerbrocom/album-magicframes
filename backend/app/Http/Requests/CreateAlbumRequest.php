@@ -17,6 +17,8 @@ class CreateAlbumRequest extends FormRequest
         return [
             'client_name' => ['required', 'string', 'max:150'],
             'title' => ['required', 'string', 'max:200'],
+            'category' => ['nullable', 'string', 'max:80'],
+            'event_date' => ['nullable', 'date'],
             'google_drive_url' => ['required', 'string', 'max:500'],
             'password' => ['required', 'string', 'min:4', 'max:100'],
             'description' => ['nullable', 'string', 'max:2000'],

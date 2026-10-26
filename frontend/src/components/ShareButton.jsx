@@ -9,7 +9,7 @@ export default function ShareButton({ slug, album }) {
   const [copied, setCopied] = useState(false);
 
   const url = `${window.location.origin}/album/${slug}`;
-  const text = `${album?.client_name || ''}'s ${album?.title || 'wedding'} album is ready. View your memories here: ${url}`;
+  const text = `${album?.client_name || ''}'s ${album?.title || 'photo'} album is ready. View the memories here: ${url}`;
 
   const copy = async () => {
     try {
@@ -68,7 +68,7 @@ export default function ShareButton({ slug, album }) {
                 {copied ? 'Copied!' : 'Copy'}
               </button>
               <a
-                href={`mailto:?subject=${encodeURIComponent(album?.title || 'Wedding album')}&body=${encodeURIComponent(text)}`}
+                href={`mailto:?subject=${encodeURIComponent(album?.title || 'Photo album')}&body=${encodeURIComponent(text)}`}
                 onClick={() => albumService.trackAnalytics(slug, { type: 'share', meta: { channel: 'email' } })}
                 className="flex flex-col items-center gap-2"
               >

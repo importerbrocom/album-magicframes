@@ -1,12 +1,18 @@
 /**
- * Decorative glyph for an event/category name, echoing the reference design's
- * botanical card icons. Purely cosmetic: matched loosely by keyword, with an
- * elegant default so any custom event name still gets a tasteful mark.
- *
- * Only surfaced visually under the `akhila` theme (hidden elsewhere via CSS),
- * so it never clutters the other themes.
+ * Decorative glyph for an event/section name, echoing the reference design's
+ * botanical card icons. Purely cosmetic: matched loosely by keyword across a
+ * broad range of album types, with an elegant default so ANY custom name still
+ * gets a tasteful mark. Only surfaced under the `akhila` theme (hidden
+ * elsewhere via CSS).
  */
 const MAP = [
+  [/birthday|cake|turning|bday/i, '✦'],
+  [/baby.?shower|shower/i, '✿'],
+  [/newborn|baby|infant/i, '❀'],
+  [/maternity|expecting|bump/i, '❧'],
+  [/graduation|convocation|degree/i, '✧'],
+  [/anniversary/i, '❦'],
+  [/family|portrait/i, '❧'],
   [/reception|party|sangeet|celebrat/i, '♧'],
   [/wedding|nikah|marriage|vivah/i, '♡'],
   [/engage|ring|proposal/i, '♡'],
@@ -14,7 +20,6 @@ const MAP = [
   [/mehendi|mehndi|henna/i, '✿'],
   [/pre.?wedding|save.?the.?date/i, '⚒'],
   [/candid|moment|street/i, '◎'],
-  [/portrait|bride|groom|couple/i, '❧'],
   [/ceremony|ritual|pooja|puja/i, '✧'],
 ];
 

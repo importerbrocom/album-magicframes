@@ -72,6 +72,8 @@ class AlbumController extends Controller
             'user_id' => $request->user()->id,
             'client_name' => $data['client_name'],
             'title' => $data['title'],
+            'category' => $data['category'] ?? null,
+            'event_date' => $data['event_date'] ?? null,
             'slug' => $this->albums->generateSlug($data['client_name']),
             'password_hash' => Hash::make($plainPassword),
             'google_drive_url' => $data['google_drive_url'],

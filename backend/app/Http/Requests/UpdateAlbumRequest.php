@@ -17,6 +17,8 @@ class UpdateAlbumRequest extends FormRequest
         return [
             'client_name' => ['sometimes', 'string', 'max:150'],
             'title' => ['sometimes', 'string', 'max:200'],
+            'category' => ['nullable', 'string', 'max:80'],
+            'event_date' => ['nullable', 'date'],
             'google_drive_url' => ['sometimes', 'string', 'max:500'],
             // Password optional on update; only changes if provided.
             'password' => ['nullable', 'string', 'min:4', 'max:100'],

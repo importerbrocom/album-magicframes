@@ -18,6 +18,8 @@ export default function EditAlbum() {
       setForm({
         client_name: a.client_name || '',
         title: a.title || '',
+        category: a.category || '',
+        event_date: a.event_date || '',
         google_drive_url: a.google_drive_url || '',
         password: '',
         description: a.description || '',
@@ -66,7 +68,7 @@ export default function EditAlbum() {
           ['google_drive_url', 'Google Drive Folder Link'],
           ['tagline', 'Tagline'],
           ['cover_image_url', 'Cover Image URL'],
-          ['film_url', 'Wedding Film URL (YouTube / Vimeo / Google Drive / .mp4)'],
+          ['film_url', 'Film URL (YouTube / Vimeo / Google Drive / .mp4)'],
           ['google_review_url', 'Google Review Link (optional)'],
         ].map(([k, label]) => (
           <div key={k}>
@@ -75,6 +77,23 @@ export default function EditAlbum() {
             {errors[k] && <p className="mt-1 text-xs text-red-600">{errors[k][0]}</p>}
           </div>
         ))}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="mb-1 block text-sm font-medium">Category (optional)</label>
+            <input value={form.category} onChange={set('category')} className="inp" placeholder="Wedding · Birthday · Maternity…" list="mf-categories" />
+            <datalist id="mf-categories">
+              {['Wedding', 'Engagement', 'Pre Wedding', 'Birthday', 'Maternity', 'Baby Shower', 'Newborn', 'Anniversary', 'Graduation', 'Family', 'Event'].map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+            {errors.category && <p className="mt-1 text-xs text-red-600">{errors.category[0]}</p>}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Event Date (optional)</label>
+            <input type="date" value={form.event_date} onChange={set('event_date')} className="inp" />
+            {errors.event_date && <p className="mt-1 text-xs text-red-600">{errors.event_date[0]}</p>}
+          </div>
+        </div>
         <div>
           <label className="mb-1 block text-sm font-medium">New Password (leave blank to keep)</label>
           <input value={form.password} onChange={set('password')} className="inp" placeholder="••••••" />

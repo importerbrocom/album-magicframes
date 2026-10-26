@@ -23,6 +23,8 @@ export default function CreateAlbum() {
   const [form, setForm] = useState({
     client_name: '',
     title: '',
+    category: '',
+    event_date: '',
     google_drive_url: '',
     password: '',
     description: '',
@@ -48,6 +50,7 @@ export default function CreateAlbum() {
       const payload = { ...form };
       if (!payload.expires_at) delete payload.expires_at;
       if (!payload.film_url) delete payload.film_url;
+      if (!payload.event_date) delete payload.event_date;
       const res = await adminService.createAlbum(payload);
       setCreated(res);
     } catch (err) {
@@ -86,8 +89,21 @@ export default function CreateAlbum() {
           <input value={form.client_name} onChange={set('client_name')} placeholder="Rahul & Anjali" className="inp" />
         </Field>
         <Field label="Album Title" error={err('title')}>
-          <input value={form.title} onChange={set('title')} placeholder="Our Wedding Journey" className="inp" />
+          <input value={form.title} onChange={set('title')} placeholder="Our Wedding Journey · A Day to Remember · …" className="inp" />
         </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Category (optional)" error={err('category')}>
+            <input value={form.category} onChange={set('category')} placeholder="Wedding · Birthday · Maternity…" className="inp" list="mf-categories" />
+            <datalist id="mf-categories">
+              {['Wedding', 'Engagement', 'Pre Wedding', 'Birthday', 'Maternity', 'Baby Shower', 'Newborn', 'Anniversary', 'Graduation', 'Family', 'Event'].map((c) => (
+                <option key={c} value={c} />
+              ))}
+            </datalist>
+          </Field>
+          <Field label="Event Date (optional)" error={err('event_date')}>
+            <input type="date" value={form.event_date} onChange={set('event_date')} className="inp" />
+          </Field>
+        </div>
         <Field label="Google Drive Folder Link" error={err('google_drive_url')}>
           <input value={form.google_drive_url} onChange={set('google_drive_url')} placeholder="https://drive.google.com/drive/folders/…" className="inp" />
         </Field>

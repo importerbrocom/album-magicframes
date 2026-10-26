@@ -17,6 +17,8 @@ class AdminAlbumResource extends JsonResource
             'id' => $this->id,
             'client_name' => $this->client_name,
             'title' => $this->title,
+            'category' => $this->category,
+            'event_date' => $this->event_date?->toDateString(),
             'slug' => $this->slug,
             'google_drive_url' => $this->google_drive_url,
             'google_drive_folder_id' => $this->google_drive_folder_id,

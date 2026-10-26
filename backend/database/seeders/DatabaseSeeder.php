@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
                 'user_id' => $admin->id,
                 'client_name' => 'Rahul & Anjali',
                 'title' => 'Our Wedding Journey',
+                'category' => 'Wedding',
                 'password_hash' => Hash::make('RA2026'),
                 'google_drive_url' => 'https://drive.google.com/drive/folders/DEMO_FOLDER_ID',
                 'google_drive_folder_id' => 'DEMO_FOLDER_ID',

@@ -2,9 +2,10 @@ import { useEffect } from 'react';
 import { parseFilm } from './parseFilm';
 
 /**
- * Full-screen wedding-film player. Supports YouTube, Vimeo and direct video
- * files (mp4/webm/ogg/mov). Opened from the album hero when `album.film_url`
- * is set. Closes on overlay click or Escape; locks body scroll while open.
+ * Full-screen film player. Supports YouTube, Vimeo, Google Drive (via the
+ * backend proxy) and direct video files (mp4/webm/ogg/mov). Opened from the
+ * album hero when a film is set. Closes on overlay click or Escape; locks body
+ * scroll while open.
  */
 export default function FilmModal({ url, onClose }) {
   useEffect(() => {
@@ -27,7 +28,7 @@ export default function FilmModal({ url, onClose }) {
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Wedding film"
+      aria-label="Film player"
       style={{ backdropFilter: 'blur(18px)' }}
     >
       <button
@@ -51,7 +52,7 @@ export default function FilmModal({ url, onClose }) {
         ) : (
           <iframe
             src={film.src}
-            title="Wedding film"
+            title="Album film"
             className="h-full w-full"
             allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
             allowFullScreen
