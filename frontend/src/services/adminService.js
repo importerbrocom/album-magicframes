@@ -19,6 +19,7 @@ export const adminService = {
   dashboard: () => api.get('/admin/dashboard').then((r) => r.data),
 
   albums: (params = {}) => api.get('/admin/albums', { params }).then((r) => r.data),
+  albumCategories: () => api.get('/admin/albums/categories').then((r) => r.data.data),
   album: (id) => api.get(`/admin/albums/${id}`).then((r) => r.data.data),
   createAlbum: (payload) => api.post('/admin/albums', payload).then((r) => r.data),
   updateAlbum: (id, payload) => api.put(`/admin/albums/${id}`, payload).then((r) => r.data.data),

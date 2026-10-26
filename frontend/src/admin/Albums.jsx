@@ -13,28 +13,74 @@ const StatusPill = ({ status }) => {
   return <span className={`rounded-full px-2 py-0.5 text-xs capitalize ${map[status] || ''}`}>{status}</span>;
 };
 
+function AlbumCard({ a }) {
+  return (
+    <Link to={`/admin/albums/${a.id}`} className="themed-surface overflow-hidden">
+      <div className="h-32 w-full bg-black/10">
+        {a.cover_image_url && <img src={a.cover_image_url} alt="" className="h-full w-full object-cover" />}
+      </div>
+      <div className="p-4">
+        <div className="flex items-center justify-between">
+          <p className="font-medium">{a.client_name}</p>
+          <StatusPill status={a.status} />
+        </div>
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>{a.title}</p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {a.category && (
+            <span className="rounded-full border border-black/15 px-2 py-0.5 text-[11px] capitalize" style={{ color: 'var(--muted)' }}>
+              {a.category}
+            </span>
+          )}
+          {a.event_date && (
+            <span className="text-[11px]" style={{ color: 'var(--muted)' }}>{fmtDate(a.event_date)}</span>
+          )}
+        </div>
+        <p className="mt-2 text-xs" style={{ color: 'var(--muted)' }}>
+          {a.photo_count} photos · {a.event_count} events
+        </p>
+      </div>
+    </Link>
+  );
+}
+
 export default function Albums() {
   const [albums, setAlbums] = useState(null);
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
+  const [categories, setCategories] = useState([]);
+  const [grouped, setGrouped] = useState(false);
   usePageMeta({ title: 'Albums | Magic Frames' });
 
-  const load = () => adminService.albums({ q }).then((r) => setAlbums(r.data));
-
+  // Load the full category list once (server-side distinct) for the filter.
   useEffect(() => {
-    const t = setTimeout(load, 250);
+    adminService.albumCategories().then(setCategories).catch(() => setCategories([]));
+  }, []);
+
+  // Fetch albums; category is filtered server-side so it scales past one page.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const params = {};
+      if (q) params.q = q;
+      if (category) params.category = category;
+      adminService.albums(params).then((r) => setAlbums(r.data)).catch(() => setAlbums([]));
+    }, 250);
     return () => clearTimeout(t);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [q]);
+  }, [q, category]);
 
-  // Category options derived from the loaded albums (no backend change needed).
-  const categories = Array.from(
-    new Set((albums || []).map((a) => (a.category || '').trim()).filter(Boolean)),
-  ).sort((a, b) => a.localeCompare(b));
-
-  const visible = (albums || []).filter(
-    (a) => !category || (a.category || '').trim() === category,
-  );
+  // Build category -> albums groups (used when "Group by category" is on).
+  const groups = (() => {
+    const map = new Map();
+    for (const a of albums || []) {
+      const key = (a.category || '').trim() || 'Uncategorized';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(a);
+    }
+    return Array.from(map.entries()).sort(([a], [b]) => {
+      if (a === 'Uncategorized') return 1;
+      if (b === 'Uncategorized') return -1;
+      return a.localeCompare(b);
+    });
+  })();
 
   return (
     <div>
@@ -63,45 +109,44 @@ export default function Albums() {
             ))}
           </select>
         )}
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {albums === null && Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="themed-surface h-56 skeleton" />
-        ))}
-        {visible.map((a) => (
-          <Link key={a.id} to={`/admin/albums/${a.id}`} className="themed-surface overflow-hidden">
-            <div className="h-32 w-full bg-black/10">
-              {a.cover_image_url && <img src={a.cover_image_url} alt="" className="h-full w-full object-cover" />}
-            </div>
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <p className="font-medium">{a.client_name}</p>
-                <StatusPill status={a.status} />
-              </div>
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>{a.title}</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                {a.category && (
-                  <span className="rounded-full border border-black/15 px-2 py-0.5 text-[11px] capitalize" style={{ color: 'var(--muted)' }}>
-                    {a.category}
-                  </span>
-                )}
-                {a.event_date && (
-                  <span className="text-[11px]" style={{ color: 'var(--muted)' }}>{fmtDate(a.event_date)}</span>
-                )}
-              </div>
-              <p className="mt-2 text-xs" style={{ color: 'var(--muted)' }}>
-                {a.photo_count} photos · {a.event_count} events
-              </p>
-            </div>
-          </Link>
-        ))}
-        {albums !== null && visible.length === 0 && (
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            {category ? `No ${category} albums found.` : 'No albums found.'}
-          </p>
+        {categories.length > 0 && (
+          <label className="flex cursor-pointer items-center gap-2 text-sm" style={{ color: 'var(--muted)' }}>
+            <input type="checkbox" checked={grouped} onChange={(e) => setGrouped(e.target.checked)} />
+            Group by category
+          </label>
         )}
       </div>
+
+      {albums === null ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="themed-surface h-56 skeleton" />
+          ))}
+        </div>
+      ) : albums.length === 0 ? (
+        <p className="text-sm" style={{ color: 'var(--muted)' }}>
+          {category ? `No ${category} albums found.` : 'No albums found.'}
+        </p>
+      ) : grouped ? (
+        <div className="space-y-8">
+          {groups.map(([name, items]) => (
+            <section key={name}>
+              <div className="mb-3 flex items-center gap-3">
+                <h2 className="font-heading text-xl">{name}</h2>
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>{items.length}</span>
+                <span className="h-px flex-1 bg-black/10" />
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {items.map((a) => <AlbumCard key={a.id} a={a} />)}
+              </div>
+            </section>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {albums.map((a) => <AlbumCard key={a.id} a={a} />)}
+        </div>
+      )}
     </div>
   );
 }

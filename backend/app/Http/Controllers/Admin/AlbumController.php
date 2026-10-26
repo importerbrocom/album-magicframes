@@ -36,10 +36,27 @@ class AlbumController extends Controller
                 $q->where('client_name', 'like', $term)->orWhere('title', 'like', $term);
             })
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('category'), fn ($q) => $q->where('category', $request->string('category')))
             ->orderByDesc('created_at')
             ->paginate(15);
 
         return AdminAlbumResource::collection($albums)->response();
+    }
+
+    /** Distinct, non-empty album categories for admin filters (alphabetical). */
+    public function categories(): JsonResponse
+    {
+        $this->authorize('viewAny', Album::class);
+
+        $categories = Album::query()
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category')
+            ->values();
+
+        return response()->json(['data' => $categories]);
     }
 
     public function store(CreateAlbumRequest $request): JsonResponse

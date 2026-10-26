@@ -29,6 +29,7 @@ Route::prefix('admin')->group(function () {
         Route::get('dashboard', [DashboardController::class, 'index']);
 
         Route::get('albums', [AlbumController::class, 'index']);
+        Route::get('albums/categories', [AlbumController::class, 'categories']);
         Route::post('albums', [AlbumController::class, 'store']);
         Route::get('albums/{album}', [AlbumController::class, 'show']);
         Route::match(['put', 'patch'], 'albums/{album}', [AlbumController::class, 'update']);
