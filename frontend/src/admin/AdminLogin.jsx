@@ -32,12 +32,9 @@ export default function AdminLogin() {
   return (
     <div data-theme="modern" className="flex min-h-screen items-center justify-center bg-[var(--bg)] p-6">
       <div className="themed-surface w-full max-w-sm p-8">
-        <div className="mb-4 flex items-center gap-3">
-          <Logo className="h-12 w-12" />
-          <div>
-            <h1 className="font-heading text-2xl font-semibold leading-none">Magic Frames</h1>
-            <p className="text-sm" style={{ color: 'var(--muted)' }}>Studio admin sign in</p>
-          </div>
+        <div className="mb-5 flex flex-col items-center text-center">
+          <Logo className="h-16 w-auto" />
+          <p className="mt-2 text-sm" style={{ color: 'var(--muted)' }}>Studio admin sign in</p>
         </div>
         <form onSubmit={submit} className="space-y-4">
           <div>

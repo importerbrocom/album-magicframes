@@ -149,10 +149,8 @@ export default function AlbumHome() {
 
         {/* Studio footer branding */}
         <footer className="mt-12 flex flex-col items-center gap-2 pb-4 text-center">
-          <Logo className="h-12 w-12 opacity-90" />
-          <p className="text-xs" style={{ color: 'var(--muted)' }}>
-            Captured by <span className="font-medium">Magic Frames™</span>
-          </p>
+          <Logo className="h-20 w-auto opacity-90" />
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>Captured with care</p>
         </footer>
       </main>
 
