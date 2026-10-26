@@ -56,6 +56,9 @@ export const albumService = {
   event: (slug, eventSlug) =>
     api.get(`/public/albums/${slug}/events/${eventSlug}`, { headers: albumAuth(slug) }).then((r) => r.data),
 
+  eventVideos: (slug, eventSlug) =>
+    api.get(`/public/albums/${slug}/events/${eventSlug}/videos`, { headers: albumAuth(slug) }).then((r) => r.data.data),
+
   photos: (slug, params = {}) =>
     api.get(`/public/albums/${slug}/photos`, { headers: albumAuth(slug), params }).then((r) => r.data),
 
