@@ -52,9 +52,28 @@ class FilmController extends Controller
         abort_if($album->drive_auth_mode === 'demo', 404);
 
         $ev = Event::where('album_id', $album->id)->where('slug', $event)->first();
-        abort_if(! $ev || ! $ev->film_drive_id, 404);
+        abort_if(! $ev, 404);
 
-        return $this->serveDriveVideo($drive, "event_{$ev->id}", $ev->film_drive_id, sha1((string) $ev->film_drive_id));
+        // Resolve the Drive id: a manual override (Drive file OR folder link)
+        // wins; otherwise the auto-detected video in the section's folder.
+        $fileId = null;
+        $signature = '';
+        if ($ev->film_url_override && str_contains($ev->film_url_override, 'drive.google.com')) {
+            $signature = sha1($ev->film_url_override);
+            $fileId = $drive->extractFileId($ev->film_url_override);
+            if (! $fileId && preg_match('#/folders/([A-Za-z0-9_-]+)#', $ev->film_url_override, $m)) {
+                $fileId = $drive->firstVideoIdInFolder($m[1]);
+            } elseif ($fileId && $drive->isFolder($fileId)) {
+                $fileId = $drive->firstVideoIdInFolder($fileId);
+            }
+        } elseif ($ev->film_drive_id) {
+            $fileId = $ev->film_drive_id;
+            $signature = sha1((string) $ev->film_drive_id);
+        }
+
+        abort_if(! $fileId, 404);
+
+        return $this->serveDriveVideo($drive, "event_{$ev->id}", $fileId, $signature);
     }
 
     /**

@@ -257,4 +257,48 @@ class AlbumController extends Controller
             $album->comments()->orderByDesc('created_at')->paginate(25)
         );
     }
+
+    /** Sections (root events) of an album, with their manual overrides. */
+    public function sections(Album $album): JsonResponse
+    {
+        $this->authorize('view', $album);
+
+        $events = $album->rootEvents()->orderBy('sort_order')->get()->map(fn ($e) => [
+            'id' => $e->id,
+            'name' => $e->name,
+            'slug' => $e->slug,
+            'photo_count' => $e->photo_count,
+            'cover_image_url' => $e->cover_image_url,          // auto-detected
+            'cover_override' => $e->cover_override,            // manual
+            'film_drive_id' => $e->film_drive_id ? true : false, // auto video present?
+            'film_url_override' => $e->film_url_override,      // manual
+        ]);
+
+        return response()->json(['data' => $events]);
+    }
+
+    /** Update a single section's manual cover/film overrides. */
+    public function updateSection(Request $request, Album $album, \App\Models\Event $event): JsonResponse
+    {
+        $this->authorize('update', $album);
+        abort_if($event->album_id !== $album->id, 404);
+
+        $data = $request->validate([
+            'cover_override' => ['nullable', 'string', 'max:1000'],
+            'film_url_override' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $event->fill([
+            'cover_override' => $data['cover_override'] ?: null,
+            'film_url_override' => $data['film_url_override'] ?: null,
+        ])->save();
+
+        Cache::forget("album.public.{$album->slug}");
+
+        return response()->json(['data' => [
+            'id' => $event->id,
+            'cover_override' => $event->cover_override,
+            'film_url_override' => $event->film_url_override,
+        ]]);
+    }
 }

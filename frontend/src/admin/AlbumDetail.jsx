@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
 import SharePanel from './SharePanel';
+import SectionsPanel from './SectionsPanel';
 
 export default function AlbumDetail() {
   const { id } = useParams();
@@ -135,6 +136,8 @@ export default function AlbumDetail() {
 
         <div className="space-y-6">
           {share && <SharePanel album={album} share={share} />}
+
+          <SectionsPanel albumId={id} />
 
           {analytics && (
             <div className="themed-surface p-5">

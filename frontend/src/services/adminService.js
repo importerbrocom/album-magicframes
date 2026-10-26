@@ -30,6 +30,9 @@ export const adminService = {
   share: (id) => api.get(`/admin/albums/${id}/share`).then((r) => r.data),
   enquiries: (id) => api.get(`/admin/albums/${id}/enquiries`).then((r) => r.data),
   comments: (id) => api.get(`/admin/albums/${id}/comments`).then((r) => r.data),
+  sections: (id) => api.get(`/admin/albums/${id}/sections`).then((r) => r.data.data),
+  updateSection: (id, eventId, payload) =>
+    api.put(`/admin/albums/${id}/sections/${eventId}`, payload).then((r) => r.data.data),
 
   getStoredUser: () => {
     try {

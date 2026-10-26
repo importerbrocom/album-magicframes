@@ -40,6 +40,8 @@ Route::prefix('admin')->group(function () {
         Route::get('albums/{album}/share', [AlbumController::class, 'share']);
         Route::get('albums/{album}/enquiries', [AlbumController::class, 'enquiries']);
         Route::get('albums/{album}/comments', [AlbumController::class, 'comments']);
+        Route::get('albums/{album}/sections', [AlbumController::class, 'sections']);
+        Route::match(['put', 'patch'], 'albums/{album}/sections/{event}', [AlbumController::class, 'updateSection']);
     });
 });
 
