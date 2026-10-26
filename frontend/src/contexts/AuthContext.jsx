@@ -8,6 +8,11 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(adminService.getStoredUser());
   const [loading, setLoading] = useState(true);
 
+  const persist = (u) => {
+    setUser(u);
+    if (u) localStorage.setItem('mf_admin_user', JSON.stringify(u));
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('mf_admin_token');
     if (!token) {
@@ -16,7 +21,7 @@ export function AuthProvider({ children }) {
     }
     adminService
       .me()
-      .then(setUser)
+      .then(persist)
       .catch(() => {
         localStorage.removeItem('mf_admin_token');
         setUser(null);
@@ -26,7 +31,7 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const data = await adminService.login(email, password);
-    setUser(data.user);
+    persist(data.user);
     return data;
   };
 
@@ -35,8 +40,21 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Re-fetch the authenticated user (after profile edits / password changes).
+  const refreshUser = async () => {
+    const u = await adminService.me();
+    persist(u);
+    return u;
+  };
+
+  const isAdmin = user?.role === 'super_admin';
+  const hasPermission = (perm) =>
+    isAdmin || (Array.isArray(user?.permissions) && user.permissions.includes(perm));
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider
+      value={{ user, loading, login, logout, refreshUser, setUser: persist, isAdmin, hasPermission }}
+    >
       {children}
     </AuthContext.Provider>
   );

@@ -1,7 +1,11 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\EnsureAlbumAccess;
+use App\Http\Middleware\EnsurePermission;
+use App\Http\Middleware\EnsureUserRole;
 use App\Services\GoogleDriveException;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Application;
@@ -21,6 +25,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'album.access' => EnsureAlbumAccess::class,
+            'role' => EnsureUserRole::class,
+            'permission' => EnsurePermission::class,
+            'account.active' => EnsureAccountActive::class,
         ]);
 
         // Sanctum stateful API support for the admin SPA when same-site.
@@ -49,6 +56,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (AuthenticationException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(['message' => 'Unauthenticated.'], 401);
+            }
+        });
+
+        $exceptions->render(function (AuthorizationException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'This action is unauthorized.'], 403);
             }
         });
     })->create();

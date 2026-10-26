@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Jobs\SyncAlbumFromGoogleDrive;
 use App\Models\Album;
+use App\Models\Role;
 use App\Models\User;
 use App\Services\AlbumService;
 use Illuminate\Database\Seeder;
@@ -13,12 +14,36 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        // Roles + permissions must exist before users can be linked to them.
+        $this->call(RolePermissionSeeder::class);
+
+        $superAdminRole = Role::where('slug', 'super_admin')->first();
+
         $admin = User::updateOrCreate(
             ['email' => 'admin@magicframes.test'],
             [
                 'name' => 'Studio Admin',
                 'role' => 'super_admin',
+                'role_id' => $superAdminRole?->id,
+                'status' => 'active',
+                'must_change_password' => false,
                 'password' => Hash::make('password'),
+            ],
+        );
+
+        // Demo staff member (photographer) so Staff Management + staff login
+        // are explorable immediately. Must change the temp password on first login.
+        $photographerRole = Role::where('slug', 'photographer')->first();
+        User::updateOrCreate(
+            ['email' => 'staff@magicframes.test'],
+            [
+                'name' => 'Demo Photographer',
+                'role' => 'photographer',
+                'role_id' => $photographerRole?->id,
+                'status' => 'active',
+                'must_change_password' => true,
+                'invited_by' => $admin->id,
+                'password' => Hash::make('staffpass'),
             ],
         );
 

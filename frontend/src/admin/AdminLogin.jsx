@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePageMeta } from '../hooks/usePageMeta';
 
@@ -58,8 +58,13 @@ export default function AdminLogin() {
             {submitting ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
+        <div className="mt-4 text-center">
+          <Link to="/admin/forgot-password" className="text-xs underline" style={{ color: 'var(--muted)' }}>
+            Forgot your password?
+          </Link>
+        </div>
         <p className="mt-6 text-center text-xs" style={{ color: 'var(--muted)' }}>
-          Demo: admin@magicframes.test / password
+          Demo admin: admin@magicframes.test / password
         </p>
       </div>
     </div>
