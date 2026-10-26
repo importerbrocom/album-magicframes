@@ -28,8 +28,7 @@ export default function AdminLayout() {
         {/* Sidebar (desktop) */}
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-black/10 p-5 md:flex">
           <div className="mb-8">
-            <Logo className="h-14 w-auto rounded-lg" />
-            <p className="mt-2 text-xs" style={{ color: 'var(--muted)' }}>Studio Admin</p>
+            <Logo variant="light" className="h-16 w-auto rounded-lg" />
           </div>
           <nav className="flex-1 space-y-1">
             {NAV.map((item) => (
