@@ -346,13 +346,15 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
         foreach ($album->events as $event) {
             $event->photo_count = Photo::where('event_id', $event->id)->where('is_available', true)->count();
             $cover = Photo::where('event_id', $event->id)->where('is_available', true)->orderBy('sort_order')->first();
-            $event->cover_image_url = $this->coverUrl($album, $cover, 'thumb');
+            // Use the higher-res 'preview' for the large banner cards so they
+            // stay crisp on big screens (was 'thumb' = 400px, too soft).
+            $event->cover_image_url = $this->coverUrl($album, $cover, 'preview');
             $event->save();
 
             foreach ($event->folders as $folder) {
                 $folder->photo_count = Photo::where('folder_id', $folder->id)->where('is_available', true)->count();
                 $fcover = Photo::where('folder_id', $folder->id)->where('is_available', true)->orderBy('sort_order')->first();
-                $folder->cover_image_url = $this->coverUrl($album, $fcover, 'thumb');
+                $folder->cover_image_url = $this->coverUrl($album, $fcover, 'preview');
                 $folder->save();
             }
         }

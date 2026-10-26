@@ -284,6 +284,17 @@ class GoogleDriveService
      */
     public function fetchThumbnailBytes(string $fileId, int $size = 400): array
     {
+        // For very large requests (full-screen / 4K viewer) skip the thumbnail
+        // CDN entirely — it won't produce that resolution — and stream the
+        // original file so quality is never downscaled. The proxy caches it.
+        if ($size >= 2560) {
+            $resp = $this->rawRequest('GET', "/files/{$fileId}", [
+                'query' => array_filter(['alt' => 'media', 'supportsAllDrives' => 'true']),
+            ]);
+
+            return [(string) $resp->getBody(), $resp->getHeaderLine('Content-Type') ?: 'image/jpeg'];
+        }
+
         // 1) Ask the Drive API for a fresh thumbnailLink (links expire).
         $link = null;
         try {

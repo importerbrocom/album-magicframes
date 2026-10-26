@@ -13,7 +13,7 @@ export default function EventCard({ slug, event, index = 0, wide = false }) {
         <LazyImage
           src={event.cover_image_url}
           alt={event.name}
-          aspectRatio={wide ? '21 / 7' : '16 / 10'}
+          aspectRatio={wide ? '24 / 7' : '16 / 7'}
           className="h-full w-full transition-transform duration-700 group-hover:scale-105"
         />
         {/* Left-weighted cinematic shade (reference style) */}

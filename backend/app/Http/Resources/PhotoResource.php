@@ -20,6 +20,10 @@ class PhotoResource extends JsonResource
         $preview = $isDemo
             ? $this->preview_url
             : route('public.photos.preview', ['slug' => $slug, 'id' => $this->id], false);
+        // Highest-quality render for the full-screen viewer (up to ~4K).
+        $full = $isDemo
+            ? ($this->original_url ?: $this->preview_url)
+            : route('public.photos.full', ['slug' => $slug, 'id' => $this->id], false);
 
         return [
             'id' => $this->id,
@@ -29,6 +33,7 @@ class PhotoResource extends JsonResource
             'height' => $this->height,
             'thumbnail_url' => $thumb,
             'preview_url' => $preview,
+            'full_url' => $full,
             // download_url is only exposed when downloads are allowed. It always
             // points at the Laravel proxy route (never a raw Drive link).
             'download_url' => $this->when(

@@ -321,6 +321,10 @@
 
 [data-theme='akhila'] .gallery-grid { gap: 11px; }
 [data-theme='akhila'] .event-card.is-wide { grid-column: 1 / -1; }
+/* Keep cards banner-like: cap height so they never get boxy/too tall. */
+[data-theme='akhila'] .event-card { max-height: 300px; }
+[data-theme='akhila'] .event-card.is-wide { max-height: 240px; }
+[data-theme='akhila'] .event-card > .relative { height: 100%; }
 
 [data-theme='akhila'] .card-shade {
   background:

@@ -66,6 +66,8 @@ Route::prefix('public')->group(function () {
         ->name('public.photos.thumb')->middleware('throttle:600,1');
     Route::get('albums/{slug}/photos/{id}/preview', [ImageController::class, 'preview'])
         ->name('public.photos.preview')->middleware('throttle:600,1');
+    Route::get('albums/{slug}/photos/{id}/full', [ImageController::class, 'full'])
+        ->name('public.photos.full')->middleware('throttle:600,1');
 
     // Wedding-film proxy for Drive-hosted videos (open, like the image proxy,
     // so the <video> element loads — including on the pre-auth cover screen).

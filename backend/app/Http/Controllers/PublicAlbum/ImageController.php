@@ -24,12 +24,20 @@ class ImageController extends Controller
 {
     public function thumb(Request $request, GoogleDriveService $drive, string $slug, int $id): Response
     {
-        return $this->serve($drive, $slug, $id, 400, 'thumb', 60 * 60 * 24 * 7);
+        // 640px keeps grid thumbnails sharp on 2x/retina displays.
+        return $this->serve($drive, $slug, $id, 640, 'thumb', 60 * 60 * 24 * 7);
     }
 
     public function preview(Request $request, GoogleDriveService $drive, string $slug, int $id): Response
     {
-        return $this->serve($drive, $slug, $id, 1600, 'preview', 60 * 60 * 24 * 3);
+        // 2560px = crisp previews / banner covers on large & 4K screens.
+        return $this->serve($drive, $slug, $id, 2560, 'preview', 60 * 60 * 24 * 3);
+    }
+
+    /** Near-original high resolution for the full-screen lightbox (up to ~4K). */
+    public function full(Request $request, GoogleDriveService $drive, string $slug, int $id): Response
+    {
+        return $this->serve($drive, $slug, $id, 3840, 'full', 60 * 60 * 24 * 3);
     }
 
     private function serve(GoogleDriveService $drive, string $slug, int $id, int $size, string $kind, int $ttl): Response
