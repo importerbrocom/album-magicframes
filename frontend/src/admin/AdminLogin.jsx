@@ -33,15 +33,15 @@ export default function AdminLogin() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white md:flex-row">
-      {/* Left brand panel — dark navy; logo inverted to light so it blends in */}
-      <div className="relative flex min-h-[220px] flex-1 items-center justify-center overflow-hidden bg-[#161c2d] md:min-h-screen">
+      {/* Left brand panel — black so the logo's black box merges with the panel (no visible box) */}
+      <div className="relative flex min-h-[220px] flex-1 items-center justify-center overflow-hidden bg-black md:min-h-screen">
         {/* Decorative circles */}
         <span className="pointer-events-none absolute left-[-40px] top-10 h-40 w-40 rounded-full bg-white/5" />
         <span className="pointer-events-none absolute bottom-[-60px] right-10 h-64 w-64 rounded-full bg-white/5" />
         <span className="pointer-events-none absolute bottom-24 left-24 h-24 w-24 rounded-full bg-white/5" />
         <div className="relative z-10 text-center">
-          {/* Black wordmark inverted to light so it reads on the dark panel */}
-          <Logo className="mx-auto h-40 w-auto invert" />
+          {/* invert turns the black-on-white logo into white-on-black; the black box then merges into the black panel */}
+          <Logo className="mx-auto h-44 w-auto invert" />
           <p className="mt-4 text-[0.7rem] uppercase tracking-[0.35em] text-white/70">magicframes.co.in</p>
         </div>
       </div>
