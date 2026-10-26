@@ -101,7 +101,7 @@ class AlbumController extends Controller
             'cover_image_url' => $this->sanitizeCover($data['cover_image_url'] ?? null),
             'film_url' => $data['film_url'] ?? null,
             'video_gallery_url' => $data['video_gallery_url'] ?? null,
-            'theme' => $data['theme'] ?? 'classic',
+            'theme' => 'akhila', // single fixed theme for all albums
             'ambient_effect' => $data['ambient_effect'] ?? null,
             'ambient_speed' => $data['ambient_speed'] ?? null,
             'ambient_count' => $data['ambient_count'] ?? null,
@@ -111,7 +111,8 @@ class AlbumController extends Controller
             'allow_comments' => $data['allow_comments'] ?? true,
             'allow_enquiries' => $data['allow_enquiries'] ?? true,
             'google_review_url' => $data['google_review_url'] ?? null,
-            'expires_at' => $data['expires_at'] ?? null,
+            // Default to 1 year from now when the admin didn't set an expiry.
+            'expires_at' => $data['expires_at'] ?? now()->addYear()->toDateString(),
             'sync_status' => 'pending',
         ]);
 

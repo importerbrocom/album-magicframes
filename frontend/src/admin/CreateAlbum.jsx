@@ -4,7 +4,12 @@ import { usePageMeta } from '../hooks/usePageMeta';
 import SharePanel from './SharePanel';
 import { AMBIENT_EFFECTS, AMBIENT_SPEEDS } from '../components/ambientEffects';
 
-const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'];
+/** Date 1 year from today as YYYY-MM-DD (default album expiry). */
+function oneYearFromToday() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().slice(0, 10);
+}
 
 const Toggle = ({ checked, onChange, label }) => (
   <label className="flex cursor-pointer items-center justify-between gap-3">
@@ -24,7 +29,6 @@ export default function CreateAlbum() {
   const [form, setForm] = useState({
     client_name: '',
     title: '',
-    category: '',
     event_date: '',
     google_drive_url: '',
     password: '',
@@ -33,13 +37,13 @@ export default function CreateAlbum() {
     cover_image_url: '',
     film_url: '',
     video_gallery_url: '',
-    theme: 'classic',
+    theme: 'akhila', // fixed theme — no picker
     ambient_effect: 'auto',
     ambient_speed: 'normal',
     ambient_count: '',
     allow_download: true,
     allow_share: true,
-    expires_at: '',
+    expires_at: oneYearFromToday(), // default: 1 year, editable below
   });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -98,19 +102,9 @@ export default function CreateAlbum() {
         <Field label="Album Title" error={err('title')}>
           <input value={form.title} onChange={set('title')} placeholder="Our Wedding Journey · A Day to Remember · …" className="inp" />
         </Field>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Category (optional)" error={err('category')}>
-            <input value={form.category} onChange={set('category')} placeholder="Wedding · Birthday · Maternity…" className="inp" list="mf-categories" />
-            <datalist id="mf-categories">
-              {['Wedding', 'Engagement', 'Pre Wedding', 'Birthday', 'Maternity', 'Baby Shower', 'Newborn', 'Anniversary', 'Graduation', 'Family', 'Event'].map((c) => (
-                <option key={c} value={c} />
-              ))}
-            </datalist>
-          </Field>
-          <Field label="Event Date (optional)" error={err('event_date')}>
-            <input type="date" value={form.event_date} onChange={set('event_date')} className="inp" />
-          </Field>
-        </div>
+        <Field label="Event Date (optional)" error={err('event_date')}>
+          <input type="date" value={form.event_date} onChange={set('event_date')} className="inp" />
+        </Field>
         {/* Photos source */}
         <div className="rounded-lg border border-black/10 p-4">
           <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Photo Gallery</p>
@@ -157,29 +151,12 @@ export default function CreateAlbum() {
           <input value={form.cover_image_url} onChange={set('cover_image_url')} placeholder="https://…" className="inp" />
         </Field>
 
-        <Field label="Theme">
-          <div className="grid grid-cols-3 gap-2">
-            {THEMES.map((t) => (
-              <button
-                type="button"
-                key={t}
-                onClick={() => setForm((f) => ({ ...f, theme: t }))}
-                className={`rounded-lg border px-3 py-2 text-sm capitalize ${
-                  form.theme === t ? 'border-charcoal bg-black/5 font-medium' : 'border-black/15'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </Field>
-
         <Field label="Ambient Effect">
           <select value={form.ambient_effect} onChange={set('ambient_effect')} className="inp">
             {AMBIENT_EFFECTS.map((e) => <option key={e.key} value={e.key}>{e.label}</option>)}
           </select>
           <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
-            Floating decorative motion (petals, snow, balloons, confetti…). “Auto” matches the category.
+            Floating decorative motion (petals, snow, balloons, confetti…).
           </p>
         </Field>
 
@@ -194,8 +171,11 @@ export default function CreateAlbum() {
           </Field>
         </div>
 
-        <Field label="Expiry Date (optional)">
+        <Field label="Expiry Date">
           <input type="date" value={form.expires_at} onChange={set('expires_at')} className="inp" />
+          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+            Defaults to 1 year from today — change it if you need a different expiry.
+          </p>
         </Field>
 
         <div className="space-y-3 border-t border-black/10 pt-4">

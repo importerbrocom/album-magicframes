@@ -4,8 +4,6 @@ import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { AMBIENT_EFFECTS, AMBIENT_SPEEDS } from '../components/ambientEffects';
 
-const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'];
-
 export default function EditAlbum() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -19,7 +17,6 @@ export default function EditAlbum() {
       setForm({
         client_name: a.client_name || '',
         title: a.title || '',
-        category: a.category || '',
         event_date: a.event_date || '',
         google_drive_url: a.google_drive_url || '',
         password: '',
@@ -28,11 +25,12 @@ export default function EditAlbum() {
         cover_image_url: a.cover_image_url || '',
         film_url: a.film_url || '',
         video_gallery_url: a.video_gallery_url || '',
-        theme: a.theme || 'classic',
+        theme: 'akhila', // fixed theme — no picker
         ambient_effect: a.ambient_effect || 'auto',
         ambient_speed: a.ambient_speed || 'normal',
         ambient_count: a.ambient_count ?? '',
         status: a.status || 'active',
+        expires_at: a.expires_at ? String(a.expires_at).slice(0, 10) : '',
         allow_download: !!a.allow_download,
         allow_share: !!a.allow_share,
         allow_comments: a.allow_comments !== false,
@@ -121,19 +119,14 @@ export default function EditAlbum() {
         ))}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="mb-1 block text-sm font-medium">Category (optional)</label>
-            <input value={form.category} onChange={set('category')} className="inp" placeholder="Wedding · Birthday · Maternity…" list="mf-categories" />
-            <datalist id="mf-categories">
-              {['Wedding', 'Engagement', 'Pre Wedding', 'Birthday', 'Maternity', 'Baby Shower', 'Newborn', 'Anniversary', 'Graduation', 'Family', 'Event'].map((c) => (
-                <option key={c} value={c} />
-              ))}
-            </datalist>
-            {errors.category && <p className="mt-1 text-xs text-red-600">{errors.category[0]}</p>}
-          </div>
-          <div>
             <label className="mb-1 block text-sm font-medium">Event Date (optional)</label>
             <input type="date" value={form.event_date} onChange={set('event_date')} className="inp" />
             {errors.event_date && <p className="mt-1 text-xs text-red-600">{errors.event_date[0]}</p>}
+          </div>
+          <div>
+            <label className="mb-1 block text-sm font-medium">Expiry Date</label>
+            <input type="date" value={form.expires_at} onChange={set('expires_at')} className="inp" />
+            {errors.expires_at && <p className="mt-1 text-xs text-red-600">{errors.expires_at[0]}</p>}
           </div>
         </div>
         <div>
@@ -144,19 +137,11 @@ export default function EditAlbum() {
           <label className="mb-1 block text-sm font-medium">Description</label>
           <textarea value={form.description} onChange={set('description')} rows={2} className="inp" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="mb-1 block text-sm font-medium">Theme</label>
-            <select value={form.theme} onChange={set('theme')} className="inp capitalize">
-              {THEMES.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium">Status</label>
-            <select value={form.status} onChange={set('status')} className="inp capitalize">
-              {['active', 'disabled', 'draft'].map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Status</label>
+          <select value={form.status} onChange={set('status')} className="inp capitalize">
+            {['active', 'disabled', 'draft'].map((s) => <option key={s} value={s}>{s}</option>)}
+          </select>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Ambient Effect</label>
@@ -164,7 +149,7 @@ export default function EditAlbum() {
             {AMBIENT_EFFECTS.map((e) => <option key={e.key} value={e.key}>{e.label}</option>)}
           </select>
           <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
-            Floating decorative motion on the album (e.g. petals, snow, balloons, confetti). “Auto” matches the category.
+            Floating decorative motion on the album (e.g. petals, snow, balloons, confetti).
           </p>
         </div>
         <div className="grid grid-cols-2 gap-3">
