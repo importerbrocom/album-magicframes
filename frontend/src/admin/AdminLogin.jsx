@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePageMeta } from '../hooks/usePageMeta';
+import Logo from '../components/Logo';
 
 export default function AdminLogin() {
   const { login } = useAuth();
@@ -39,8 +40,8 @@ export default function AdminLogin() {
         <span className="pointer-events-none absolute bottom-[-60px] right-10 h-64 w-64 rounded-full bg-white/5" />
         <span className="pointer-events-none absolute bottom-24 left-24 h-24 w-24 rounded-full bg-white/5" />
         <div className="relative z-10 text-center">
-          {/* Transparent wordmark (no black box) so it blends into the panel */}
-          <img src="/logo.svg" alt="Magic Frames" className="mx-auto h-40 w-auto object-contain" />
+          {/* Real uploaded logo (/logo.png) with SVG fallback */}
+          <Logo className="mx-auto h-40 w-auto" />
           <p className="mt-2 text-[0.7rem] uppercase tracking-[0.35em] text-white/70">magicframes.co.in</p>
         </div>
       </div>

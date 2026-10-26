@@ -27,8 +27,8 @@ export default function AdminLayout() {
       <div className="mx-auto flex max-w-7xl">
         {/* Sidebar (desktop) */}
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-black/10 p-5 md:flex">
-          <div className="mb-8">
-            <Logo variant="light" className="h-16 w-auto rounded-lg" />
+          <div className="mb-8 rounded-lg bg-[#161c2d] p-3">
+            <Logo className="h-14 w-auto" />
           </div>
           <nav className="flex-1 space-y-1">
             {NAV.map((item) => (
