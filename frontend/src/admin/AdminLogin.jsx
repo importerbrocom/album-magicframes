@@ -33,8 +33,8 @@ export default function AdminLogin() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white md:flex-row">
-      {/* Left brand panel — pure black so the logo's (inverted) black box is invisible: no box edges */}
-      <div className="relative flex min-h-[220px] flex-1 items-center justify-center overflow-hidden bg-black md:min-h-screen">
+      {/* Left brand panel — navy #161c2d (matches the logo's box) so no box edge shows */}
+      <div className="relative flex min-h-[220px] flex-1 items-center justify-center overflow-hidden bg-[#161c2d] md:min-h-screen">
         {/* Decorative circles */}
         <span className="pointer-events-none absolute left-[-40px] top-10 h-40 w-40 rounded-full bg-white/5" />
         <span className="pointer-events-none absolute bottom-[-60px] right-10 h-64 w-64 rounded-full bg-white/5" />
