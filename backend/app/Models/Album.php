@@ -25,6 +25,7 @@ class Album extends Model
         'cover_photo_id',
         'cover_image_url',
         'film_url',
+        'video_gallery_url',
         'description',
         'tagline',
         'status',

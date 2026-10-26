@@ -27,6 +27,7 @@ export default function EditAlbum() {
         tagline: a.tagline || '',
         cover_image_url: a.cover_image_url || '',
         film_url: a.film_url || '',
+        video_gallery_url: a.video_gallery_url || '',
         theme: a.theme || 'classic',
         ambient_effect: a.ambient_effect || 'auto',
         ambient_speed: a.ambient_speed || 'normal',
@@ -94,6 +95,17 @@ export default function EditAlbum() {
             A separate video for the hero. Drive file or folder link, or YouTube/Vimeo/.mp4.
           </p>
           {errors.film_url && <p className="mt-1 text-xs text-red-600">{errors.film_url[0]}</p>}
+        </div>
+
+        {/* Video Gallery — a THIRD separate upload: a folder of videos */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Video Gallery</p>
+          <label className="mb-1 block text-sm font-medium">Google Drive Folder Link (videos)</label>
+          <input value={form.video_gallery_url} onChange={set('video_gallery_url')} className="inp" placeholder="https://drive.google.com/drive/folders/…" />
+          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+            A separate folder of videos shown as their own “Video Gallery” section (distinct from the photos and the teaser).
+          </p>
+          {errors.video_gallery_url && <p className="mt-1 text-xs text-red-600">{errors.video_gallery_url[0]}</p>}
         </div>
 
         {[

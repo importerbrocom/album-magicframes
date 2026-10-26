@@ -12,6 +12,7 @@ import Logo from '../components/Logo';
 import FilmModal from '../components/FilmModal';
 import { parseFilm } from '../components/parseFilm';
 import { heroEyebrow, galleryHeading, formatEventDate } from '../components/albumCopy';
+import VideoGallery from '../components/VideoGallery';
 
 /**
  * Album home: cinematic hero + gallery section cards. All copy is driven by the
@@ -123,6 +124,9 @@ export default function AlbumHome() {
             ))}
           </div>
         )}
+
+        {/* Separate Video Gallery (its own Drive folder of videos) */}
+        <VideoGallery />
 
         {/* ---- Engagement: comments, enquiry, Google review ----
             Default-on: show unless the album explicitly disables the feature

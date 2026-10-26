@@ -100,6 +100,7 @@ class AlbumController extends Controller
             'tagline' => $data['tagline'] ?? null,
             'cover_image_url' => $this->sanitizeCover($data['cover_image_url'] ?? null),
             'film_url' => $data['film_url'] ?? null,
+            'video_gallery_url' => $data['video_gallery_url'] ?? null,
             'theme' => $data['theme'] ?? 'classic',
             'ambient_effect' => $data['ambient_effect'] ?? null,
             'ambient_speed' => $data['ambient_speed'] ?? null,

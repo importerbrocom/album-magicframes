@@ -79,6 +79,11 @@ Route::prefix('public')->group(function () {
         ->name('public.events.film')->middleware('throttle:300,1');
     Route::get('albums/{slug}/events/{event}/cover', [ImageController::class, 'sectionCover'])
         ->name('public.events.cover')->middleware('throttle:600,1');
+    // Separate "Video Gallery" (a Drive folder of videos). List + per-item stream.
+    Route::get('albums/{slug}/video-gallery', [FilmController::class, 'videoGallery'])
+        ->name('public.albums.videogallery')->middleware('throttle:120,1');
+    Route::get('albums/{slug}/video-gallery/{fileId}', [FilmController::class, 'videoItem'])
+        ->name('public.albums.videoitem')->middleware('throttle:300,1');
 
     // Engagement features — intentionally OPEN (no album token) so anyone with
     // the shared/reshared link (friends, family) can comment and enquire.

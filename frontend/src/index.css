@@ -391,6 +391,18 @@
 }
 @media (prefers-reduced-motion: reduce) { .card-play { animation: none; } }
 
+/* Video Gallery tiles */
+.video-tile { border: 1px solid rgba(217,173,96,0.15); background: #171713; cursor: pointer; }
+.video-tile video { transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+.video-tile:hover video { transform: scale(1.06); }
+.video-tile-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.85); background: rgba(0,0,0,.3); color: #fff;
+  font-size: 15px; backdrop-filter: blur(4px); transition: background .3s ease, color .3s ease, transform .3s ease;
+}
+.video-tile:hover .video-tile-play { background: var(--accent); color: #111; transform: translate(-50%, -50%) scale(1.1); }
+
 /* ===== Cinematic full-viewport hero stage ===== */
 .hero-stage { height: 56vh; min-height: 360px; background: #17130d; }
 [data-theme='akhila'] .hero-stage { height: min(88vh, 780px); min-height: 520px; }

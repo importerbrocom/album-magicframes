@@ -26,6 +26,7 @@ class UpdateAlbumRequest extends FormRequest
             'tagline' => ['nullable', 'string', 'max:200'],
             'cover_image_url' => ['nullable', 'string', 'max:1000'],
             'film_url' => ['nullable', 'url', 'max:1000'],
+            'video_gallery_url' => ['nullable', 'url', 'max:1000'],
             'theme' => ['sometimes', Rule::in(['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'])],
             'ambient_effect' => ['nullable', Rule::in(['none', 'auto', 'leaves', 'flowers', 'petals', 'snow', 'confetti', 'sprinkles', 'balloons', 'bubbles', 'hearts'])],
             'ambient_speed' => ['nullable', Rule::in(['slow', 'normal', 'fast'])],

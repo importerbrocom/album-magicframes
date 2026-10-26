@@ -32,6 +32,7 @@ export default function CreateAlbum() {
     tagline: '',
     cover_image_url: '',
     film_url: '',
+    video_gallery_url: '',
     theme: 'classic',
     ambient_effect: 'auto',
     ambient_speed: 'normal',
@@ -54,6 +55,7 @@ export default function CreateAlbum() {
       const payload = { ...form };
       if (!payload.expires_at) delete payload.expires_at;
       if (!payload.film_url) delete payload.film_url;
+      if (!payload.video_gallery_url) delete payload.video_gallery_url;
       if (!payload.event_date) delete payload.event_date;
       if (payload.ambient_count === '') delete payload.ambient_count;
       const res = await adminService.createAlbum(payload);
@@ -127,6 +129,17 @@ export default function CreateAlbum() {
             <input value={form.film_url} onChange={set('film_url')} placeholder="https://drive.google.com/file/d/… or /folders/… · YouTube · Vimeo · .mp4" className="inp" />
             <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
               A separate video for the hero. Paste a <b>Google Drive video</b> link (file or folder), or a YouTube/Vimeo/.mp4 link. Plays over your cover image; streamed securely. Drive folder → the first video inside is used.
+            </p>
+          </Field>
+        </div>
+
+        {/* Video Gallery — a THIRD separate upload: a folder of videos */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Video Gallery</p>
+          <Field label="Google Drive Folder Link (videos)" error={err('video_gallery_url')}>
+            <input value={form.video_gallery_url} onChange={set('video_gallery_url')} placeholder="https://drive.google.com/drive/folders/…" className="inp" />
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+              A separate folder of videos shown as their own “Video Gallery” section (distinct from the photos and the teaser). All videos in the folder are listed.
             </p>
           </Field>
         </div>

@@ -25,6 +25,7 @@ class AdminAlbumResource extends JsonResource
             'drive_auth_mode' => $this->drive_auth_mode,
             'cover_image_url' => $this->cover_image_url,
             'film_url' => $this->film_url,
+            'video_gallery_url' => $this->video_gallery_url,
             'description' => $this->description,
             'tagline' => $this->tagline,
             'status' => $this->status,

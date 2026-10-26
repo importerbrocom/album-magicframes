@@ -44,6 +44,61 @@ class FilmController extends Controller
         return $this->serveDriveVideo($drive, "album_{$album->id}", $fileId, sha1($album->film_url));
     }
 
+    /** List the videos in the album's separate "Video Gallery" Drive folder. */
+    public function videoGallery(Request $request, GoogleDriveService $drive, string $slug): \Illuminate\Http\JsonResponse
+    {
+        $album = Album::where('slug', $slug)->first();
+        abort_if(! $album || ! $album->isAccessible(), 404);
+        abort_if(! $album->video_gallery_url, 404);
+
+        if ($album->drive_auth_mode === 'demo') {
+            return response()->json(['data' => []]);
+        }
+
+        // Resolve the folder id from the saved link.
+        $folderId = null;
+        if (preg_match('#/folders/([A-Za-z0-9_-]+)#', $album->video_gallery_url, $m)) {
+            $folderId = $m[1];
+        } else {
+            $folderId = $drive->extractFileId($album->video_gallery_url);
+        }
+        abort_if(! $folderId, 404);
+
+        try {
+            $videos = $drive->listVideoFiles($folderId);
+        } catch (GoogleDriveException $e) {
+            return response()->json(['data' => []]);
+        }
+
+        $data = array_map(fn ($v) => [
+            'id' => $v['id'],
+            'name' => pathinfo($v['name'] ?? 'Video', PATHINFO_FILENAME),
+            'src' => route('public.albums.videoitem', ['slug' => $slug, 'fileId' => $v['id']], false),
+        ], $videos);
+
+        return response()->json(['data' => $data]);
+    }
+
+    /** Stream a single video from the album's video-gallery folder by file id. */
+    public function videoItem(Request $request, GoogleDriveService $drive, string $slug, string $fileId): Response
+    {
+        $album = Album::where('slug', $slug)->first();
+        abort_if(! $album || ! $album->isAccessible(), 404);
+        abort_if(! $album->video_gallery_url || $album->drive_auth_mode === 'demo', 404);
+
+        // Only allow ids that actually live in this album's gallery folder.
+        $folderId = null;
+        if (preg_match('#/folders/([A-Za-z0-9_-]+)#', $album->video_gallery_url, $m)) {
+            $folderId = $m[1];
+        }
+        if ($folderId) {
+            $ids = array_column($drive->listVideoFiles($folderId), 'id');
+            abort_if(! in_array($fileId, $ids, true), 404);
+        }
+
+        return $this->serveDriveVideo($drive, "galleryvid_{$album->id}_{$fileId}", $fileId, sha1($fileId));
+    }
+
     /** Per-section film (a video detected inside the section's Drive folder). */
     public function eventFilm(Request $request, GoogleDriveService $drive, string $slug, string $event): Response
     {
