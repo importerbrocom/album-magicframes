@@ -8,11 +8,14 @@ import { useState } from 'react';
  *
  * `object-contain` keeps the whole wordmark visible; `rounded` → circular badge.
  */
+// Cache-busting token: bump when the logo file is replaced on the server so
+// browsers fetch the new image instead of a stale cached copy.
+const LOGO_VERSION = '3';
 const SOURCES = ['/logo.png', '/logo.jpg', '/logo.svg'];
 
 export default function Logo({ className = 'h-12 w-auto', rounded = false }) {
   const [i, setI] = useState(0);
-  const src = SOURCES[i];
+  const src = `${SOURCES[i]}?v=${LOGO_VERSION}`;
 
   return (
     <img
