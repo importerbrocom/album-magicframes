@@ -33,6 +33,8 @@ export const adminService = {
   sections: (id) => api.get(`/admin/albums/${id}/sections`).then((r) => r.data.data),
   updateSection: (id, eventId, payload) =>
     api.put(`/admin/albums/${id}/sections/${eventId}`, payload).then((r) => r.data.data),
+  updateSectionsOrder: (id, order) =>
+    api.put(`/admin/albums/${id}/sections/order`, { order }).then((r) => r.data),
   galleryVideos: (id) => api.get(`/admin/albums/${id}/gallery-videos`).then((r) => r.data.data),
   updateGalleryPosters: (id, posters) =>
     api.put(`/admin/albums/${id}/gallery-videos`, { posters }).then((r) => r.data.data),

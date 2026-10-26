@@ -119,15 +119,19 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
 
         $eventSort = 0;
         foreach ($eventFolders as $i => $ef) {
-            $event = Event::updateOrCreate(
+            $event = Event::firstOrNew(
                 ['album_id' => $album->id, 'google_drive_folder_id' => $ef['id']],
-                [
-                    'name' => $ef['name'],
-                    'slug' => $this->uniqueEventSlug($album, $ef['name'], $ef['id']),
-                    'sort_order' => $eventSort++,
-                    'is_available' => true,
-                ],
             );
+            $event->name = $ef['name'];
+            $event->slug = $event->slug ?: $this->uniqueEventSlug($album, $ef['name'], $ef['id']);
+            $event->is_available = true;
+            // Only assign a sort_order on first creation; preserve the admin's
+            // manual order on re-sync.
+            if (! $event->exists || $event->sort_order === null) {
+                $event->sort_order = $eventSort;
+            }
+            $eventSort++;
+            $event->save();
             $this->seenEventDriveIds[] = $ef['id'];
 
             // Detect a video inside this section's folder -> per-section film.
@@ -186,15 +190,17 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
 
         foreach ($tree as $eventName => $folderNames) {
             $driveId = 'demo-event-' . Str::slug($eventName);
-            $event = Event::updateOrCreate(
+            $event = Event::firstOrNew(
                 ['album_id' => $album->id, 'google_drive_folder_id' => $driveId],
-                [
-                    'name' => $eventName,
-                    'slug' => $this->uniqueEventSlug($album, $eventName, $driveId),
-                    'sort_order' => $eventSort++,
-                    'is_available' => true,
-                ],
             );
+            $event->name = $eventName;
+            $event->slug = $event->slug ?: $this->uniqueEventSlug($album, $eventName, $driveId);
+            $event->is_available = true;
+            if (! $event->exists || $event->sort_order === null) {
+                $event->sort_order = $eventSort;
+            }
+            $eventSort++;
+            $event->save();
             $this->seenEventDriveIds[] = $driveId;
 
             if (empty($folderNames)) {

@@ -350,6 +350,33 @@ class AlbumController extends Controller
         return response()->json(['data' => $events]);
     }
 
+    /** Save the display order of sections (root events) by id. */
+    public function updateSectionsOrder(Request $request, Album $album): JsonResponse
+    {
+        $this->authorize('update', $album);
+
+        $data = $request->validate([
+            'order' => ['array'],
+            'order.*' => ['integer'],
+        ]);
+
+        // Assign sort_order by the given id sequence (only ids that belong to
+        // this album's root events).
+        $validIds = $album->rootEvents()->pluck('id')->all();
+        $i = 0;
+        foreach ($data['order'] ?? [] as $eventId) {
+            if (in_array((int) $eventId, $validIds, true)) {
+                \App\Models\Event::where('id', $eventId)
+                    ->where('album_id', $album->id)
+                    ->update(['sort_order' => $i++]);
+            }
+        }
+
+        Cache::forget("album.public.{$album->slug}");
+
+        return response()->json(['ok' => true]);
+    }
+
     /** Update a single section's manual cover/film overrides. */
     public function updateSection(Request $request, Album $album, \App\Models\Event $event): JsonResponse
     {
