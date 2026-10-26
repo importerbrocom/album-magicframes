@@ -35,8 +35,19 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Update the cached user after a profile edit / password change, keeping
+  // localStorage in sync so a refresh shows the latest details.
+  const updateUser = (next) => {
+    setUser(next);
+    try {
+      localStorage.setItem('mf_admin_user', JSON.stringify(next));
+    } catch {
+      /* ignore quota / serialization errors */
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

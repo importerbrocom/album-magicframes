@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import RequireAuth from './admin/RequireAuth';
+import RequireAccess from './admin/RequireAccess';
 
 // Code splitting (spec section 49): each page is its own chunk.
 const AlbumLogin = lazy(() => import('./pages/AlbumLogin'));
@@ -12,6 +13,9 @@ const FolderGalleryPage = lazy(() => import('./pages/FolderGalleryPage'));
 const VideoGalleryPage = lazy(() => import('./pages/VideoGalleryPage'));
 
 const AdminLogin = lazy(() => import('./admin/AdminLogin'));
+const ForgotPassword = lazy(() => import('./admin/ForgotPassword'));
+const ResetPassword = lazy(() => import('./admin/ResetPassword'));
+const FirstLogin = lazy(() => import('./admin/FirstLogin'));
 const AdminLayout = lazy(() => import('./admin/AdminLayout'));
 const Dashboard = lazy(() => import('./admin/Dashboard'));
 const Albums = lazy(() => import('./admin/Albums'));
@@ -20,6 +24,9 @@ const AlbumDetail = lazy(() => import('./admin/AlbumDetail'));
 const EditAlbum = lazy(() => import('./admin/EditAlbum'));
 const Analytics = lazy(() => import('./admin/Analytics'));
 const Settings = lazy(() => import('./admin/Settings'));
+const Profile = lazy(() => import('./admin/Profile'));
+const Staff = lazy(() => import('./admin/Staff'));
+const AuditLogs = lazy(() => import('./admin/AuditLogs'));
 const GoogleDrive = lazy(() => import('./admin/GoogleDrive'));
 const Landing = lazy(() => import('./pages/Landing'));
 
@@ -48,8 +55,20 @@ export default function App() {
               <Route path="event/:eventSlug/folder/:folderSlug" element={<FolderGalleryPage />} />
             </Route>
 
-            {/* Admin */}
+            {/* Admin + staff auth */}
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+            <Route path="/admin/reset-password" element={<ResetPassword />} />
+            {/* Forced first-login password change (authenticated, no chrome) */}
+            <Route
+              path="/admin/first-login"
+              element={
+                <RequireAuth>
+                  <FirstLogin />
+                </RequireAuth>
+              }
+            />
+
             <Route
               path="/admin"
               element={
@@ -67,6 +86,24 @@ export default function App() {
               <Route path="albums/:id/analytics" element={<Analytics />} />
               <Route path="google" element={<GoogleDrive />} />
               <Route path="settings" element={<Settings />} />
+              <Route path="profile" element={<Profile />} />
+              {/* Staff management + activity log — admins only */}
+              <Route
+                path="staff"
+                element={
+                  <RequireAccess adminOnly>
+                    <Staff />
+                  </RequireAccess>
+                }
+              />
+              <Route
+                path="activity"
+                element={
+                  <RequireAccess adminOnly>
+                    <AuditLogs />
+                  </RequireAccess>
+                }
+              />
             </Route>
 
             <Route path="*" element={<Navigate to="/" replace />} />

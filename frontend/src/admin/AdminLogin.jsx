@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePageMeta } from '../hooks/usePageMeta';
 import Logo from '../components/Logo';
@@ -22,7 +22,12 @@ export default function AdminLogin() {
     setError('');
     setSubmitting(true);
     try {
-      await login(email, password);
+      const { user } = await login(email, password);
+      // Staff with a temporary password must change it before anything else.
+      if (user?.must_change_password) {
+        navigate('/admin/first-login', { replace: true });
+        return;
+      }
       navigate(location.state?.from?.pathname || '/admin/dashboard', { replace: true });
     } catch (err) {
       setError(err.response?.data?.message || 'Invalid credentials.');
@@ -94,7 +99,9 @@ export default function AdminLogin() {
             </div>
 
             <div className="flex items-center justify-between gap-4">
-              <a href="#" className="text-sm text-gray-700 underline">Forgot your password?</a>
+              <Link to="/admin/forgot-password" className="text-sm text-gray-700 underline">
+                Forgot your password?
+              </Link>
               <button
                 type="submit"
                 disabled={submitting}

@@ -79,6 +79,17 @@ else
   "$PHP_BIN" artisan migrate --force
 fi
 
+# --- Public storage link (profile photos / uploaded avatars) ---------------
+# Avatars are stored on the "public" disk (storage/app/public) and served at
+# /storage/...  Create Laravel's storage:link, then expose it under the doc
+# root so the static-file rule in .htaccess can serve /storage/* directly.
+echo "==> Linking public storage (avatars)"
+[ -L "$APP_BASE/public/storage" ] || "$PHP_BIN" artisan storage:link || true
+if [ ! -e "$DOC_ROOT/storage" ]; then
+  ln -s "$APP_BASE/storage/app/public" "$DOC_ROOT/storage" || \
+    echo "!!  Could not create $DOC_ROOT/storage symlink — create it manually if avatars 404."
+fi
+
 # --- Deploy the React SPA into the doc root --------------------------------
 # Prefer a freshly built frontend/dist (if Node is available / was built), else
 # fall back to the prebuilt bundle committed at deploy/cpanel/spa-dist.

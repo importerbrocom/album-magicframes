@@ -1,8 +1,12 @@
 <?php
 
 use App\Http\Controllers\Admin\AlbumController;
+use App\Http\Controllers\Admin\AuditLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\PasswordResetController;
+use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\PublicAlbum\AlbumAccessController;
 use App\Http\Controllers\PublicAlbum\AnalyticsController;
 use App\Http\Controllers\PublicAlbum\CommentController;
@@ -19,12 +23,40 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->group(function () {
-    // Public auth endpoint, rate limited to resist brute force.
+    // Public auth endpoints, rate limited to resist brute force.
     Route::post('login', [AuthController::class, 'login'])->middleware('throttle:10,1');
 
-    Route::middleware('auth:sanctum')->group(function () {
+    // Forgot / reset password (open, rate limited). Works for admin + staff.
+    Route::post('forgot-password', [PasswordResetController::class, 'sendResetLink'])
+        ->middleware('throttle:6,1');
+    Route::post('reset-password', [PasswordResetController::class, 'reset'])
+        ->middleware('throttle:6,1');
+
+    // Authenticated: account.active blocks inactive/suspended users and forces
+    // the first-login password change (only me/logout/profile.password pass).
+    Route::middleware(['auth:sanctum', 'account.active'])->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
+
+        // Self-service profile (any authenticated user — admin or staff).
+        Route::get('profile', [ProfileController::class, 'show']);
+        Route::match(['put', 'patch', 'post'], 'profile', [ProfileController::class, 'update']);
+        Route::post('profile/password', [ProfileController::class, 'changePassword']);
+
+        // Staff management (admin-only; gated further by permission + policy).
+        Route::middleware('permission:staff.view')->group(function () {
+            Route::get('staff/meta', [StaffController::class, 'meta']);
+            Route::get('staff', [StaffController::class, 'index']);
+            Route::get('staff/{staff}', [StaffController::class, 'show']);
+            Route::get('audit-logs', [AuditLogController::class, 'index']);
+        });
+        Route::middleware('permission:staff.manage')->group(function () {
+            Route::post('staff', [StaffController::class, 'store']);
+            Route::match(['put', 'patch', 'post'], 'staff/{staff}', [StaffController::class, 'update']);
+            Route::patch('staff/{staff}/status', [StaffController::class, 'updateStatus']);
+            Route::post('staff/{staff}/reset-password', [StaffController::class, 'resetPassword']);
+            Route::delete('staff/{staff}', [StaffController::class, 'destroy']);
+        });
 
         Route::get('dashboard', [DashboardController::class, 'index']);
 

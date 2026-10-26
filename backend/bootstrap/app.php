@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureAccountActive;
 use App\Http\Middleware\EnsureAlbumAccess;
+use App\Http\Middleware\EnsurePermission;
 use App\Services\GoogleDriveException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -21,6 +23,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'album.access' => EnsureAlbumAccess::class,
+            'account.active' => EnsureAccountActive::class,
+            'permission' => EnsurePermission::class,
         ]);
 
         // NOTE: We intentionally do NOT enable statefulApi(). Admin auth is

@@ -4,43 +4,46 @@ namespace App\Policies;
 
 use App\Models\Album;
 use App\Models\User;
+use App\Support\Permissions;
 
 /**
- * Authorization for admin-side album management. For the MVP a single admin
- * role manages everything, but this policy is the hook point for future RBAC
- * (super_admin / photographer / editor / assistant).
+ * Authorization for admin-side album management.
+ *
+ * Admins (super_admin / admin) manage everything. Staff are authorized by
+ * their granular permissions (albums.view/create/update/delete) AND, for
+ * row-level actions, by ownership of the album.
  */
 class AlbumPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->hasPermission(Permissions::ALBUMS_VIEW);
     }
 
     public function view(User $user, Album $album): bool
     {
-        return $this->owns($user, $album);
+        return $user->hasPermission(Permissions::ALBUMS_VIEW) && $this->owns($user, $album);
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole('super_admin', 'photographer', 'editor');
+        return $user->hasPermission(Permissions::ALBUMS_CREATE);
     }
 
     public function update(User $user, Album $album): bool
     {
-        return $this->owns($user, $album);
+        return $user->hasPermission(Permissions::ALBUMS_UPDATE) && $this->owns($user, $album);
     }
 
     public function delete(User $user, Album $album): bool
     {
-        return $this->owns($user, $album) && $user->hasRole('super_admin', 'photographer');
+        return $user->hasPermission(Permissions::ALBUMS_DELETE) && $this->owns($user, $album);
     }
 
     private function owns(User $user, Album $album): bool
     {
-        // Super admins manage all albums; others only their own.
-        if ($user->hasRole('super_admin')) {
+        // Admins manage all albums; others only their own (or unassigned).
+        if ($user->isAdmin()) {
             return true;
         }
 

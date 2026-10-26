@@ -17,5 +17,11 @@ export default function RequireAuth({ children }) {
     return <Navigate to="/admin/login" state={{ from: location }} replace />;
   }
 
+  // Forced first-login password change: staff (or anyone with a temporary
+  // password) must set a new one before reaching any admin page.
+  if (user.must_change_password && location.pathname !== '/admin/first-login') {
+    return <Navigate to="/admin/first-login" replace />;
+  }
+
   return children;
 }

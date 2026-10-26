@@ -16,6 +16,43 @@ export const adminService = {
       localStorage.removeItem('mf_admin_user');
     }),
 
+  // --- Forgot / reset password (open endpoints) ---
+  forgotPassword: (email) =>
+    api.post('/admin/forgot-password', { email }).then((r) => r.data),
+  resetPassword: (payload) =>
+    api.post('/admin/reset-password', payload).then((r) => r.data),
+
+  // --- Self-service profile (admin or staff) ---
+  profile: () => api.get('/admin/profile').then((r) => r.data.data),
+  updateProfile: (formData) =>
+    // multipart (may include an avatar file); Laravel reads method override.
+    api
+      .post('/admin/profile', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      .then((r) => r.data.data),
+  changePassword: (payload) =>
+    api.post('/admin/profile/password', payload).then((r) => r.data),
+
+  // --- Staff management (admin only) ---
+  staffMeta: () => api.get('/admin/staff/meta').then((r) => r.data),
+  staff: (params = {}) => api.get('/admin/staff', { params }).then((r) => r.data),
+  staffMember: (id) => api.get(`/admin/staff/${id}`).then((r) => r.data.data),
+  createStaff: (formData) =>
+    api
+      .post('/admin/staff', formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      .then((r) => r.data),
+  updateStaff: (id, formData) =>
+    api
+      .post(`/admin/staff/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } })
+      .then((r) => r.data.data),
+  updateStaffStatus: (id, status) =>
+    api.patch(`/admin/staff/${id}/status`, { status }).then((r) => r.data.data),
+  resetStaffPassword: (id) =>
+    api.post(`/admin/staff/${id}/reset-password`).then((r) => r.data),
+  deleteStaff: (id) => api.delete(`/admin/staff/${id}`).then((r) => r.data),
+
+  // --- Audit logs ---
+  auditLogs: (params = {}) => api.get('/admin/audit-logs', { params }).then((r) => r.data),
+
   dashboard: () => api.get('/admin/dashboard').then((r) => r.data),
 
   albums: (params = {}) => api.get('/admin/albums', { params }).then((r) => r.data),
