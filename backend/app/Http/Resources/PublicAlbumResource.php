@@ -25,6 +25,7 @@ class PublicAlbumResource extends JsonResource
             'film_url' => $this->film_url,
             'film_src' => $this->filmSrc(),
             'has_video_gallery' => ! empty($this->video_gallery_url),
+            'video_gallery_cover' => ! empty($this->video_gallery_url) ? $this->videoGalleryCover() : null,
             'theme' => $this->theme,
             'ambient_effect' => $this->ambient_effect,
             'ambient_speed' => $this->ambient_speed,

@@ -12,7 +12,7 @@ import Logo from '../components/Logo';
 import FilmModal from '../components/FilmModal';
 import { parseFilm } from '../components/parseFilm';
 import { heroEyebrow, galleryHeading, formatEventDate } from '../components/albumCopy';
-import VideoGallery from '../components/VideoGallery';
+import VideosCard from '../components/VideosCard';
 
 /**
  * Album home: cinematic hero + gallery section cards. All copy is driven by the
@@ -119,14 +119,22 @@ export default function AlbumHome() {
           <EmptyState icon="📸" title="No photos available yet." message="Your album is being prepared. Please check back soon." />
         ) : (
           <div className="mf-reveal gallery-grid grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {/* Videos card as the FIRST card in the grid, when the album has a
+                video gallery. It opens the dedicated Video Gallery page. */}
+            {album.has_video_gallery && (
+              <VideosCard slug={slug} album={album} index={0} wide />
+            )}
             {events.map((ev, i) => (
-              <EventCard key={ev.id} slug={slug} event={ev} index={i} wide={i === 0} />
+              <EventCard
+                key={ev.id}
+                slug={slug}
+                event={ev}
+                index={album.has_video_gallery ? i + 1 : i}
+                wide={!album.has_video_gallery && i === 0}
+              />
             ))}
           </div>
         )}
-
-        {/* Separate Video Gallery (its own Drive folder of videos) */}
-        <VideoGallery />
 
         {/* ---- Engagement: comments, enquiry, Google review ----
             Default-on: show unless the album explicitly disables the feature

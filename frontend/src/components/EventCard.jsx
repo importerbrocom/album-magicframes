@@ -1,12 +1,8 @@
 import { Link } from 'react-router-dom';
 import LazyImage from './LazyImage';
 import categoryIcon, { sectionCaption, titleCase } from './categoryIcon';
-import { parseFilm } from './parseFilm';
 
 export default function EventCard({ slug, event, index = 0, wide = false }) {
-  // Does this section have a video? (auto-detected film or an override)
-  const hasFilm = !!parseFilm(event.film_src);
-
   return (
     <Link
       to={`/album/${slug}/event/${event.slug}`}
@@ -28,15 +24,6 @@ export default function EventCard({ slug, event, index = 0, wide = false }) {
           <p className="card-caption">{sectionCaption(event.name)}</p>
           <span className="card-view"><span>VIEW</span> <b>›</b></span>
         </div>
-
-        {/* Section has video(s): a centered play cue. The whole card is a link,
-            so clicking it (or the cue) opens the section page where the full
-            Videos grid lives — it does not play inline. */}
-        {hasFilm && (
-          <span className="card-play pointer-events-none" aria-hidden="true">
-            <span>▶</span>
-          </span>
-        )}
 
         {/* Gold corner arrow affordance */}
         <span className="card-arrow" aria-hidden="true">↗</span>

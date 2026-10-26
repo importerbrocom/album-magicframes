@@ -122,62 +122,6 @@ class FilmController extends Controller
         return $this->serveDriveVideo($drive, "galleryvid_{$album->id}_{$fileId}", $fileId, sha1($fileId));
     }
 
-    /** List ALL videos inside a section's Drive folder (for its page grid). */
-    public function eventVideos(Request $request, GoogleDriveService $drive, string $slug, string $event): \Illuminate\Http\JsonResponse
-    {
-        $album = Album::where('slug', $slug)->first();
-        abort_if(! $album || ! $album->isAccessible(), 404);
-
-        $ev = Event::where('album_id', $album->id)->where('slug', $event)->first();
-        abort_if(! $ev, 404);
-
-        // Demo albums: sample clips so the section page shows a video grid.
-        if ($album->drive_auth_mode === 'demo') {
-            $base = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample';
-            $samples = [
-                ['id' => "demo-{$ev->slug}-1", 'name' => "{$ev->name} Film", 'src' => "{$base}/ForBiggerMeltdowns.mp4", 'poster' => 'https://picsum.photos/id/1043/800/450'],
-                ['id' => "demo-{$ev->slug}-2", 'name' => 'Highlights', 'src' => "{$base}/ForBiggerFun.mp4", 'poster' => 'https://picsum.photos/id/1044/800/450'],
-            ];
-
-            return response()->json(['data' => $samples]);
-        }
-
-        if (! $ev->google_drive_folder_id) {
-            return response()->json(['data' => []]);
-        }
-
-        try {
-            $videos = $drive->listVideoFiles($ev->google_drive_folder_id);
-        } catch (\Throwable $e) {
-            return response()->json(['data' => []]);
-        }
-
-        $data = array_map(fn ($v) => [
-            'id' => $v['id'],
-            'name' => pathinfo($v['name'] ?? 'Video', PATHINFO_FILENAME),
-            'src' => route('public.events.videoitem', ['slug' => $slug, 'event' => $event, 'fileId' => $v['id']], false),
-            'poster' => null,
-        ], $videos);
-
-        return response()->json(['data' => $data]);
-    }
-
-    /** Stream a single video from a section's folder by file id. */
-    public function eventVideoItem(Request $request, GoogleDriveService $drive, string $slug, string $event, string $fileId): Response
-    {
-        $album = Album::where('slug', $slug)->first();
-        abort_if(! $album || ! $album->isAccessible() || $album->drive_auth_mode === 'demo', 404);
-
-        $ev = Event::where('album_id', $album->id)->where('slug', $event)->first();
-        abort_if(! $ev || ! $ev->google_drive_folder_id, 404);
-
-        // Only allow ids that actually live in this section's folder.
-        $ids = array_column($drive->listVideoFiles($ev->google_drive_folder_id), 'id');
-        abort_if(! in_array($fileId, $ids, true), 404);
-
-        return $this->serveDriveVideo($drive, "eventvid_{$ev->id}_{$fileId}", $fileId, sha1($fileId));
-    }
-
     /** Per-section film (a video detected inside the section's Drive folder). */
     public function eventFilm(Request $request, GoogleDriveService $drive, string $slug, string $event): Response
     {

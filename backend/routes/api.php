@@ -81,11 +81,6 @@ Route::prefix('public')->group(function () {
         ->name('public.albums.film')->middleware('throttle:300,1');
     Route::get('albums/{slug}/events/{event}/film', [FilmController::class, 'eventFilm'])
         ->name('public.events.film')->middleware('throttle:300,1');
-    // All videos inside a section's folder (section page grid) + per-item stream.
-    Route::get('albums/{slug}/events/{event}/videos', [FilmController::class, 'eventVideos'])
-        ->name('public.events.videos')->middleware('throttle:120,1');
-    Route::get('albums/{slug}/events/{event}/videos/{fileId}', [FilmController::class, 'eventVideoItem'])
-        ->name('public.events.videoitem')->middleware('throttle:300,1');
     Route::get('albums/{slug}/events/{event}/cover', [ImageController::class, 'sectionCover'])
         ->name('public.events.cover')->middleware('throttle:600,1');
     // Separate "Video Gallery" (a Drive folder of videos). List + per-item stream.

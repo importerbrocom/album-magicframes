@@ -161,6 +161,22 @@ class Album extends Model
         return $videos;
     }
 
+    /**
+     * A cover image for the "Videos" gallery card. Prefers the first poster in
+     * the video_posters map, else falls back to the album cover image.
+     */
+    public function videoGalleryCover(): ?string
+    {
+        $posters = $this->video_posters ?: [];
+        foreach ($posters as $url) {
+            if (is_string($url) && $url !== '' && ! str_contains($url, 'drive.google.com')) {
+                return $url; // a directly-renderable poster
+            }
+        }
+
+        return $this->cover_image_url;
+    }
+
     public function isExpired(): bool
     {
         return $this->expires_at !== null && $this->expires_at->isPast();
