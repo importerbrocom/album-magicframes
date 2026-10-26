@@ -112,6 +112,12 @@ export default function CreateAlbum() {
         <Field label="Google Drive Folder Link" error={err('google_drive_url')}>
           <input value={form.google_drive_url} onChange={set('google_drive_url')} placeholder="https://drive.google.com/drive/folders/…" className="inp" />
         </Field>
+        <Field label="Teaser Video — Google Drive / YouTube / Vimeo / .mp4" error={err('film_url')}>
+          <input value={form.film_url} onChange={set('film_url')} placeholder="https://drive.google.com/file/d/… or /folders/… · YouTube · Vimeo · .mp4" className="inp" />
+          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+            Paste a <b>Google Drive video</b> link (file or folder), or a YouTube/Vimeo/.mp4 link. Plays from the hero over your cover image; streamed securely. Drive folder → the first video inside is used.
+          </p>
+        </Field>
         <Field label="Access Password" error={err('password')}>
           <input value={form.password} onChange={set('password')} placeholder="RA2026" className="inp" />
         </Field>
@@ -123,12 +129,6 @@ export default function CreateAlbum() {
         </Field>
         <Field label="Cover Image URL (optional)" error={err('cover_image_url')}>
           <input value={form.cover_image_url} onChange={set('cover_image_url')} placeholder="https://…" className="inp" />
-        </Field>
-        <Field label="Teaser Film URL (optional)" error={err('film_url')}>
-          <input value={form.film_url} onChange={set('film_url')} placeholder="YouTube · Vimeo · Drive video file OR folder · .mp4" className="inp" />
-          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
-            Paste a YouTube/Vimeo link, a direct .mp4, a Google Drive video, or a Drive <b>folder</b> link (the first video in it is used). Streamed securely. Each section with a video in its own Drive folder also gets a play button automatically.
-          </p>
         </Field>
 
         <Field label="Theme">

@@ -370,17 +370,26 @@
 }
 [data-theme='akhila'] .group:hover .card-arrow { background: var(--accent); color: #111; transform: rotate(35deg); }
 
-/* Centered play button on section cards that have their own film */
+/* Centered play button on section cards that have their own film.
+   Prominent gold "view the video" affordance with a soft pulsing ring. */
 .card-play {
   position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
   z-index: 3; display: grid; place-items: center;
-  width: 54px; height: 54px; border-radius: 50%; cursor: pointer;
-  border: 1px solid rgba(255,255,255,.85); background: rgba(0,0,0,.25);
+  width: 64px; height: 64px; border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--accent, #d9ad60); background: rgba(0,0,0,.32);
   backdrop-filter: blur(5px); color: #fff;
+  box-shadow: 0 0 0 0 rgba(217,173,96,.55);
+  animation: mf-play-pulse 2.6s ease-out infinite;
   transition: background .3s ease, color .3s ease, transform .3s ease;
 }
-.card-play span { font-size: 14px; margin-left: 2px; }
-.card-play:hover { background: var(--accent); color: #111; transform: translate(-50%, -50%) scale(1.1); }
+.card-play span { font-size: 17px; margin-left: 3px; }
+.card-play:hover { background: var(--accent, #d9ad60); color: #111; transform: translate(-50%, -50%) scale(1.1); animation: none; }
+@keyframes mf-play-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(217,173,96,.5); }
+  70%  { box-shadow: 0 0 0 16px rgba(217,173,96,0); }
+  100% { box-shadow: 0 0 0 0 rgba(217,173,96,0); }
+}
+@media (prefers-reduced-motion: reduce) { .card-play { animation: none; } }
 
 /* ===== Cinematic full-viewport hero stage ===== */
 .hero-stage { height: 56vh; min-height: 360px; background: #17130d; }
