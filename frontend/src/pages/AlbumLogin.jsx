@@ -88,9 +88,6 @@ export default function AlbumLogin() {
           <div className="absolute inset-0 bg-black/45" />
         </div>
 
-        <span className="mf-ambient one" aria-hidden="true" />
-        <span className="mf-ambient two" aria-hidden="true" />
-
         <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center text-white">
           <p className="login-eyebrow mb-3 text-xs uppercase tracking-[0.3em] opacity-80 animate-fadeIn">{heroEyebrow(landing)}</p>
           <h1 className="hero-title text-5xl leading-tight sm:text-6xl animate-fadeUp">{landing.client_name}</h1>

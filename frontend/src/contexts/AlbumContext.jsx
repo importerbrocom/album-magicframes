@@ -72,7 +72,9 @@ export default function AlbumLayout() {
     <ThemeScope theme={album.theme}>
       <AlbumContext.Provider value={{ album, slug }}>
         <AmbientFx />
-        <Outlet />
+        <div className="mf-content">
+          <Outlet />
+        </div>
       </AlbumContext.Provider>
     </ThemeScope>
   );

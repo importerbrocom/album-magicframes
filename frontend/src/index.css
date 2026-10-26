@@ -246,7 +246,13 @@
 [data-theme='akhila'] .mf-reveal.mf-in { opacity: 1; transform: translateY(0); }
 
 /* ===== Ambient motion effects (admin-selectable per album) ===== */
-.mf-fx { position: fixed; inset: 0; pointer-events: none; z-index: 8; overflow: hidden; }
+/* Particles sit BEHIND the page content (z-index:0), so they only show through
+   the dark background and never drift over photos or text. The album content
+   paints above them via its own stacking (see .mf-content below). */
+.mf-fx { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+/* Album content paints above the particles so leaves/petals only show through
+   the dark background gaps — never over photos, cards or text. */
+.mf-content { position: relative; z-index: 1; }
 .mf-particle {
   position: absolute; top: 100%; display: block; line-height: 1;
   opacity: 0; will-change: transform, opacity;
