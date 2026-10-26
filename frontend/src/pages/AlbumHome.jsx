@@ -117,9 +117,9 @@ export default function AlbumHome() {
         ) : events.length === 0 ? (
           <EmptyState icon="📸" title="No photos available yet." message="Your album is being prepared. Please check back soon." />
         ) : (
-          <div className="mf-reveal grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mf-reveal gallery-grid grid grid-cols-1 gap-3 sm:grid-cols-2">
             {events.map((ev, i) => (
-              <EventCard key={ev.id} slug={slug} event={ev} index={i} />
+              <EventCard key={ev.id} slug={slug} event={ev} index={i} wide={i === 0} />
             ))}
           </div>
         )}
