@@ -4,6 +4,7 @@ import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
 import SharePanel from './SharePanel';
 import SectionsPanel from './SectionsPanel';
+import VideoPostersPanel from './VideoPostersPanel';
 
 export default function AlbumDetail() {
   const { id } = useParams();
@@ -138,6 +139,8 @@ export default function AlbumDetail() {
           {share && <SharePanel album={album} share={share} />}
 
           <SectionsPanel albumId={id} />
+
+          <VideoPostersPanel albumId={id} hasGallery={!!album.video_gallery_url} />
 
           {analytics && (
             <div className="themed-surface p-5">

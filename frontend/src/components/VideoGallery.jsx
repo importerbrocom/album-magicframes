@@ -46,8 +46,12 @@ export default function VideoGallery() {
               className="video-tile group relative block aspect-video w-full overflow-hidden text-left"
               aria-label={`Play ${v.name}`}
             >
-              {/* Poster via a muted preload frame */}
-              <video src={`${v.src}#t=0.5`} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+              {/* Chosen poster if set, else a muted first-frame of the video */}
+              {v.poster ? (
+                <img src={v.poster} alt={v.name} loading="lazy" className="h-full w-full object-cover" />
+              ) : (
+                <video src={`${v.src}#t=0.5`} className="h-full w-full object-cover" muted playsInline preload="metadata" />
+              )}
               <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 to-black/10" />
               <span className="video-tile-play pointer-events-none">▶</span>
               <span className="pointer-events-none absolute bottom-0 left-0 right-0 p-3 text-sm text-white">{v.name}</span>

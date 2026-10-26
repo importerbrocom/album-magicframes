@@ -42,6 +42,8 @@ Route::prefix('admin')->group(function () {
         Route::get('albums/{album}/comments', [AlbumController::class, 'comments']);
         Route::get('albums/{album}/sections', [AlbumController::class, 'sections']);
         Route::match(['put', 'patch'], 'albums/{album}/sections/{event}', [AlbumController::class, 'updateSection']);
+        Route::get('albums/{album}/gallery-videos', [AlbumController::class, 'galleryVideos']);
+        Route::match(['put', 'patch'], 'albums/{album}/gallery-videos', [AlbumController::class, 'updateGalleryPosters']);
     });
 });
 
@@ -84,6 +86,8 @@ Route::prefix('public')->group(function () {
         ->name('public.albums.videogallery')->middleware('throttle:120,1');
     Route::get('albums/{slug}/video-gallery/{fileId}', [FilmController::class, 'videoItem'])
         ->name('public.albums.videoitem')->middleware('throttle:300,1');
+    Route::get('albums/{slug}/video-gallery/{fileId}/poster', [ImageController::class, 'videoPoster'])
+        ->name('public.albums.videoposter')->middleware('throttle:600,1');
 
     // Engagement features — intentionally OPEN (no album token) so anyone with
     // the shared/reshared link (friends, family) can comment and enquire.

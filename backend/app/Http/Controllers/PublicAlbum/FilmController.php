@@ -70,11 +70,23 @@ class FilmController extends Controller
             return response()->json(['data' => []]);
         }
 
-        $data = array_map(fn ($v) => [
-            'id' => $v['id'],
-            'name' => pathinfo($v['name'] ?? 'Video', PATHINFO_FILENAME),
-            'src' => route('public.albums.videoitem', ['slug' => $slug, 'fileId' => $v['id']], false),
-        ], $videos);
+        $posters = $album->video_posters ?: [];
+
+        $data = array_map(function ($v) use ($slug, $posters) {
+            $poster = $posters[$v['id']] ?? null;
+            // A Drive image poster can't load in <img> directly — route it
+            // through the poster proxy; a normal image URL is used as-is.
+            if ($poster && str_contains($poster, 'drive.google.com')) {
+                $poster = route('public.albums.videoposter', ['slug' => $slug, 'fileId' => $v['id']], false);
+            }
+
+            return [
+                'id' => $v['id'],
+                'name' => pathinfo($v['name'] ?? 'Video', PATHINFO_FILENAME),
+                'src' => route('public.albums.videoitem', ['slug' => $slug, 'fileId' => $v['id']], false),
+                'poster' => $poster, // null => frontend falls back to the first frame
+            ];
+        }, $videos);
 
         return response()->json(['data' => $data]);
     }

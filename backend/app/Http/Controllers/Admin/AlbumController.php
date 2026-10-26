@@ -259,6 +259,58 @@ class AlbumController extends Controller
         );
     }
 
+    /** Admin: list the album's video-gallery videos + their poster overrides. */
+    public function galleryVideos(Album $album, GoogleDriveService $drive): JsonResponse
+    {
+        $this->authorize('view', $album);
+
+        if (! $album->video_gallery_url || $album->drive_auth_mode === 'demo') {
+            return response()->json(['data' => []]);
+        }
+
+        $folderId = null;
+        if (preg_match('#/folders/([A-Za-z0-9_-]+)#', $album->video_gallery_url, $m)) {
+            $folderId = $m[1];
+        } else {
+            $folderId = $drive->extractFolderId($album->video_gallery_url);
+        }
+
+        try {
+            $videos = $drive->listVideoFiles($folderId);
+        } catch (\Throwable $e) {
+            return response()->json(['data' => [], 'error' => 'Could not list the video folder.']);
+        }
+
+        $posters = $album->video_posters ?: [];
+        $data = array_map(fn ($v) => [
+            'id' => $v['id'],
+            'name' => $v['name'] ?? 'Video',
+            'poster' => $posters[$v['id']] ?? '',
+        ], $videos);
+
+        return response()->json(['data' => $data]);
+    }
+
+    /** Admin: save the per-video poster map for the video gallery. */
+    public function updateGalleryPosters(Request $request, Album $album): JsonResponse
+    {
+        $this->authorize('update', $album);
+
+        $data = $request->validate([
+            'posters' => ['array'],
+            'posters.*' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        // Keep only non-empty entries.
+        $posters = array_filter($data['posters'] ?? [], fn ($v) => is_string($v) && trim($v) !== '');
+        $album->video_posters = $posters ?: null;
+        $album->save();
+
+        Cache::forget("album.public.{$album->slug}");
+
+        return response()->json(['data' => $album->video_posters ?: []]);
+    }
+
     /** Sections (root events) of an album, with their manual overrides. */
     public function sections(Album $album): JsonResponse
     {

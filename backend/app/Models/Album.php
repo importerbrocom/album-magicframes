@@ -26,6 +26,7 @@ class Album extends Model
         'cover_image_url',
         'film_url',
         'video_gallery_url',
+        'video_posters',
         'description',
         'tagline',
         'status',
@@ -57,6 +58,7 @@ class Album extends Model
         'allow_comments' => 'boolean',
         'allow_enquiries' => 'boolean',
         'event_date' => 'date',
+        'video_posters' => 'array',
         'last_synced_at' => 'datetime',
         'expires_at' => 'datetime',
     ];

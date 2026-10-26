@@ -89,6 +89,54 @@ class ImageController extends Controller
         return $this->imageResponse($body, $contentType, 60 * 60 * 24 * 3);
     }
 
+    /**
+     * Serve a Video Gallery item's poster when it's a Google Drive image link.
+     * Keyed by the video's Drive file id (the poster map lives on the album).
+     */
+    public function videoPoster(Request $request, GoogleDriveService $drive, string $slug, string $fileId): Response
+    {
+        $album = Album::where('slug', $slug)->first();
+        abort_if(! $album || ! $album->isAccessible(), 404);
+
+        $posters = $album->video_posters ?: [];
+        $url = $posters[$fileId] ?? null;
+        abort_if(! $url, 404);
+
+        $imgId = $drive->extractFileId($url);
+        if (! $imgId || $album->drive_auth_mode === 'demo') {
+            return redirect()->away($url);
+        }
+
+        $dir = storage_path('app/imgcache/videoposter');
+        $base = "{$dir}/{$album->id}_{$fileId}";
+        $binFile = "{$base}.bin";
+        $ctFile = "{$base}.ct";
+        $keyFile = "{$base}.key";
+        $sig = sha1($url);
+        $cached = is_file($keyFile) ? trim((string) file_get_contents($keyFile)) : null;
+        $fresh = is_file($binFile) && $cached === $sig && (time() - filemtime($binFile) < 60 * 60 * 24 * 3);
+
+        if (! $fresh) {
+            try {
+                [$body, $contentType] = $drive->fetchThumbnailBytes($imgId, 1200);
+            } catch (GoogleDriveException $e) {
+                if (is_file($binFile)) {
+                    return $this->imageResponse((string) file_get_contents($binFile), is_file($ctFile) ? trim((string) file_get_contents($ctFile)) : 'image/jpeg', 60 * 60 * 24 * 3);
+                }
+                abort(502, $e->userMessage);
+            }
+            File::ensureDirectoryExists($dir);
+            @file_put_contents($binFile, $body);
+            @file_put_contents($ctFile, $contentType ?: 'image/jpeg');
+            @file_put_contents($keyFile, $sig);
+        } else {
+            $body = (string) file_get_contents($binFile);
+            $contentType = is_file($ctFile) ? trim((string) file_get_contents($ctFile)) : 'image/jpeg';
+        }
+
+        return $this->imageResponse($body, $contentType, 60 * 60 * 24 * 3);
+    }
+
     private function serve(GoogleDriveService $drive, string $slug, int $id, int $size, string $kind, int $ttl): Response
     {
         $album = Album::where('slug', $slug)->first();
