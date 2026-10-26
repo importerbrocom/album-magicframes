@@ -102,6 +102,8 @@ class AlbumController extends Controller
             'film_url' => $data['film_url'] ?? null,
             'theme' => $data['theme'] ?? 'classic',
             'ambient_effect' => $data['ambient_effect'] ?? null,
+            'ambient_speed' => $data['ambient_speed'] ?? null,
+            'ambient_count' => $data['ambient_count'] ?? null,
             'status' => $data['status'] ?? 'active',
             'allow_download' => $data['allow_download'] ?? true,
             'allow_share' => $data['allow_share'] ?? true,

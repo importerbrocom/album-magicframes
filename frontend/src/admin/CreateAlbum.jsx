@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
 import SharePanel from './SharePanel';
-import { AMBIENT_EFFECTS } from '../components/ambientEffects';
+import { AMBIENT_EFFECTS, AMBIENT_SPEEDS } from '../components/ambientEffects';
 
 const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'];
 
@@ -34,6 +34,8 @@ export default function CreateAlbum() {
     film_url: '',
     theme: 'classic',
     ambient_effect: 'auto',
+    ambient_speed: 'normal',
+    ambient_count: '',
     allow_download: true,
     allow_share: true,
     expires_at: '',
@@ -53,6 +55,7 @@ export default function CreateAlbum() {
       if (!payload.expires_at) delete payload.expires_at;
       if (!payload.film_url) delete payload.film_url;
       if (!payload.event_date) delete payload.event_date;
+      if (payload.ambient_count === '') delete payload.ambient_count;
       const res = await adminService.createAlbum(payload);
       setCreated(res);
     } catch (err) {
@@ -153,6 +156,17 @@ export default function CreateAlbum() {
             Floating decorative motion (petals, snow, balloons, confetti…). “Auto” matches the category.
           </p>
         </Field>
+
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Effect Speed">
+            <select value={form.ambient_speed} onChange={set('ambient_speed')} className="inp">
+              {AMBIENT_SPEEDS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </Field>
+          <Field label="Particle Count" error={err('ambient_count')}>
+            <input type="number" min="0" max="60" value={form.ambient_count} onChange={set('ambient_count')} placeholder="Auto" className="inp" />
+          </Field>
+        </div>
 
         <Field label="Expiry Date (optional)">
           <input type="date" value={form.expires_at} onChange={set('expires_at')} className="inp" />

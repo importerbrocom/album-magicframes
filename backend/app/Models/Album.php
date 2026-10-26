@@ -30,6 +30,8 @@ class Album extends Model
         'status',
         'theme',
         'ambient_effect',
+        'ambient_speed',
+        'ambient_count',
         'allow_download',
         'allow_share',
         'google_review_url',

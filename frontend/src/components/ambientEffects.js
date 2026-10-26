@@ -46,15 +46,38 @@ function autoForCategory(category = '') {
   return 'leaves';
 }
 
+// Speed presets -> animation-duration multiplier (smaller = faster).
+export const AMBIENT_SPEEDS = [
+  { key: 'slow', label: 'Slow' },
+  { key: 'normal', label: 'Normal' },
+  { key: 'fast', label: 'Fast' },
+];
+const SPEED_FACTOR = { slow: 1.6, normal: 1, fast: 0.55 };
+
 /**
- * Resolve the active effect for an album.
- * @returns {{ key:string, glyph:string, count:number } | null} null = no effect
+ * Resolve the active effect for an album, applying the admin's speed and
+ * count overrides when set.
+ * @returns {{ key:string, glyph:string, count:number, speed:number } | null}
+ *          null = no effect
  */
 export function resolveEffect(album) {
   let key = (album?.ambient_effect || 'auto').toLowerCase();
   if (key === 'none') return null;
   if (key === 'auto') key = autoForCategory(album?.category || '');
 
-  const counts = { balloons: 6, confetti: 16, sprinkles: 16, snow: 20, bubbles: 12 };
-  return { key, glyph: GLYPH[key] ?? '', count: counts[key] ?? 10 };
+  const defaults = { balloons: 6, confetti: 16, sprinkles: 16, snow: 20, bubbles: 12 };
+  const defaultCount = defaults[key] ?? 10;
+
+  // Count: admin override (0–60) wins; 0 means "no particles" => no effect.
+  let count = defaultCount;
+  const raw = album?.ambient_count;
+  if (raw !== null && raw !== undefined && raw !== '') {
+    const n = Math.max(0, Math.min(60, parseInt(raw, 10) || 0));
+    if (n === 0) return null;
+    count = n;
+  }
+
+  const speed = SPEED_FACTOR[(album?.ambient_speed || 'normal').toLowerCase()] ?? 1;
+
+  return { key, glyph: GLYPH[key] ?? '', count, speed };
 }

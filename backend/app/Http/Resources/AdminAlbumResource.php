@@ -30,6 +30,8 @@ class AdminAlbumResource extends JsonResource
             'status' => $this->status,
             'theme' => $this->theme,
             'ambient_effect' => $this->ambient_effect,
+            'ambient_speed' => $this->ambient_speed,
+            'ambient_count' => $this->ambient_count,
             'allow_download' => $this->allow_download,
             'allow_share' => $this->allow_share,
             'allow_comments' => $this->allow_comments,

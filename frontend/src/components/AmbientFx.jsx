@@ -5,11 +5,12 @@ import { resolveEffect } from './ambientEffects';
 /** Build randomized particle styles for an effect (called off the render path). */
 function buildParticles(fx) {
   if (!fx) return [];
+  const speed = fx.speed ?? 1; // <1 faster, >1 slower
   return Array.from({ length: fx.count }).map((_, i) => ({
     key: i,
     style: {
       left: `${Math.round(Math.random() * 96) + 2}%`,
-      animationDuration: `${9 + Math.random() * 10}s`,
+      animationDuration: `${((9 + Math.random() * 10) * speed).toFixed(1)}s`,
       animationDelay: `${(Math.random() * 10).toFixed(2)}s`,
       fontSize: `${12 + Math.round(Math.random() * 16)}px`,
       '--mf-drift': `${Math.round(Math.random() * 120 - 60)}px`,
@@ -35,13 +36,13 @@ export default function AmbientFx() {
   const { album } = useAlbum();
   const fx = resolveEffect(album);
 
-  // Build randomized particles once per effect key (lazy init, off render path).
+  // Build randomized particles when the effect/speed/count changes (lazy init).
   const [particles, setParticles] = useState(() => buildParticles(fx));
-  const fxKey = fx?.key ?? null;
+  const fxSig = fx ? `${fx.key}:${fx.count}:${fx.speed}` : null;
   useEffect(() => {
     setParticles(buildParticles(fx));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fxKey]);
+  }, [fxSig]);
 
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return undefined;
