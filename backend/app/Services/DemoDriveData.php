@@ -55,6 +55,23 @@ class DemoDriveData
         ];
     }
 
+    /**
+     * Sample per-section films for the demo album, keyed by event name. Gives
+     * a couple of section cards a working play button in demo mode. Public
+     * sample clips (played directly — no Drive proxy needed).
+     *
+     * @return array<string,string>
+     */
+    public static function sectionVideos(): array
+    {
+        $base = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample';
+
+        return [
+            'Wedding' => "{$base}/ForBiggerMeltdowns.mp4",
+            'Reception' => "{$base}/ForBiggerFun.mp4",
+        ];
+    }
+
     /** Deterministic photo count for a given folder path (varied but stable). */
     public static function photoCount(string $seed): int
     {
