@@ -35,54 +35,69 @@ export default function AlbumHome() {
     <div className="min-h-screen pb-16">
       <AlbumHeader slug={slug} album={album} />
 
-      {/* Hero */}
-      <section className="relative">
-        <div className="relative h-72 w-full overflow-hidden sm:h-96">
-          {album.cover_image_url && (
-            <img src={album.cover_image_url} alt="" className="h-full w-full object-cover" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-          {/* Play the film (shown only when the album actually has a video) */}
-          {hasFilm ? (
+      {/* Cinematic full-viewport hero */}
+      <section className="hero-stage relative w-full overflow-hidden">
+        {album.cover_image_url && (
+          <img src={album.cover_image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        )}
+        <div className="hero-shade absolute inset-0" />
+
+        {/* Decorative script note (akhila theme only, generic) */}
+        <span className="hero-note" aria-hidden="true">Love<br />Laugh<br />Forever ♡</span>
+
+        {/* Centered play button — opens the film when one exists */}
+        {hasFilm ? (
+          <button type="button" className="hero-play hero-play-active" aria-label="Play film" onClick={() => setFilmOpen(true)}>
+            <span>▶</span>
+          </button>
+        ) : (
+          <span className="hero-play" aria-hidden="true"><span>▶</span></span>
+        )}
+
+        {/* Centered title block */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+          <p className="mb-3 text-[0.65rem] uppercase tracking-[0.4em] opacity-85">{heroEyebrow(album)}</p>
+          <h1 className="hero-title animate-fadeUp text-5xl sm:text-6xl md:text-7xl">{album.client_name}</h1>
+          {album.title && <p className="font-heading mt-2 text-lg uppercase tracking-[0.3em] opacity-90 sm:text-xl">{album.title}</p>}
+          <span className="hero-rule" aria-hidden="true" />
+          {album.tagline && <p className="mt-3 text-sm italic opacity-80">“{album.tagline}”</p>}
+          {eventDate && <p className="mt-2 text-[0.7rem] uppercase tracking-[0.3em] opacity-70">{eventDate}</p>}
+          {hasFilm && (
             <button
               type="button"
-              className="hero-play hero-play-active"
-              aria-label="Play film"
               onClick={() => setFilmOpen(true)}
+              className="hero-film-cta mt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em]"
             >
-              <span>▶</span>
+              <span aria-hidden="true">▶</span> Watch the Film
             </button>
-          ) : (
-            <span className="hero-play" aria-hidden="true"><span>▶</span></span>
           )}
-          <div className="absolute bottom-0 left-0 right-0 p-6 text-center text-white">
-            <p className="mb-2 text-[0.65rem] uppercase tracking-[0.4em] opacity-80">{heroEyebrow(album)}</p>
-            <h1 className="hero-title text-4xl sm:text-5xl animate-fadeUp">{album.client_name}</h1>
-            {album.title && <p className="font-heading mt-1 text-xl opacity-90">{album.title}</p>}
-            <span className="hero-rule" aria-hidden="true" />
-            {album.tagline && <p className="mt-2 text-sm italic opacity-80">“{album.tagline}”</p>}
-            {eventDate && (
-              <p className="mt-2 text-[0.7rem] uppercase tracking-[0.3em] opacity-70">{eventDate}</p>
-            )}
-            {hasFilm && (
-              <button
-                type="button"
-                onClick={() => setFilmOpen(true)}
-                className="hero-film-cta mt-4 inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em]"
-              >
-                <span aria-hidden="true">▶</span> Watch the Film
-              </button>
-            )}
-          </div>
         </div>
+
+        {/* Film scrubber strip (visual, akhila theme) — opens the film on click */}
+        {hasFilm && (
+          <button
+            type="button"
+            className="hero-scrubber"
+            aria-label="Play film"
+            onClick={() => setFilmOpen(true)}
+          >
+            <span className="hero-scrubber-play">▶</span>
+            <span className="hero-scrubber-time">0:00</span>
+            <span className="hero-scrubber-track"><i /></span>
+            <span className="hero-scrubber-ic">◖))</span>
+            <span className="hero-scrubber-ic">HD</span>
+            <span className="hero-scrubber-ic">⛶</span>
+          </button>
+        )}
       </section>
 
-      <main className="mx-auto max-w-6xl px-4 pt-8">
-        <div className="mf-reveal mb-5 text-center">
+      <main className="mx-auto max-w-6xl px-4 pt-10">
+        <div className="mf-reveal mb-7 text-center">
           <p className="text-xs uppercase tracking-[0.3em]" style={{ color: 'var(--muted)' }}>
             Explore the collection
           </p>
-          <h2 className="font-heading mt-1 text-3xl">{galleryHeading(album)}</h2>
+          <h2 className="font-heading mt-1 text-4xl sm:text-5xl">{galleryHeading(album)}</h2>
+          <span className="gallery-rings" aria-hidden="true"><i /><i /></span>
           {album.description && (
             <p className="mx-auto mt-3 max-w-2xl text-sm" style={{ color: 'var(--muted)' }}>
               {album.description}

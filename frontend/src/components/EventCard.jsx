@@ -21,7 +21,10 @@ export default function EventCard({ slug, event, index = 0 }) {
           <span className="card-cat-icon" aria-hidden="true">{categoryIcon(event.name)}</span>
           <h3 className="font-heading text-2xl leading-tight">{event.name}</h3>
           <p className="text-sm opacity-90">{event.photo_count} Photos</p>
+          <span className="card-view" aria-hidden="true">VIEW <b>›</b></span>
         </div>
+        {/* Gold corner arrow affordance (akhila theme) */}
+        <span className="card-arrow" aria-hidden="true">↗</span>
       </div>
     </Link>
   );

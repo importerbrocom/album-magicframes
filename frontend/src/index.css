@@ -264,26 +264,77 @@
   font-size: 1.15rem; line-height: 1; margin-bottom: 0.15rem;
 }
 
-/* ---- Hero cinematic flourishes: handwritten note + film play button ----
-   The DECORATIVE play span is akhila-only. A REAL film button
-   (.hero-play-active) is shown on every theme so clients can play the film
-   regardless of the chosen look. */
-.hero-play { display: none; }
-.hero-play-active { cursor: pointer; }
+/* Interlocking gold rings under the Gallery heading (akhila theme) */
+.gallery-rings { display: none; }
+[data-theme='akhila'] .gallery-rings { display: flex; justify-content: center; align-items: center; height: 16px; margin-top: 4px; }
+[data-theme='akhila'] .gallery-rings i { width: 13px; height: 13px; border: 1px solid var(--accent); border-radius: 50%; margin-right: -3px; }
 
-/* Shared play-button look (applies wherever a .hero-play is visible) */
-.hero-play {
-  place-items: center; position: absolute; top: 42%; left: 50%;
-  width: 58px; height: 58px; margin: -29px 0 0 -29px;
-  border: 1px solid rgba(255,255,255,.85); border-radius: 50%;
-  background: rgba(0,0,0,.28); backdrop-filter: blur(5px); color: #fff;
-  z-index: 3; transition: background .3s ease, transform .3s ease, color .3s ease;
+/* Card "VIEW ›" affordance + gold corner arrow (akhila theme) */
+.card-view, .card-arrow { display: none; }
+[data-theme='akhila'] .card-view {
+  display: inline-flex; align-items: center; gap: 10px; margin-top: 10px;
+  font-size: 8px; letter-spacing: 2px; font-weight: 500; text-transform: uppercase;
 }
-.hero-play span { font-size: 15px; margin-left: 3px; }
+[data-theme='akhila'] .card-view b {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 22px; height: 22px; border: 1px solid rgba(255,255,255,.6); border-radius: 50%;
+  font-size: 16px; font-weight: 300; transition: background .3s ease, color .3s ease, border-color .3s ease;
+}
+[data-theme='akhila'] .group:hover .card-view b { background: var(--accent); border-color: var(--accent); color: #111; }
+[data-theme='akhila'] .card-arrow {
+  display: grid; place-items: center; position: absolute; right: 16px; bottom: 16px; z-index: 2;
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--accent);
+  background: rgba(5,5,5,.6); backdrop-filter: blur(4px); color: var(--accent);
+  font-size: 17px; transition: transform .25s ease, background .25s ease, color .25s ease;
+}
+[data-theme='akhila'] .group:hover .card-arrow { background: var(--accent); color: #111; transform: rotate(35deg); }
 
-/* Real film button: visible on all themes */
-.hero-play-active { display: grid; }
+/* ===== Cinematic full-viewport hero stage ===== */
+.hero-stage { height: 56vh; min-height: 360px; background: #17130d; }
+[data-theme='akhila'] .hero-stage { height: min(88vh, 780px); min-height: 520px; }
+.hero-shade {
+  background:
+    linear-gradient(0deg, rgba(0,0,0,.75), transparent 55%),
+    linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,.08) 50%, rgba(0,0,0,.4));
+}
+[data-theme='akhila'] .hero-stage img { animation: mf-hero-zoom 18s ease-in-out infinite alternate; transform-origin: center 42%; }
+
+/* ---- Hero play button + flourishes ----
+   The DECORATIVE play span is akhila-only. A REAL film button
+   (.hero-play-active) is shown on every theme so clients can play the film. */
+.hero-play {
+  display: none; place-items: center; position: absolute; top: 44%; left: 50%;
+  width: 62px; height: 62px; margin: -31px 0 0 -31px;
+  border: 1px solid rgba(255,255,255,.85); border-radius: 50%;
+  background: rgba(0,0,0,.25); backdrop-filter: blur(5px); color: #fff;
+  z-index: 4; cursor: default; transition: background .3s ease, transform .3s ease, color .3s ease;
+}
+.hero-play span { font-size: 16px; margin-left: 3px; }
+.hero-play-active { display: grid; cursor: pointer; }
 .hero-play-active:hover { background: var(--accent); color: #111; transform: scale(1.08); }
+[data-theme='akhila'] .hero-play { display: grid; }
+
+/* Handwritten decorative note — akhila only, right side, vertically centered */
+.hero-note { display: none; }
+[data-theme='akhila'] .hero-note {
+  display: block; position: absolute; right: 5%; top: 42%; z-index: 3;
+  font-family: var(--script-font); font-size: 1.45rem; line-height: 1.25;
+  color: #e7c28a; transform: rotate(-8deg); opacity: .9; text-align: center; pointer-events: none;
+}
+
+/* Film scrubber strip along the bottom of the hero (akhila theme) */
+.hero-scrubber { display: none; }
+[data-theme='akhila'] .hero-scrubber {
+  display: flex; align-items: center; gap: 16px; position: absolute;
+  left: 4.5%; right: 4.5%; bottom: 0; height: 44px; z-index: 4;
+  border-top: 1px solid rgba(255,255,255,.38); background: transparent;
+  color: #fff; font-size: 10px; letter-spacing: .5px; cursor: pointer;
+}
+.hero-scrubber-play { font-size: 13px; }
+.hero-scrubber-track { position: relative; flex: 1; height: 2px; background: rgba(255,255,255,.4); }
+.hero-scrubber-track i { position: absolute; left: 0; top: 0; height: 100%; width: 14%; background: #fff; }
+.hero-scrubber-ic { font-size: 12px; opacity: .9; }
+.hero-scrubber:hover .hero-scrubber-track i { background: var(--accent); }
 
 /* "Watch the Film" text CTA — gold outline pill, works on every theme */
 .hero-film-cta {
@@ -296,11 +347,12 @@
 [data-theme='akhila'] .hero-film-cta { border-radius: 0; border-color: var(--accent); color: var(--accent); }
 [data-theme='akhila'] .hero-film-cta:hover { color: var(--accent-contrast); }
 
-/* Decorative play span: akhila only */
-[data-theme='akhila'] .hero-play { display: grid; }
-[data-theme='akhila'] section.relative:hover .hero-play { background: var(--accent); color: #111; transform: scale(1.08); }
 @media (max-width: 640px) {
-  .hero-play { top: 36%; }
+  .hero-play { top: 40%; }
+  [data-theme='akhila'] .hero-note { right: 4%; top: 22%; font-size: 1.1rem; }
+  [data-theme='akhila'] .hero-scrubber { gap: 8px; }
+  [data-theme='akhila'] .hero-scrubber-ic:last-child,
+  [data-theme='akhila'] .hero-scrubber-ic:nth-last-child(2) { display: none; }
 }
 
 /* ---- Login screen flourish (akhila only) ---- */
