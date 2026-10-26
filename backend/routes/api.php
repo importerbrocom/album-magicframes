@@ -77,6 +77,8 @@ Route::prefix('public')->group(function () {
         ->name('public.albums.film')->middleware('throttle:300,1');
     Route::get('albums/{slug}/events/{event}/film', [FilmController::class, 'eventFilm'])
         ->name('public.events.film')->middleware('throttle:300,1');
+    Route::get('albums/{slug}/events/{event}/cover', [ImageController::class, 'sectionCover'])
+        ->name('public.events.cover')->middleware('throttle:600,1');
 
     // Engagement features — intentionally OPEN (no album token) so anyone with
     // the shared/reshared link (friends, family) can comment and enquire.

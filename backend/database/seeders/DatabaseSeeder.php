@@ -50,5 +50,16 @@ class DatabaseSeeder extends Seeder
 
         // Run the sync inline during seeding so the demo album is viewable at once.
         SyncAlbumFromGoogleDrive::dispatchSync($album->id);
+
+        // Demo only: give the first section a sample video override so the
+        // per-section "view video" play button is visible out of the box.
+        $firstSection = \App\Models\Event::where('album_id', $album->id)
+            ->whereNull('parent_id')
+            ->orderBy('sort_order')
+            ->first();
+        if ($firstSection) {
+            $firstSection->film_url_override = 'https://www.youtube.com/watch?v=aqz-KE-bpKQ';
+            $firstSection->save();
+        }
     }
 }

@@ -40,6 +40,55 @@ class ImageController extends Controller
         return $this->serve($drive, $slug, $id, 3840, 'full', 60 * 60 * 24 * 3);
     }
 
+    /**
+     * Serve a section's manual cover override when it's a Google Drive image
+     * link (which can't load directly in an <img>). Fetches the bytes via the
+     * Drive API and caches them on disk, mirroring the photo proxy.
+     */
+    public function sectionCover(Request $request, GoogleDriveService $drive, string $slug, string $event): Response
+    {
+        $album = Album::where('slug', $slug)->first();
+        abort_if(! $album || ! $album->isAccessible(), 404);
+
+        $ev = \App\Models\Event::where('album_id', $album->id)->where('slug', $event)->first();
+        abort_if(! $ev || ! $ev->cover_override, 404);
+
+        // Not a Drive link → just redirect to the given URL.
+        $fileId = $drive->extractFileId($ev->cover_override);
+        if (! $fileId || $album->drive_auth_mode === 'demo') {
+            return redirect()->away($ev->cover_override);
+        }
+
+        $dir = storage_path('app/imgcache/sectioncover');
+        $base = "{$dir}/{$ev->id}";
+        $binFile = "{$base}.bin";
+        $ctFile = "{$base}.ct";
+        $keyFile = "{$base}.key";
+        $sig = sha1($ev->cover_override);
+        $cached = is_file($keyFile) ? trim((string) file_get_contents($keyFile)) : null;
+        $fresh = is_file($binFile) && $cached === $sig && (time() - filemtime($binFile) < 60 * 60 * 24 * 3);
+
+        if (! $fresh) {
+            try {
+                [$body, $contentType] = $drive->fetchThumbnailBytes($fileId, 1600);
+            } catch (GoogleDriveException $e) {
+                if (is_file($binFile)) {
+                    return $this->imageResponse((string) file_get_contents($binFile), is_file($ctFile) ? trim((string) file_get_contents($ctFile)) : 'image/jpeg', 60 * 60 * 24 * 3);
+                }
+                abort(502, $e->userMessage);
+            }
+            File::ensureDirectoryExists($dir);
+            @file_put_contents($binFile, $body);
+            @file_put_contents($ctFile, $contentType ?: 'image/jpeg');
+            @file_put_contents($keyFile, $sig);
+        } else {
+            $body = (string) file_get_contents($binFile);
+            $contentType = is_file($ctFile) ? trim((string) file_get_contents($ctFile)) : 'image/jpeg';
+        }
+
+        return $this->imageResponse($body, $contentType, 60 * 60 * 24 * 3);
+    }
+
     private function serve(GoogleDriveService $drive, string $slug, int $id, int $size, string $kind, int $ttl): Response
     {
         $album = Album::where('slug', $slug)->first();

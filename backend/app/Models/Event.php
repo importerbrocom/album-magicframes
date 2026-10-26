@@ -28,11 +28,21 @@ class Event extends Model
 
     /**
      * Effective cover for the public card: the admin override wins, else the
-     * auto-detected cover from sync.
+     * auto-detected cover from sync. A Google Drive image link can't load in
+     * an <img>, so route it through the section-cover proxy.
      */
     public function effectiveCover(): ?string
     {
-        return $this->cover_override ?: $this->cover_image_url;
+        if ($this->cover_override) {
+            $slug = optional($this->album)->slug;
+            if ($slug && str_contains($this->cover_override, 'drive.google.com')) {
+                return route('public.events.cover', ['slug' => $slug, 'event' => $this->slug], false);
+            }
+
+            return $this->cover_override; // a normal image URL — used as-is
+        }
+
+        return $this->cover_image_url;
     }
 
     /**
