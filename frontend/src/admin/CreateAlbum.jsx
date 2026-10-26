@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
 import SharePanel from './SharePanel';
+import { AMBIENT_EFFECTS } from '../components/ambientEffects';
 
 const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'];
 
@@ -32,6 +33,7 @@ export default function CreateAlbum() {
     cover_image_url: '',
     film_url: '',
     theme: 'classic',
+    ambient_effect: 'auto',
     allow_download: true,
     allow_share: true,
     expires_at: '',
@@ -141,6 +143,15 @@ export default function CreateAlbum() {
               </button>
             ))}
           </div>
+        </Field>
+
+        <Field label="Ambient Effect">
+          <select value={form.ambient_effect} onChange={set('ambient_effect')} className="inp">
+            {AMBIENT_EFFECTS.map((e) => <option key={e.key} value={e.key}>{e.label}</option>)}
+          </select>
+          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+            Floating decorative motion (petals, snow, balloons, confetti…). “Auto” matches the category.
+          </p>
         </Field>
 
         <Field label="Expiry Date (optional)">

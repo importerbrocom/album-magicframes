@@ -245,13 +245,57 @@
 [data-theme='akhila'] .mf-reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s ease, transform .8s ease; }
 [data-theme='akhila'] .mf-reveal.mf-in { opacity: 1; transform: translateY(0); }
 
-/* ---- Ambient floating gold "leaves" (decorative, injected by AlbumLayout) ---- */
-.mf-ambient { position: fixed; pointer-events: none; z-index: 8; width: 9px; height: 18px;
-  border-radius: 90% 0 90% 0; background: linear-gradient(135deg, #b78643, #e7c28a);
-  filter: blur(1px); opacity: 0; display: none; }
-[data-theme='akhila'] .mf-ambient { display: block; animation: mf-float-leaf 13s linear infinite; }
-.mf-ambient.one { left: 8%; top: 55%; }
-.mf-ambient.two { right: 10%; top: 76%; animation-delay: 5s; }
+/* ===== Ambient motion effects (admin-selectable per album) ===== */
+.mf-fx { position: fixed; inset: 0; pointer-events: none; z-index: 8; overflow: hidden; }
+.mf-particle {
+  position: absolute; top: 100%; display: block; line-height: 1;
+  opacity: 0; will-change: transform, opacity;
+  animation-name: mf-fall; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+/* Base fall: rise from below to above the viewport with a gentle horizontal drift + spin */
+@keyframes mf-fall {
+  0%   { opacity: 0; transform: translate(0, 0) rotate(0); }
+  10%  { opacity: .85; }
+  90%  { opacity: .6; }
+  100% { opacity: 0; transform: translate(var(--mf-drift, 0), -112vh) rotate(320deg); }
+}
+/* Snow / bubbles drift more slowly and sway */
+@keyframes mf-drift-soft {
+  0%   { opacity: 0; transform: translate(0, 0); }
+  12%  { opacity: .9; }
+  50%  { transform: translate(calc(var(--mf-drift, 0) * 0.6), -56vh); }
+  90%  { opacity: .5; }
+  100% { opacity: 0; transform: translate(var(--mf-drift, 0), -112vh); }
+}
+
+/* ---- Effect-specific particle styling ---- */
+/* Gold leaves: CSS-drawn teardrop (no glyph) */
+.mf-fx-leaves .mf-particle {
+  width: 9px; height: 18px; border-radius: 90% 0 90% 0;
+  background: linear-gradient(135deg, #b78643, #e7c28a); filter: blur(.5px);
+}
+/* Flowers / petals / hearts: tinted glyphs */
+.mf-fx-flowers .mf-particle { color: #f0d9a8; text-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.mf-fx-petals .mf-particle { color: #e7a9ad; text-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.mf-fx-hearts .mf-particle { color: #e06a7b; text-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.mf-fx-snow .mf-particle { color: #ffffff; filter: drop-shadow(0 0 2px rgba(255,255,255,.5)); animation-name: mf-drift-soft; }
+.mf-fx-balloons .mf-particle { filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+/* Confetti: small bright rectangles, varied colors via nth-child */
+.mf-fx-confetti .mf-particle { width: 8px; height: 12px; border-radius: 1px; background: #d9ad60; }
+.mf-fx-confetti .mf-particle:nth-child(3n) { background: #e7a9ad; }
+.mf-fx-confetti .mf-particle:nth-child(3n+1) { background: #8fc1d4; }
+.mf-fx-confetti .mf-particle:nth-child(4n) { background: #a7d39a; }
+/* Sprinkles: thin rounded capsules */
+.mf-fx-sprinkles .mf-particle { width: 4px; height: 14px; border-radius: 999px; background: #f0b2c0; }
+.mf-fx-sprinkles .mf-particle:nth-child(3n) { background: #f4d58a; }
+.mf-fx-sprinkles .mf-particle:nth-child(3n+1) { background: #9ad0e0; }
+.mf-fx-sprinkles .mf-particle:nth-child(4n) { background: #b4e0a0; }
+/* Bubbles: translucent circles, soft rise */
+.mf-fx-bubbles .mf-particle {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.75), rgba(255,255,255,.08) 60%, transparent 70%);
+  border: 1px solid rgba(255,255,255,.35); animation-name: mf-drift-soft;
+}
 
 /* ---- Decorative category icons on event/folder cards (akhila only) ---- */
 .card-cat-icon, .folder-cat-icon { display: none; }
@@ -370,7 +414,7 @@
 [data-theme='akhila'] .group.relative > :first-child { outline: 1px solid rgba(217,173,96,0.10); outline-offset: -1px; }
 
 @media (prefers-reduced-motion: reduce) {
-  [data-theme='akhila'] section.relative img.object-cover,
-  [data-theme='akhila'] .mf-ambient { animation: none; }
+  [data-theme='akhila'] .hero-stage img { animation: none; }
+  .mf-fx { display: none; }
   [data-theme='akhila'] .mf-reveal { opacity: 1; transform: none; transition: none; }
 }

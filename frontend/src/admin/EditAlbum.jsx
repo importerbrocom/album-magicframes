@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { AMBIENT_EFFECTS } from '../components/ambientEffects';
 
 const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'];
 
@@ -27,6 +28,7 @@ export default function EditAlbum() {
         cover_image_url: a.cover_image_url || '',
         film_url: a.film_url || '',
         theme: a.theme || 'classic',
+        ambient_effect: a.ambient_effect || 'auto',
         status: a.status || 'active',
         allow_download: !!a.allow_download,
         allow_share: !!a.allow_share,
@@ -115,6 +117,15 @@ export default function EditAlbum() {
               {['active', 'disabled', 'draft'].map((s) => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Ambient Effect</label>
+          <select value={form.ambient_effect} onChange={set('ambient_effect')} className="inp">
+            {AMBIENT_EFFECTS.map((e) => <option key={e.key} value={e.key}>{e.label}</option>)}
+          </select>
+          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+            Floating decorative motion on the album (e.g. petals, snow, balloons, confetti). “Auto” matches the category.
+          </p>
         </div>
         <div className="grid grid-cols-2 gap-3 border-t border-black/10 pt-4">
           <label className="flex items-center gap-2 text-sm">

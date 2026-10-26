@@ -101,6 +101,7 @@ class AlbumController extends Controller
             'cover_image_url' => $this->sanitizeCover($data['cover_image_url'] ?? null),
             'film_url' => $data['film_url'] ?? null,
             'theme' => $data['theme'] ?? 'classic',
+            'ambient_effect' => $data['ambient_effect'] ?? null,
             'status' => $data['status'] ?? 'active',
             'allow_download' => $data['allow_download'] ?? true,
             'allow_share' => $data['allow_share'] ?? true,

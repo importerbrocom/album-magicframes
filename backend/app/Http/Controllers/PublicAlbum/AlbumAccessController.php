@@ -51,6 +51,7 @@ class AlbumAccessController extends Controller
             'film_url' => $album->film_url,
             'film_src' => $album->filmSrc(),
             'theme' => $album->theme,
+            'ambient_effect' => $album->ambient_effect,
             'allow_share' => $album->allow_share,
             'allow_comments' => $album->allow_comments,
             'allow_enquiries' => $album->allow_enquiries,

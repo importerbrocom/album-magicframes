@@ -25,6 +25,7 @@ class PublicAlbumResource extends JsonResource
             'film_url' => $this->film_url,
             'film_src' => $this->filmSrc(),
             'theme' => $this->theme,
+            'ambient_effect' => $this->ambient_effect,
             'allow_download' => $this->allow_download,
             'allow_share' => $this->allow_share,
             'allow_comments' => $this->allow_comments,

@@ -29,6 +29,7 @@ class Album extends Model
         'tagline',
         'status',
         'theme',
+        'ambient_effect',
         'allow_download',
         'allow_share',
         'google_review_url',

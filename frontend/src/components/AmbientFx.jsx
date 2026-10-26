@@ -1,70 +1,78 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useAlbum } from '../contexts/AlbumContext';
+import { resolveEffect } from './ambientEffects';
+
+/** Build randomized particle styles for an effect (called off the render path). */
+function buildParticles(fx) {
+  if (!fx) return [];
+  return Array.from({ length: fx.count }).map((_, i) => ({
+    key: i,
+    style: {
+      left: `${Math.round(Math.random() * 96) + 2}%`,
+      animationDuration: `${9 + Math.random() * 10}s`,
+      animationDelay: `${(Math.random() * 10).toFixed(2)}s`,
+      fontSize: `${12 + Math.round(Math.random() * 16)}px`,
+      '--mf-drift': `${Math.round(Math.random() * 120 - 60)}px`,
+    },
+  }));
+}
 
 /**
- * Decorative cinematic flourishes for the album-viewing experience.
+ * Decorative ambient motion for the album viewer + scroll-reveal activation.
  *
- * - Renders two ambient floating "gold leaf" particles (CSS-animated; only
- *   visible under the `akhila` theme via `.mf-ambient` styling in index.css).
- * - Activates scroll-reveal: any element with the `.mf-reveal` class fades/
- *   slides in via an IntersectionObserver that toggles `.mf-in`.
+ * - Renders floating particles for the album's chosen `ambient_effect`
+ *   (leaves, flowers, petals, snow, confetti, sprinkles, balloons, bubbles,
+ *   hearts) — or an auto pick based on the album category. Each effect is a
+ *   `.mf-fx-<key>` class in index.css; particles get randomized positions,
+ *   sizes and delays so the motion feels organic. Works on every theme.
+ * - Scroll-reveal: `.mf-reveal` elements fade/slide in. Because events/photos
+ *   render after first paint, we re-observe via a MutationObserver and run a
+ *   safety pass so async grids never stay stuck invisible.
  *
- * Content on these pages loads asynchronously (events/photos arrive after the
- * first paint), so we also watch the DOM with a MutationObserver to pick up
- * `.mf-reveal` nodes added later, and run a safety pass so anything already in
- * view is revealed even if its intersection callback never fires. Without this
- * an async-rendered grid can stay stuck at opacity:0 (invisible).
- *
- * Purely additive — inert on non-akhila themes (particles are display:none and
- * `.mf-reveal` has no transition there, so it's visible regardless).
+ * Respects prefers-reduced-motion (particles hidden via CSS).
  */
 export default function AmbientFx() {
+  const { album } = useAlbum();
+  const fx = resolveEffect(album);
+
+  // Build randomized particles once per effect key (lazy init, off render path).
+  const [particles, setParticles] = useState(() => buildParticles(fx));
+  const fxKey = fx?.key ?? null;
+  useEffect(() => {
+    setParticles(buildParticles(fx));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fxKey]);
+
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined') return undefined;
-
     const reveal = (el) => el.classList.add('mf-in');
-
     const io = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            reveal(entry.target);
-            io.unobserve(entry.target);
-          }
-        });
-      },
+      (entries) => entries.forEach((e) => {
+        if (e.isIntersecting) { reveal(e.target); io.unobserve(e.target); }
+      }),
       { threshold: 0.08 },
     );
-
-    const observeAll = () => {
-      document.querySelectorAll('.mf-reveal:not(.mf-in)').forEach((n) => io.observe(n));
-    };
-
-    // Initial pass, then keep watching for async-rendered nodes.
+    const observeAll = () => document.querySelectorAll('.mf-reveal:not(.mf-in)').forEach((n) => io.observe(n));
     observeAll();
-
     const mo = new MutationObserver(() => observeAll());
     mo.observe(document.body, { childList: true, subtree: true });
-
-    // Safety net: after a short delay, reveal any still-hidden node that is at
-    // or above the current viewport (covers edge cases where IO doesn't fire).
     const safety = setTimeout(() => {
       document.querySelectorAll('.mf-reveal:not(.mf-in)').forEach((el) => {
-        const rect = el.getBoundingClientRect();
-        if (rect.top < window.innerHeight * 1.2) reveal(el);
+        if (el.getBoundingClientRect().top < window.innerHeight * 1.2) reveal(el);
       });
     }, 1200);
-
-    return () => {
-      io.disconnect();
-      mo.disconnect();
-      clearTimeout(safety);
-    };
+    return () => { io.disconnect(); mo.disconnect(); clearTimeout(safety); };
   }, []);
 
+  if (!fx) return null;
+
   return (
-    <>
-      <span className="mf-ambient one" aria-hidden="true" />
-      <span className="mf-ambient two" aria-hidden="true" />
-    </>
+    <div className={`mf-fx mf-fx-${fx.key}`} aria-hidden="true">
+      {particles.map((p) => (
+        <span key={p.key} className="mf-particle" style={p.style}>
+          {fx.glyph}
+        </span>
+      ))}
+    </div>
   );
 }
