@@ -70,6 +70,7 @@ class FilmController extends Controller
             return response()->json(['data' => []]);
         }
 
+        $videos = $album->applyVideoOrder($videos);
         $posters = $album->video_posters ?: [];
 
         $data = array_map(function ($v) use ($slug, $posters) {

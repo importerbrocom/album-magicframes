@@ -36,6 +36,8 @@ export const adminService = {
   galleryVideos: (id) => api.get(`/admin/albums/${id}/gallery-videos`).then((r) => r.data.data),
   updateGalleryPosters: (id, posters) =>
     api.put(`/admin/albums/${id}/gallery-videos`, { posters }).then((r) => r.data.data),
+  updateGalleryOrder: (id, order) =>
+    api.put(`/admin/albums/${id}/gallery-videos/order`, { order }).then((r) => r.data.data),
 
   getStoredUser: () => {
     try {

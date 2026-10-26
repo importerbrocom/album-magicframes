@@ -281,6 +281,7 @@ class AlbumController extends Controller
             return response()->json(['data' => [], 'error' => 'Could not list the video folder.']);
         }
 
+        $videos = $album->applyVideoOrder($videos);
         $posters = $album->video_posters ?: [];
         $data = array_map(fn ($v) => [
             'id' => $v['id'],
@@ -309,6 +310,25 @@ class AlbumController extends Controller
         Cache::forget("album.public.{$album->slug}");
 
         return response()->json(['data' => $album->video_posters ?: []]);
+    }
+
+    /** Admin: save the display order (array of Drive file ids) for the gallery. */
+    public function updateGalleryOrder(Request $request, Album $album): JsonResponse
+    {
+        $this->authorize('update', $album);
+
+        $data = $request->validate([
+            'order' => ['array'],
+            'order.*' => ['string', 'max:200'],
+        ]);
+
+        $order = array_values(array_filter($data['order'] ?? [], fn ($v) => is_string($v) && $v !== ''));
+        $album->video_order = $order ?: null;
+        $album->save();
+
+        Cache::forget("album.public.{$album->slug}");
+
+        return response()->json(['data' => $album->video_order ?: []]);
     }
 
     /** Sections (root events) of an album, with their manual overrides. */

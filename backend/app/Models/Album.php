@@ -27,6 +27,7 @@ class Album extends Model
         'film_url',
         'video_gallery_url',
         'video_posters',
+        'video_order',
         'description',
         'tagline',
         'status',
@@ -59,6 +60,7 @@ class Album extends Model
         'allow_enquiries' => 'boolean',
         'event_date' => 'date',
         'video_posters' => 'array',
+        'video_order' => 'array',
         'last_synced_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
@@ -131,6 +133,32 @@ class Album extends Model
         }
 
         return $this->film_url;
+    }
+
+    /**
+     * Order a list of Drive video items (each with an 'id') by the album's
+     * saved video_order. Ids not in the order keep their original relative
+     * position at the end. Pure/stable — safe for both public + admin.
+     *
+     * @param  array<int,array<string,mixed>>  $videos
+     * @return array<int,array<string,mixed>>
+     */
+    public function applyVideoOrder(array $videos): array
+    {
+        $order = $this->video_order ?: [];
+        if (empty($order)) {
+            return $videos;
+        }
+
+        $pos = array_flip($order); // id => index
+        $big = count($order) + 1;
+        usort($videos, function ($a, $b) use ($pos, $big) {
+            $pa = $pos[$a['id']] ?? $big;
+            $pb = $pos[$b['id']] ?? $big;
+            return $pa <=> $pb;
+        });
+
+        return $videos;
     }
 
     public function isExpired(): bool

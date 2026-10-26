@@ -44,6 +44,7 @@ Route::prefix('admin')->group(function () {
         Route::match(['put', 'patch'], 'albums/{album}/sections/{event}', [AlbumController::class, 'updateSection']);
         Route::get('albums/{album}/gallery-videos', [AlbumController::class, 'galleryVideos']);
         Route::match(['put', 'patch'], 'albums/{album}/gallery-videos', [AlbumController::class, 'updateGalleryPosters']);
+        Route::match(['put', 'patch'], 'albums/{album}/gallery-videos/order', [AlbumController::class, 'updateGalleryOrder']);
     });
 });
 
