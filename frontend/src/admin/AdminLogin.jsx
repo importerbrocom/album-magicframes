@@ -33,16 +33,16 @@ export default function AdminLogin() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white md:flex-row">
-      {/* Left brand panel — dark navy */}
-      <div className="relative flex min-h-[220px] flex-1 items-center justify-center overflow-hidden bg-[#161c2d] md:min-h-screen">
+      {/* Left brand panel — plain white so the black wordmark shows */}
+      <div className="relative flex min-h-[220px] flex-1 items-center justify-center overflow-hidden border-b border-gray-100 bg-white md:min-h-screen md:border-b-0 md:border-r">
         {/* Decorative circles */}
-        <span className="pointer-events-none absolute left-[-40px] top-10 h-40 w-40 rounded-full bg-white/5" />
-        <span className="pointer-events-none absolute bottom-[-60px] right-10 h-64 w-64 rounded-full bg-white/5" />
-        <span className="pointer-events-none absolute bottom-24 left-24 h-24 w-24 rounded-full bg-white/5" />
+        <span className="pointer-events-none absolute left-[-40px] top-10 h-40 w-40 rounded-full bg-gray-100/70" />
+        <span className="pointer-events-none absolute bottom-[-60px] right-10 h-64 w-64 rounded-full bg-gray-100/70" />
+        <span className="pointer-events-none absolute bottom-24 left-24 h-24 w-24 rounded-full bg-gray-100/70" />
         <div className="relative z-10 text-center">
-          {/* Real uploaded logo (/logo.png) with SVG fallback */}
+          {/* Black script wordmark (/logo.svg) */}
           <Logo className="mx-auto h-40 w-auto" />
-          <p className="mt-2 text-[0.7rem] uppercase tracking-[0.35em] text-white/70">magicframes.co.in</p>
+          <p className="mt-2 text-[0.7rem] uppercase tracking-[0.35em] text-gray-400">magicframes.co.in</p>
         </div>
       </div>
 

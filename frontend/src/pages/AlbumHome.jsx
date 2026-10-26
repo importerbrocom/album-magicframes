@@ -147,9 +147,9 @@ export default function AlbumHome() {
           <GoogleReviewButton slug={slug} url={album.google_review_url} />
         </div>
 
-        {/* Studio footer branding */}
+        {/* Studio footer branding — invert the black wordmark so it reads on the dark page */}
         <footer className="mt-12 flex flex-col items-center gap-2 pb-4 text-center">
-          <Logo className="h-20 w-auto opacity-90" />
+          <Logo className="h-20 w-auto opacity-90 invert" />
           <p className="text-xs" style={{ color: 'var(--muted)' }}>Captured with care</p>
         </footer>
       </main>

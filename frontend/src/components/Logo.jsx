@@ -1,25 +1,23 @@
 import { useState } from 'react';
 
 /**
- * Magic Frames logo — shown as the FULL wordmark (not a cropped circle).
+ * Magic Frames logo — the black script wordmark on a transparent background.
  *
- * variant="dark" (default): the uploaded raster logo (/logo.png → /logo.jpg)
- *   with the bundled dark SVG wordmark as fallback. Best on dark surfaces.
- * variant="light": a white-background, black-text SVG wordmark for use on
- *   light surfaces (e.g. the admin sidebar).
+ * Source order: /logo.svg (bundled transparent vector) → /logo.png → /logo.jpg.
+ * The black wordmark needs a light surface to be visible.
  *
  * `object-contain` keeps the whole wordmark visible; `rounded` → circular badge.
  */
-const DARK_SOURCES = ['/logo.png', '/logo.jpg', '/logo.svg'];
+const SOURCES = ['/logo.svg', '/logo.png', '/logo.jpg'];
 
-export default function Logo({ className = 'h-12 w-auto', rounded = false, variant = 'dark' }) {
+export default function Logo({ className = 'h-12 w-auto', rounded = false }) {
   const [i, setI] = useState(0);
-  const src = variant === 'light' ? '/logo-light.svg' : DARK_SOURCES[i];
+  const src = SOURCES[i];
 
   return (
     <img
       src={src}
-      onError={variant === 'light' ? undefined : () => setI((n) => (n < DARK_SOURCES.length - 1 ? n + 1 : n))}
+      onError={() => setI((n) => (n < SOURCES.length - 1 ? n + 1 : n))}
       alt="Magic Frames"
       className={`${className} object-contain ${rounded ? 'rounded-full object-cover' : ''}`}
     />

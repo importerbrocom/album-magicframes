@@ -2,11 +2,10 @@
   <defs>
     <style>@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&amp;family=Montserrat:wght@600&amp;display=swap');</style>
   </defs>
-  <!-- Black background + silver script wordmark (matches uploaded logo.png) -->
-  <rect x="0" y="0" width="512" height="512" fill="#0b0b0b" rx="16" />
-  <g fill="#d6d6d6">
+  <!-- Transparent background + black script wordmark -->
+  <g fill="#111111">
     <text x="256" y="250" font-family="'Great Vibes', cursive" font-size="150" text-anchor="middle">Magic</text>
     <text x="256" y="378" font-family="'Great Vibes', cursive" font-size="150" text-anchor="middle">Frames</text>
-    <text x="400" y="196" font-family="'Montserrat', Arial, sans-serif" font-size="30" text-anchor="middle">™</text>
+    <text x="408" y="196" font-family="'Montserrat', Arial, sans-serif" font-size="30" text-anchor="middle">™</text>
   </g>
 </svg>
