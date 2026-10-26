@@ -37,6 +37,24 @@ class DemoDriveData
         ];
     }
 
+    /**
+     * Sample videos for the demo album's "Video Gallery" section. Public test
+     * clips + picsum posters so the gallery, tiles and player can be
+     * demonstrated without a real Google Drive.
+     *
+     * @return array<int,array<string,string>>
+     */
+    public static function videos(): array
+    {
+        $base = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample';
+
+        return [
+            ['id' => 'demo-vid-1', 'name' => 'Highlights', 'src' => "{$base}/ForBiggerJoyrides.mp4", 'poster' => 'https://picsum.photos/id/1016/1200/700'],
+            ['id' => 'demo-vid-2', 'name' => 'Ceremony Film', 'src' => "{$base}/ForBiggerBlazes.mp4", 'poster' => 'https://picsum.photos/id/1025/1200/700'],
+            ['id' => 'demo-vid-3', 'name' => 'Reception', 'src' => "{$base}/ForBiggerEscapes.mp4", 'poster' => 'https://picsum.photos/id/1039/1200/700'],
+        ];
+    }
+
     /** Deterministic photo count for a given folder path (varied but stable). */
     public static function photoCount(string $seed): int
     {

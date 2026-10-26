@@ -40,6 +40,8 @@ class DatabaseSeeder extends Seeder
                 'description' => 'A collection of memories from our wedding celebrations.',
                 'tagline' => 'Memories that last forever.',
                 'film_url' => 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+                // Demo video gallery (sentinel link; demo mode returns sample clips).
+                'video_gallery_url' => 'https://drive.google.com/drive/folders/DEMO_VIDEO_FOLDER',
                 'theme' => 'akhila',
                 'status' => 'active',
                 'allow_download' => true,

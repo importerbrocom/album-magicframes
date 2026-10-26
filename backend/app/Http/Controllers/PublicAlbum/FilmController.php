@@ -52,7 +52,17 @@ class FilmController extends Controller
         abort_if(! $album->video_gallery_url, 404);
 
         if ($album->drive_auth_mode === 'demo') {
-            return response()->json(['data' => []]);
+            // Demo albums: return public sample clips (played directly).
+            $posters = $album->video_posters ?: [];
+            $videos = \App\Services\DemoDriveData::videos();
+            $data = array_map(fn ($v) => [
+                'id' => $v['id'],
+                'name' => $v['name'],
+                'src' => $v['src'],
+                'poster' => $posters[$v['id']] ?? $v['poster'],
+            ], $album->applyVideoOrder($videos));
+
+            return response()->json(['data' => $data]);
         }
 
         // Resolve the folder id from the saved link.

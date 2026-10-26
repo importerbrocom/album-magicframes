@@ -264,8 +264,20 @@ class AlbumController extends Controller
     {
         $this->authorize('view', $album);
 
-        if (! $album->video_gallery_url || $album->drive_auth_mode === 'demo') {
+        if (! $album->video_gallery_url) {
             return response()->json(['data' => []]);
+        }
+
+        if ($album->drive_auth_mode === 'demo') {
+            $posters = $album->video_posters ?: [];
+            $videos = \App\Services\DemoDriveData::videos();
+            $data = array_map(fn ($v) => [
+                'id' => $v['id'],
+                'name' => $v['name'],
+                'poster' => $posters[$v['id']] ?? '',
+            ], $album->applyVideoOrder($videos));
+
+            return response()->json(['data' => $data]);
         }
 
         $folderId = null;
