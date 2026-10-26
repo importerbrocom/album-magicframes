@@ -1,12 +1,18 @@
 {
-  "name": "Magic Frames — Digital Wedding Albums",
+  "name": "Magic Frames — Digital Photo Albums",
   "short_name": "Magic Frames",
-  "description": "Premium digital wedding photo albums.",
+  "description": "Premium digital photo albums.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#faf6f0",
-  "theme_color": "#faf6f0",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "icons": [
+    {
+      "src": "/logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
     {
       "src": "/favicon.svg",
       "sizes": "any",

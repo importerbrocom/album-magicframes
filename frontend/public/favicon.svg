@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="12" fill="#0a0a0a"/>
-  <text x="50%" y="54%" text-anchor="middle" dominant-baseline="middle"
-        font-family="'Brush Script MT','Segoe Script',cursive" font-size="30"
-        fill="#b9b9b9" font-style="italic">MF</text>
-  <text x="52" y="20" font-family="Arial, sans-serif" font-size="9" fill="#b9b9b9">™</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Magic Frames">
+  <defs>
+    <style>@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&amp;display=swap');</style>
+  </defs>
+  <rect width="64" height="64" rx="12" fill="#000000"/>
+  <text x="33" y="46" font-family="'Great Vibes', cursive" font-size="44" text-anchor="middle" fill="#b9b9b9">M</text>
 </svg>
