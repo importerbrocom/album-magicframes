@@ -69,8 +69,34 @@ export default function EditAlbum() {
         {[
           ['client_name', 'Client Name'],
           ['title', 'Album Title'],
-          ['google_drive_url', 'Google Drive Folder Link'],
-          ['film_url', 'Teaser Video — Google Drive / YouTube / Vimeo / .mp4'],
+        ].map(([k, label]) => (
+          <div key={k}>
+            <label className="mb-1 block text-sm font-medium">{label}</label>
+            <input value={form[k]} onChange={set(k)} className="inp" />
+            {errors[k] && <p className="mt-1 text-xs text-red-600">{errors[k][0]}</p>}
+          </div>
+        ))}
+
+        {/* Photo gallery source */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Photo Gallery</p>
+          <label className="mb-1 block text-sm font-medium">Google Drive Folder Link (photos)</label>
+          <input value={form.google_drive_url} onChange={set('google_drive_url')} className="inp" />
+          {errors.google_drive_url && <p className="mt-1 text-xs text-red-600">{errors.google_drive_url[0]}</p>}
+        </div>
+
+        {/* Teaser film — a SEPARATE upload from the photo folder */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Teaser Film</p>
+          <label className="mb-1 block text-sm font-medium">Teaser Video Link — Google Drive / YouTube / Vimeo / .mp4</label>
+          <input value={form.film_url} onChange={set('film_url')} className="inp" placeholder="https://drive.google.com/file/d/… or /folders/… · YouTube · Vimeo · .mp4" />
+          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+            A separate video for the hero. Drive file or folder link, or YouTube/Vimeo/.mp4.
+          </p>
+          {errors.film_url && <p className="mt-1 text-xs text-red-600">{errors.film_url[0]}</p>}
+        </div>
+
+        {[
           ['tagline', 'Tagline'],
           ['cover_image_url', 'Cover Image URL'],
           ['google_review_url', 'Google Review Link (optional)'],

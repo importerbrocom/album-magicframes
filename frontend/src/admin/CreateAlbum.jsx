@@ -109,15 +109,28 @@ export default function CreateAlbum() {
             <input type="date" value={form.event_date} onChange={set('event_date')} className="inp" />
           </Field>
         </div>
-        <Field label="Google Drive Folder Link" error={err('google_drive_url')}>
-          <input value={form.google_drive_url} onChange={set('google_drive_url')} placeholder="https://drive.google.com/drive/folders/…" className="inp" />
-        </Field>
-        <Field label="Teaser Video — Google Drive / YouTube / Vimeo / .mp4" error={err('film_url')}>
-          <input value={form.film_url} onChange={set('film_url')} placeholder="https://drive.google.com/file/d/… or /folders/… · YouTube · Vimeo · .mp4" className="inp" />
-          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
-            Paste a <b>Google Drive video</b> link (file or folder), or a YouTube/Vimeo/.mp4 link. Plays from the hero over your cover image; streamed securely. Drive folder → the first video inside is used.
-          </p>
-        </Field>
+        {/* Photos source */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Photo Gallery</p>
+          <Field label="Google Drive Folder Link (photos)" error={err('google_drive_url')}>
+            <input value={form.google_drive_url} onChange={set('google_drive_url')} placeholder="https://drive.google.com/drive/folders/…" className="inp" />
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+              The folder that holds your event sub-folders and photos.
+            </p>
+          </Field>
+        </div>
+
+        {/* Teaser film source — a SEPARATE upload from the photo folder */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Teaser Film</p>
+          <Field label="Teaser Video Link — Google Drive / YouTube / Vimeo / .mp4" error={err('film_url')}>
+            <input value={form.film_url} onChange={set('film_url')} placeholder="https://drive.google.com/file/d/… or /folders/… · YouTube · Vimeo · .mp4" className="inp" />
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+              A separate video for the hero. Paste a <b>Google Drive video</b> link (file or folder), or a YouTube/Vimeo/.mp4 link. Plays over your cover image; streamed securely. Drive folder → the first video inside is used.
+            </p>
+          </Field>
+        </div>
+
         <Field label="Access Password" error={err('password')}>
           <input value={form.password} onChange={set('password')} placeholder="RA2026" className="inp" />
         </Field>
