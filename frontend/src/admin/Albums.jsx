@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { formatEventDate as fmtDate } from '../components/albumCopy';
 
 const StatusPill = ({ status }) => {
   const map = {
@@ -54,6 +55,16 @@ export default function Albums() {
                 <StatusPill status={a.status} />
               </div>
               <p className="text-sm" style={{ color: 'var(--muted)' }}>{a.title}</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {a.category && (
+                  <span className="rounded-full border border-black/15 px-2 py-0.5 text-[11px] capitalize" style={{ color: 'var(--muted)' }}>
+                    {a.category}
+                  </span>
+                )}
+                {a.event_date && (
+                  <span className="text-[11px]" style={{ color: 'var(--muted)' }}>{fmtDate(a.event_date)}</span>
+                )}
+              </div>
               <p className="mt-2 text-xs" style={{ color: 'var(--muted)' }}>
                 {a.photo_count} photos · {a.event_count} events
               </p>

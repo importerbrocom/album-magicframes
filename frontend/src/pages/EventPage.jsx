@@ -50,9 +50,15 @@ export default function EventPage() {
           </>
         ) : (
           <>
-            <div className="mb-6">
+            <div className="mf-reveal mb-6 text-center">
+              {album?.category && (
+                <p className="mb-1 text-[0.65rem] uppercase tracking-[0.35em]" style={{ color: 'var(--accent)' }}>
+                  {album.category}
+                </p>
+              )}
               <h1 className="font-heading text-4xl">{event.name}</h1>
-              <p className="text-sm" style={{ color: 'var(--muted)' }}>
+              <span className="section-rule" aria-hidden="true" />
+              <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
                 {event.photo_count} Photos
                 {data.folder_count > 0 && ` · ${data.folder_count} Folders`}
               </p>

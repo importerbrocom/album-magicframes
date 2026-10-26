@@ -75,6 +75,10 @@
 [data-theme='akhila'] .hero-title { font-family: var(--script-font); font-weight: 400; line-height: 0.95; }
 [data-theme='akhila'] .hero-rule { display: block; }
 
+/* Centered gold rule under section sub-headings (event/folder pages). Shown on
+   every theme so the editorial rhythm carries through the gallery. */
+.section-rule { display: block; width: 46px; height: 1px; margin: 12px auto 0; background: var(--accent); opacity: 0.8; }
+
 @layer base {
   html { scroll-behavior: smooth; }
   body {
