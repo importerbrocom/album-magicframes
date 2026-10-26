@@ -20,6 +20,14 @@ export default function AlbumHeader({ slug, album, back }) {
           <h1 className="font-heading truncate text-xl leading-none">{album?.client_name}</h1>
           <p className="truncate text-xs" style={{ color: 'var(--muted)' }}>{album?.title}</p>
         </Link>
+        {album?.category && (
+          <span
+            className="hidden shrink-0 rounded-full px-2.5 py-0.5 text-[0.6rem] uppercase tracking-[0.25em] sm:inline-block"
+            style={{ color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 45%, transparent)' }}
+          >
+            {album.category}
+          </span>
+        )}
         {album?.allow_share && <ShareButton slug={slug} album={album} />}
       </div>
     </header>
