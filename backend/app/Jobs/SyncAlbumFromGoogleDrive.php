@@ -130,6 +130,14 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
             );
             $this->seenEventDriveIds[] = $ef['id'];
 
+            // Detect a video inside this section's folder -> per-section film.
+            try {
+                $event->film_drive_id = $drive->firstVideoIdInFolder($ef['id']);
+                $event->save();
+            } catch (\Throwable $e) {
+                // Non-fatal: a section simply has no film.
+            }
+
             // Photos directly inside the event folder (no sub-folder).
             $directImages = $drive->listImageFiles($ef['id']);
             $photoCount += $this->storePhotos($album, $event, null, $directImages, $seenFileIds, $drive);

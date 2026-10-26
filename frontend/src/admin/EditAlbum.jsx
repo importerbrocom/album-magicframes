@@ -72,7 +72,7 @@ export default function EditAlbum() {
           ['google_drive_url', 'Google Drive Folder Link'],
           ['tagline', 'Tagline'],
           ['cover_image_url', 'Cover Image URL'],
-          ['film_url', 'Film URL (YouTube / Vimeo / Google Drive / .mp4)'],
+          ['film_url', 'Teaser Film URL (YouTube / Vimeo / Drive file or folder / .mp4)'],
           ['google_review_url', 'Google Review Link (optional)'],
         ].map(([k, label]) => (
           <div key={k}>

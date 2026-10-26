@@ -16,6 +16,7 @@ class Event extends Model
         'name',
         'slug',
         'google_drive_folder_id',
+        'film_drive_id',
         'parent_id',
         'cover_image_url',
         'photo_count',

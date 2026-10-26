@@ -153,6 +153,46 @@ class GoogleDriveService
         );
     }
 
+    /** List video files directly inside a folder (mp4, mov, webm, …). */
+    public function listVideoFiles(string $parentId): array
+    {
+        return $this->listChildren(
+            $parentId,
+            "mimeType contains 'video/'",
+            'id,name,mimeType,size,createdTime',
+        );
+    }
+
+    /**
+     * Return the first video FILE id inside a folder, or null if none.
+     * Used to auto-pick a teaser/section film from a Drive folder link.
+     */
+    public function firstVideoIdInFolder(string $folderId): ?string
+    {
+        $videos = $this->listVideoFiles($folderId);
+        // Prefer a file named like a teaser/trailer, else the first.
+        usort($videos, function ($a, $b) {
+            $pri = fn ($n) => preg_match('/teaser|trailer|highlight|film/i', $n['name'] ?? '') ? 0 : 1;
+            return $pri($a) <=> $pri($b);
+        });
+
+        return $videos[0]['id'] ?? null;
+    }
+
+    /** True if the given id/link points at a Drive FOLDER (not a file). */
+    public function isFolder(string $id): bool
+    {
+        try {
+            $data = $this->request('GET', "/files/{$id}", [
+                'query' => ['fields' => 'mimeType', 'supportsAllDrives' => 'true'],
+            ]);
+
+            return ($data['mimeType'] ?? null) === self::FOLDER_MIME;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     /**
      * Generic paginated listing of children matching an extra query clause.
      *

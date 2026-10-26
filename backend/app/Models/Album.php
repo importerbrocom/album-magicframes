@@ -117,7 +117,13 @@ class Album extends Model
         /** @var \App\Services\GoogleDriveService $drive */
         $drive = app(\App\Services\GoogleDriveService::class);
 
-        if ($this->drive_auth_mode !== 'demo' && $drive->extractFileId($this->film_url)) {
+        // Route through our streaming proxy for ANY Google Drive link — a
+        // direct file, a /file/d/ share link, OR a folder link (the proxy
+        // auto-picks the first video in the folder).
+        $isDriveLink = $drive->extractFileId($this->film_url)
+            || str_contains($this->film_url, 'drive.google.com');
+
+        if ($this->drive_auth_mode !== 'demo' && $isDriveLink) {
             return route('public.albums.film', ['slug' => $this->slug], false);
         }
 

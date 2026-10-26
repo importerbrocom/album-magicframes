@@ -370,6 +370,18 @@
 }
 [data-theme='akhila'] .group:hover .card-arrow { background: var(--accent); color: #111; transform: rotate(35deg); }
 
+/* Centered play button on section cards that have their own film */
+.card-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 3; display: grid; place-items: center;
+  width: 54px; height: 54px; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(255,255,255,.85); background: rgba(0,0,0,.25);
+  backdrop-filter: blur(5px); color: #fff;
+  transition: background .3s ease, color .3s ease, transform .3s ease;
+}
+.card-play span { font-size: 14px; margin-left: 2px; }
+.card-play:hover { background: var(--accent); color: #111; transform: translate(-50%, -50%) scale(1.1); }
+
 /* ===== Cinematic full-viewport hero stage ===== */
 .hero-stage { height: 56vh; min-height: 360px; background: #17130d; }
 [data-theme='akhila'] .hero-stage { height: min(88vh, 780px); min-height: 520px; }

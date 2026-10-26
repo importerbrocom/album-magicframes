@@ -73,6 +73,8 @@ Route::prefix('public')->group(function () {
     // so the <video> element loads — including on the pre-auth cover screen).
     Route::get('albums/{slug}/film', [FilmController::class, 'stream'])
         ->name('public.albums.film')->middleware('throttle:300,1');
+    Route::get('albums/{slug}/events/{event}/film', [FilmController::class, 'eventFilm'])
+        ->name('public.events.film')->middleware('throttle:300,1');
 
     // Engagement features — intentionally OPEN (no album token) so anyone with
     // the shared/reshared link (friends, family) can comment and enquire.

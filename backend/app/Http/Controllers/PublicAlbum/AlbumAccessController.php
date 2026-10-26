@@ -100,6 +100,7 @@ class AlbumAccessController extends Controller
         $events = $album->rootEvents()
             ->where('is_available', true)
             ->orderBy('sort_order')
+            ->with('album:id,slug')
             ->get();
 
         return EventResource::collection($events)->response();

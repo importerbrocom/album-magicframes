@@ -124,10 +124,10 @@ export default function CreateAlbum() {
         <Field label="Cover Image URL (optional)" error={err('cover_image_url')}>
           <input value={form.cover_image_url} onChange={set('cover_image_url')} placeholder="https://…" className="inp" />
         </Field>
-        <Field label="Wedding Film URL (optional)" error={err('film_url')}>
-          <input value={form.film_url} onChange={set('film_url')} placeholder="YouTube · Vimeo · Google Drive video · or .mp4 link" className="inp" />
+        <Field label="Teaser Film URL (optional)" error={err('film_url')}>
+          <input value={form.film_url} onChange={set('film_url')} placeholder="YouTube · Vimeo · Drive video file OR folder · .mp4" className="inp" />
           <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
-            Paste a YouTube/Vimeo link, a direct .mp4, or a Google Drive video share link (streamed securely through the album).
+            Paste a YouTube/Vimeo link, a direct .mp4, a Google Drive video, or a Drive <b>folder</b> link (the first video in it is used). Streamed securely. Each section with a video in its own Drive folder also gets a play button automatically.
           </p>
         </Field>
 
