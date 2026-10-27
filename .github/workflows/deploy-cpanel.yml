@@ -67,7 +67,7 @@ jobs:
 
       # ---- Assemble the upload-ready release bundle ----
       # Mirrors the cPanel layout:
-      #   release/app/      -> Laravel app (goes to ~/laravel/album-magicframes)
+      #   release/app/      -> Laravel app (goes to ~/laravel/album2)
       #   release/docroot/  -> doc-root contents (SPA + front controller + .htaccess)
       - name: Assemble release bundle
         run: |
@@ -151,7 +151,7 @@ jobs:
               echo "### ⏭️ Deploy NOT performed — build only"
               echo ""
               echo "Your code was built successfully but **was not uploaded to the live site**."
-              echo "To ship changes to album-magicframes.nokkoo.in, set the repository variable"
+              echo "To ship changes to album2.nokkoo.in, set the repository variable"
               echo "**DEPLOY_ENABLED = true** (Settings → Secrets and variables → Actions → Variables),"
               echo "or run this workflow manually with **force_deploy = true**."
             } >> "$GITHUB_STEP_SUMMARY"
@@ -219,9 +219,9 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/docroot/
-          # Doc root per DEPLOYMENT_CPANEL.md: /home/uddjzwrz/album-magicframes.nokkoo.in
+          # Doc root for album2 subdomain: /home/uddjzwrz/album2.nokkoo.in
           # (FTP login is rooted at the home dir, so this path is relative to it).
-          server-dir: /album-magicframes.nokkoo.in/
+          server-dir: /album2.nokkoo.in/
 
       - name: Deploy doc root (attempt 2)
         id: docroot2
@@ -235,7 +235,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/docroot/
-          server-dir: /album-magicframes.nokkoo.in/
+          server-dir: /album2.nokkoo.in/
 
       - name: Deploy doc root (final attempt)
         if: steps.docroot1.outcome == 'failure' && steps.docroot2.outcome == 'failure'
@@ -247,7 +247,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/docroot/
-          server-dir: /album-magicframes.nokkoo.in/
+          server-dir: /album2.nokkoo.in/
 
       # ---- Laravel app (outside doc root) : attempts 1–3 ----
       # NOTE: run `php artisan migrate --force && config:cache && route:cache`
@@ -264,7 +264,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album-magicframes/
+          server-dir: /laravel/album2/
           exclude: |
             **/.env
             **/database/database.sqlite
@@ -281,7 +281,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album-magicframes/
+          server-dir: /laravel/album2/
           exclude: |
             **/.env
             **/database/database.sqlite
@@ -296,7 +296,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album-magicframes/
+          server-dir: /laravel/album2/
           exclude: |
             **/.env
             **/database/database.sqlite
@@ -312,8 +312,12 @@ jobs:
               echo ""
               echo "**Finish on the server** (FTP can't run PHP) — in cPanel Terminal:"
               echo '```bash'
-              echo "cd ~/laravel/album-magicframes"
-              echo "php artisan migrate --force && php artisan config:cache && php artisan route:cache"
+              echo "cd ~/laravel/album2/backend"
+              echo "# FIRST deploy only — creates the schema AND seeds the demo data into the new DB:"
+              echo "php artisan key:generate --force    # only if APP_KEY is still empty"
+              echo "php artisan migrate --force --seed"
+              echo "php artisan config:cache && php artisan route:cache"
+              echo "# Later redeploys: use 'php artisan migrate --force' (no --seed) to keep your data."
               echo '```'
             } >> "$GITHUB_STEP_SUMMARY"
           else
