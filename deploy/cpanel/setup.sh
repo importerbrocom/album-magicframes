@@ -4,18 +4,18 @@
 #
 # Run this on the server (via SSH or cPanel Terminal) AFTER:
 #   1. the Laravel app is at  $APP_BASE  (git clone of backend/)
-#   2. ~/laravel/album-magicframes/.env is filled in (see deploy/cpanel/backend.env.example)
+#   2. ~/laravel/album2/.env is filled in (see deploy/cpanel/backend.env.example)
 #   3. the React build output (frontend/dist/*) has been placed/uploaded somewhere
 #      (either $APP_BASE/public is NOT used here — the SPA goes to the doc root)
 #
 # Usage:
-#   cd ~/laravel/album-magicframes
+#   cd ~/laravel/album2
 #   bash deploy/cpanel/setup.sh                 # full setup / redeploy
 #   PHP_BIN=/usr/local/bin/ea-php83 bash deploy/cpanel/setup.sh
 #
 # Environment overrides (all optional — sensible cPanel defaults assumed):
 #   APP_BASE   Laravel app root        (default: this script's ../../.. )
-#   DOC_ROOT   public doc root         (default: ~/album-magicframes.nokkoo.in)
+#   DOC_ROOT   public doc root         (default: ~/album2.nokkoo.in)
 #   PHP_BIN    PHP CLI binary          (default: php)
 #   SEED       run db seeder (1/0)     (default: 0 — set 1 on first deploy)
 # =============================================================================
@@ -27,7 +27,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 APP_BASE="${APP_BASE:-$REPO_ROOT/backend}"
-DOC_ROOT="${DOC_ROOT:-$HOME/album-magicframes.nokkoo.in}"
+DOC_ROOT="${DOC_ROOT:-$HOME/album2.nokkoo.in}"
 PHP_BIN="${PHP_BIN:-php}"
 SEED="${SEED:-0}"
 
@@ -102,9 +102,9 @@ cp "$SCRIPT_DIR/htaccess-docroot.txt"  "$DOC_ROOT/.htaccess"
 [ -f "$APP_BASE/public/favicon.ico" ] && cp "$APP_BASE/public/favicon.ico" "$DOC_ROOT/" || true
 [ -f "$APP_BASE/public/robots.txt" ]  && cp "$APP_BASE/public/robots.txt"  "$DOC_ROOT/" || true
 
-# The doc-root index.php hardcodes $APP_BASE = /home/<user>/laravel/album-magicframes/backend.
+# The doc-root index.php hardcodes $APP_BASE = /home/<user>/laravel/album2/backend.
 # If APP_BASE differs, patch the copy so it points at the real location.
-if [ "$APP_BASE" != "/home/uddjzwrz/laravel/album-magicframes/backend" ]; then
+if [ "$APP_BASE" != "/home/uddjzwrz/laravel/album2/backend" ]; then
   echo "==> Patching \$APP_BASE in doc-root index.php -> $APP_BASE"
   "$PHP_BIN" -r '$f=$argv[1];$b=$argv[2];$s=file_get_contents($f);$s=preg_replace("#\\\$APP_BASE = .*;#","\$APP_BASE = ".var_export($b,true).";",$s,1);file_put_contents($f,$s);' "$DOC_ROOT/index.php" "$APP_BASE"
 fi
@@ -117,5 +117,5 @@ echo "==> Caching config and routes"
 echo
 echo "==> Done."
 echo "    SPA build: upload the contents of frontend/dist/ into $DOC_ROOT"
-echo "    Verify:    https://album-magicframes.nokkoo.in/up"
-echo "               https://album-magicframes.nokkoo.in/admin/login"
+echo "    Verify:    https://album2.nokkoo.in/up"
+echo "               https://album2.nokkoo.in/admin/login"

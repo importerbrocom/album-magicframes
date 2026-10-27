@@ -1,14 +1,14 @@
 # =============================================================================
 # Magic Frames — single-origin cPanel .htaccess
-# Place this file as:  /home/uddjzwrz/album-magicframes.nokkoo.in/.htaccess
+# Place this file as:  /home/uddjzwrz/album2.nokkoo.in/.htaccess
 #
 # Layout assumed:
-#   DOC ROOT  = /home/uddjzwrz/album-magicframes.nokkoo.in
+#   DOC ROOT  = /home/uddjzwrz/album2.nokkoo.in
 #     ├── index.html, assets/, favicon.svg, manifest.webmanifest   (React build)
 #     ├── index.php, favicon.ico, robots.txt                       (Laravel public/)
 #     └── .htaccess                                                (this file)
 #   Laravel app (code + vendor + .env) lives OUTSIDE the doc root at:
-#     /home/uddjzwrz/laravel/album-magicframes/backend
+#     /home/uddjzwrz/laravel/album2/backend
 #
 # Behaviour:
 #   /.well-known/acme-challenge/* -> served over HTTP for AutoSSL validation
