@@ -8,7 +8,7 @@
 #     ├── index.php, favicon.ico, robots.txt                       (Laravel public/)
 #     └── .htaccess                                                (this file)
 #   Laravel app (code + vendor + .env) lives OUTSIDE the doc root at:
-#     /home/uddjzwrz/laravel/album2
+#     /home/uddjzwrz/laravel/album2/backend
 #
 # Behaviour:
 #   /.well-known/acme-challenge/* -> served over HTTP for AutoSSL validation

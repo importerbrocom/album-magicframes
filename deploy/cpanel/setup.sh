@@ -102,9 +102,9 @@ cp "$SCRIPT_DIR/htaccess-docroot.txt"  "$DOC_ROOT/.htaccess"
 [ -f "$APP_BASE/public/favicon.ico" ] && cp "$APP_BASE/public/favicon.ico" "$DOC_ROOT/" || true
 [ -f "$APP_BASE/public/robots.txt" ]  && cp "$APP_BASE/public/robots.txt"  "$DOC_ROOT/" || true
 
-# The doc-root index.php hardcodes $APP_BASE = /home/<user>/laravel/album2.
+# The doc-root index.php hardcodes $APP_BASE = /home/<user>/laravel/album2/backend.
 # If APP_BASE differs, patch the copy so it points at the real location.
-if [ "$APP_BASE" != "/home/uddjzwrz/laravel/album2" ]; then
+if [ "$APP_BASE" != "/home/uddjzwrz/laravel/album2/backend" ]; then
   echo "==> Patching \$APP_BASE in doc-root index.php -> $APP_BASE"
   "$PHP_BIN" -r '$f=$argv[1];$b=$argv[2];$s=file_get_contents($f);$s=preg_replace("#\\\$APP_BASE = .*;#","\$APP_BASE = ".var_export($b,true).";",$s,1);file_put_contents($f,$s);' "$DOC_ROOT/index.php" "$APP_BASE"
 fi

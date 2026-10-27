@@ -264,7 +264,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album2/
+          server-dir: /laravel/album2/backend/
           exclude: |
             **/.env
             **/database/database.sqlite
@@ -281,7 +281,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album2/
+          server-dir: /laravel/album2/backend/
           exclude: |
             **/.env
             **/database/database.sqlite
@@ -296,7 +296,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album2/
+          server-dir: /laravel/album2/backend/
           exclude: |
             **/.env
             **/database/database.sqlite
@@ -312,7 +312,7 @@ jobs:
               echo ""
               echo "**Finish on the server** (FTP can't run PHP) — in cPanel Terminal:"
               echo '```bash'
-              echo "cd ~/laravel/album2"
+              echo "cd ~/laravel/album2/backend"
               echo "# FIRST deploy only — creates the schema AND seeds the demo data into the new DB:"
               echo "php artisan key:generate --force    # only if APP_KEY is still empty"
               echo "php artisan migrate --force --seed"
