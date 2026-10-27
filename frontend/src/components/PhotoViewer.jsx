@@ -131,7 +131,7 @@ export default function PhotoViewer({
 
         <img
           key={photo.id}
-          src={photo.preview_url || photo.thumbnail_url}
+          src={photo.full_url || photo.preview_url || photo.thumbnail_url}
           alt={photo.file_name}
           className="max-h-full max-w-full select-none object-contain transition-transform duration-300 animate-fadeIn"
           style={{ transform: `scale(${zoom})` }}

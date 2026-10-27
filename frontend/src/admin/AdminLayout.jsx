@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import Logo from '../components/Logo';
 
 const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: '◧' },
@@ -27,8 +28,7 @@ export default function AdminLayout() {
         {/* Sidebar (desktop) */}
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-black/10 p-5 md:flex">
           <div className="mb-8">
-            <h1 className="font-heading text-2xl font-semibold">Magic Frames</h1>
-            <p className="text-xs" style={{ color: 'var(--muted)' }}>Studio Admin</p>
+            <Logo className="h-16 w-auto" />
           </div>
           <nav className="flex-1 space-y-1">
             {NAV.map((item) => (

@@ -2,8 +2,14 @@ import { useState } from 'react';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
 import SharePanel from './SharePanel';
+import { AMBIENT_EFFECTS, AMBIENT_SPEEDS } from '../components/ambientEffects';
 
-const THEMES = ['classic', 'modern', 'cinematic', 'minimal', 'luxury', 'traditional', 'akhila'];
+/** Date 1 year from today as YYYY-MM-DD (default album expiry). */
+function oneYearFromToday() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() + 1);
+  return d.toISOString().slice(0, 10);
+}
 
 const Toggle = ({ checked, onChange, label }) => (
   <label className="flex cursor-pointer items-center justify-between gap-3">
@@ -23,15 +29,21 @@ export default function CreateAlbum() {
   const [form, setForm] = useState({
     client_name: '',
     title: '',
+    event_date: '',
     google_drive_url: '',
     password: '',
     description: '',
     tagline: '',
     cover_image_url: '',
-    theme: 'classic',
+    film_url: '',
+    video_gallery_url: '',
+    theme: 'akhila', // fixed theme — no picker
+    ambient_effect: 'auto',
+    ambient_speed: 'normal',
+    ambient_count: '',
     allow_download: true,
     allow_share: true,
-    expires_at: '',
+    expires_at: oneYearFromToday(), // default: 1 year, editable below
   });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -46,6 +58,10 @@ export default function CreateAlbum() {
     try {
       const payload = { ...form };
       if (!payload.expires_at) delete payload.expires_at;
+      if (!payload.film_url) delete payload.film_url;
+      if (!payload.video_gallery_url) delete payload.video_gallery_url;
+      if (!payload.event_date) delete payload.event_date;
+      if (payload.ambient_count === '') delete payload.ambient_count;
       const res = await adminService.createAlbum(payload);
       setCreated(res);
     } catch (err) {
@@ -84,11 +100,44 @@ export default function CreateAlbum() {
           <input value={form.client_name} onChange={set('client_name')} placeholder="Rahul & Anjali" className="inp" />
         </Field>
         <Field label="Album Title" error={err('title')}>
-          <input value={form.title} onChange={set('title')} placeholder="Our Wedding Journey" className="inp" />
+          <input value={form.title} onChange={set('title')} placeholder="Our Wedding Journey · A Day to Remember · …" className="inp" />
         </Field>
-        <Field label="Google Drive Folder Link" error={err('google_drive_url')}>
-          <input value={form.google_drive_url} onChange={set('google_drive_url')} placeholder="https://drive.google.com/drive/folders/…" className="inp" />
+        <Field label="Event Date (optional)" error={err('event_date')}>
+          <input type="date" value={form.event_date} onChange={set('event_date')} className="inp" />
         </Field>
+        {/* Photos source */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Photo Gallery</p>
+          <Field label="Google Drive Folder Link (photos)" error={err('google_drive_url')}>
+            <input value={form.google_drive_url} onChange={set('google_drive_url')} placeholder="https://drive.google.com/drive/folders/…" className="inp" />
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+              The folder that holds your event sub-folders and photos.
+            </p>
+          </Field>
+        </div>
+
+        {/* Teaser film source — a SEPARATE upload from the photo folder */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Teaser Film</p>
+          <Field label="Teaser Video Link — Google Drive / YouTube / Vimeo / .mp4" error={err('film_url')}>
+            <input value={form.film_url} onChange={set('film_url')} placeholder="https://drive.google.com/file/d/… or /folders/… · YouTube · Vimeo · .mp4" className="inp" />
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+              A separate video for the hero. Paste a <b>Google Drive video</b> link (file or folder), or a YouTube/Vimeo/.mp4 link. Plays over your cover image; streamed securely. Drive folder → the first video inside is used.
+            </p>
+          </Field>
+        </div>
+
+        {/* Video Gallery — a THIRD separate upload: a folder of videos */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Video Gallery</p>
+          <Field label="Google Drive Folder Link (videos)" error={err('video_gallery_url')}>
+            <input value={form.video_gallery_url} onChange={set('video_gallery_url')} placeholder="https://drive.google.com/drive/folders/…" className="inp" />
+            <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+              A separate folder of videos shown as their own “Video Gallery” section (distinct from the photos and the teaser). All videos in the folder are listed.
+            </p>
+          </Field>
+        </div>
+
         <Field label="Access Password" error={err('password')}>
           <input value={form.password} onChange={set('password')} placeholder="RA2026" className="inp" />
         </Field>
@@ -102,25 +151,31 @@ export default function CreateAlbum() {
           <input value={form.cover_image_url} onChange={set('cover_image_url')} placeholder="https://…" className="inp" />
         </Field>
 
-        <Field label="Theme">
-          <div className="grid grid-cols-3 gap-2">
-            {THEMES.map((t) => (
-              <button
-                type="button"
-                key={t}
-                onClick={() => setForm((f) => ({ ...f, theme: t }))}
-                className={`rounded-lg border px-3 py-2 text-sm capitalize ${
-                  form.theme === t ? 'border-charcoal bg-black/5 font-medium' : 'border-black/15'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
+        <Field label="Ambient Effect">
+          <select value={form.ambient_effect} onChange={set('ambient_effect')} className="inp">
+            {AMBIENT_EFFECTS.map((e) => <option key={e.key} value={e.key}>{e.label}</option>)}
+          </select>
+          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+            Floating decorative motion (petals, snow, balloons, confetti…).
+          </p>
         </Field>
 
-        <Field label="Expiry Date (optional)">
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Effect Speed">
+            <select value={form.ambient_speed} onChange={set('ambient_speed')} className="inp">
+              {AMBIENT_SPEEDS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </Field>
+          <Field label="Particle Count" error={err('ambient_count')}>
+            <input type="number" min="0" max="60" value={form.ambient_count} onChange={set('ambient_count')} placeholder="Auto" className="inp" />
+          </Field>
+        </div>
+
+        <Field label="Expiry Date">
           <input type="date" value={form.expires_at} onChange={set('expires_at')} className="inp" />
+          <p className="mt-1 text-xs" style={{ color: 'var(--muted)' }}>
+            Defaults to 1 year from today — change it if you need a different expiry.
+          </p>
         </Field>
 
         <div className="space-y-3 border-t border-black/10 pt-4">

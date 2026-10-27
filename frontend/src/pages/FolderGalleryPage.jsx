@@ -42,9 +42,12 @@ export default function FolderGalleryPage() {
     <div className="min-h-screen pb-16">
       <AlbumHeader slug={slug} album={album} back={`/album/${slug}/event/${eventSlug}`} />
       <main className="mx-auto max-w-6xl px-4 pt-6">
-        <div className="mb-6">
-          <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--muted)' }}>{event?.name}</p>
+        <div className="mf-reveal mb-6 text-center">
+          <p className="text-[0.65rem] uppercase tracking-[0.35em]" style={{ color: 'var(--accent)' }}>
+            {[album?.category, event?.name].filter(Boolean).join(' · ')}
+          </p>
           <h1 className="font-heading text-4xl">{folder?.name || 'Photos'}</h1>
+          <span className="section-rule" aria-hidden="true" />
         </div>
         {folder && <Gallery slug={slug} album={album} filters={{ folder_id: folder.id }} />}
       </main>

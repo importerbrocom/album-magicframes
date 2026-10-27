@@ -43,11 +43,21 @@ class AlbumAccessController extends Controller
             'slug' => $album->slug,
             'client_name' => $album->client_name,
             'title' => $album->title,
+            'category' => $album->category,
+            'event_date' => $album->event_date?->toDateString(),
             'tagline' => $album->tagline,
             'description' => $album->description,
             'cover_image_url' => $album->cover_image_url,
+            'film_url' => $album->film_url,
+            'film_src' => $album->filmSrc(),
             'theme' => $album->theme,
+            'ambient_effect' => $album->ambient_effect,
+            'ambient_speed' => $album->ambient_speed,
+            'ambient_count' => $album->ambient_count,
             'allow_share' => $album->allow_share,
+            'allow_comments' => $album->allow_comments,
+            'allow_enquiries' => $album->allow_enquiries,
+            'google_review_url' => $album->google_review_url ?: config('services.album.google_review_url'),
             'requires_password' => true,
         ]);
     }
@@ -90,6 +100,7 @@ class AlbumAccessController extends Controller
         $events = $album->rootEvents()
             ->where('is_available', true)
             ->orderBy('sort_order')
+            ->with('album:id,slug')
             ->get();
 
         return EventResource::collection($events)->response();

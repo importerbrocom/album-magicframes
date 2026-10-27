@@ -36,10 +36,27 @@ class AlbumController extends Controller
                 $q->where('client_name', 'like', $term)->orWhere('title', 'like', $term);
             })
             ->when($request->filled('status'), fn ($q) => $q->where('status', $request->string('status')))
+            ->when($request->filled('category'), fn ($q) => $q->where('category', $request->string('category')))
             ->orderByDesc('created_at')
             ->paginate(15);
 
         return AdminAlbumResource::collection($albums)->response();
+    }
+
+    /** Distinct, non-empty album categories for admin filters (alphabetical). */
+    public function categories(): JsonResponse
+    {
+        $this->authorize('viewAny', Album::class);
+
+        $categories = Album::query()
+            ->whereNotNull('category')
+            ->where('category', '!=', '')
+            ->distinct()
+            ->orderBy('category')
+            ->pluck('category')
+            ->values();
+
+        return response()->json(['data' => $categories]);
     }
 
     public function store(CreateAlbumRequest $request): JsonResponse
@@ -72,6 +89,8 @@ class AlbumController extends Controller
             'user_id' => $request->user()->id,
             'client_name' => $data['client_name'],
             'title' => $data['title'],
+            'category' => $data['category'] ?? null,
+            'event_date' => $data['event_date'] ?? null,
             'slug' => $this->albums->generateSlug($data['client_name']),
             'password_hash' => Hash::make($plainPassword),
             'google_drive_url' => $data['google_drive_url'],
@@ -79,12 +98,21 @@ class AlbumController extends Controller
             'drive_auth_mode' => $authMode,
             'description' => $data['description'] ?? null,
             'tagline' => $data['tagline'] ?? null,
-            'cover_image_url' => $data['cover_image_url'] ?? null,
-            'theme' => $data['theme'] ?? 'classic',
+            'cover_image_url' => $this->sanitizeCover($data['cover_image_url'] ?? null),
+            'film_url' => $data['film_url'] ?? null,
+            'video_gallery_url' => $data['video_gallery_url'] ?? null,
+            'theme' => 'akhila', // single fixed theme for all albums
+            'ambient_effect' => $data['ambient_effect'] ?? null,
+            'ambient_speed' => $data['ambient_speed'] ?? null,
+            'ambient_count' => $data['ambient_count'] ?? null,
             'status' => $data['status'] ?? 'active',
             'allow_download' => $data['allow_download'] ?? true,
             'allow_share' => $data['allow_share'] ?? true,
-            'expires_at' => $data['expires_at'] ?? null,
+            'allow_comments' => $data['allow_comments'] ?? true,
+            'allow_enquiries' => $data['allow_enquiries'] ?? true,
+            'google_review_url' => $data['google_review_url'] ?? null,
+            // Default to 1 year from now when the admin didn't set an expiry.
+            'expires_at' => $data['expires_at'] ?? now()->addYear()->toDateString(),
             'sync_status' => 'pending',
         ]);
 
@@ -95,6 +123,25 @@ class AlbumController extends Controller
             'album' => new AdminAlbumResource($album),
             'share' => $this->albums->sharePayload($album, $plainPassword),
         ], 201);
+    }
+
+    /**
+     * A Google Drive "/file/d/.../view" or "open?id=" link is a web page, not
+     * an image, and can't render in an <img>. Reject those so the sync picks a
+     * real photo as the cover instead. A plain image URL is kept as-is.
+     */
+    private function sanitizeCover(?string $url): ?string
+    {
+        if (! $url) {
+            return null;
+        }
+        if (str_contains($url, 'drive.google.com/file/')
+            || str_contains($url, 'drive.google.com/open')
+            || str_ends_with($url, '/view')) {
+            return null;
+        }
+
+        return $url;
     }
 
     public function show(Album $album): JsonResponse
@@ -124,6 +171,10 @@ class AlbumController extends Controller
                     return response()->json(['message' => $e->userMessage], 422);
                 }
             }
+        }
+
+        if (array_key_exists('cover_image_url', $data)) {
+            $data['cover_image_url'] = $this->sanitizeCover($data['cover_image_url']);
         }
 
         $album->fill($data)->save();
@@ -187,5 +238,180 @@ class AlbumController extends Controller
         $this->authorize('view', $album);
 
         return response()->json($this->albums->sharePayload($album));
+    }
+
+    /** Enquiries submitted from this album (admin view). */
+    public function enquiries(Album $album): JsonResponse
+    {
+        $this->authorize('view', $album);
+
+        return response()->json(
+            $album->enquiries()->orderByDesc('created_at')->paginate(25)
+        );
+    }
+
+    /** Comments left on this album (admin view). */
+    public function comments(Album $album): JsonResponse
+    {
+        $this->authorize('view', $album);
+
+        return response()->json(
+            $album->comments()->orderByDesc('created_at')->paginate(25)
+        );
+    }
+
+    /** Admin: list the album's video-gallery videos + their poster overrides. */
+    public function galleryVideos(Album $album, GoogleDriveService $drive): JsonResponse
+    {
+        $this->authorize('view', $album);
+
+        if (! $album->video_gallery_url) {
+            return response()->json(['data' => []]);
+        }
+
+        if ($album->drive_auth_mode === 'demo') {
+            $posters = $album->video_posters ?: [];
+            $videos = \App\Services\DemoDriveData::videos();
+            $data = array_map(fn ($v) => [
+                'id' => $v['id'],
+                'name' => $v['name'],
+                'poster' => $posters[$v['id']] ?? '',
+            ], $album->applyVideoOrder($videos));
+
+            return response()->json(['data' => $data]);
+        }
+
+        $folderId = null;
+        if (preg_match('#/folders/([A-Za-z0-9_-]+)#', $album->video_gallery_url, $m)) {
+            $folderId = $m[1];
+        } else {
+            $folderId = $drive->extractFolderId($album->video_gallery_url);
+        }
+
+        try {
+            $videos = $drive->listVideoFiles($folderId);
+        } catch (\Throwable $e) {
+            return response()->json(['data' => [], 'error' => 'Could not list the video folder.']);
+        }
+
+        $videos = $album->applyVideoOrder($videos);
+        $posters = $album->video_posters ?: [];
+        $data = array_map(fn ($v) => [
+            'id' => $v['id'],
+            'name' => $v['name'] ?? 'Video',
+            'poster' => $posters[$v['id']] ?? '',
+        ], $videos);
+
+        return response()->json(['data' => $data]);
+    }
+
+    /** Admin: save the per-video poster map for the video gallery. */
+    public function updateGalleryPosters(Request $request, Album $album): JsonResponse
+    {
+        $this->authorize('update', $album);
+
+        $data = $request->validate([
+            'posters' => ['array'],
+            'posters.*' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        // Keep only non-empty entries.
+        $posters = array_filter($data['posters'] ?? [], fn ($v) => is_string($v) && trim($v) !== '');
+        $album->video_posters = $posters ?: null;
+        $album->save();
+
+        Cache::forget("album.public.{$album->slug}");
+
+        return response()->json(['data' => $album->video_posters ?: []]);
+    }
+
+    /** Admin: save the display order (array of Drive file ids) for the gallery. */
+    public function updateGalleryOrder(Request $request, Album $album): JsonResponse
+    {
+        $this->authorize('update', $album);
+
+        $data = $request->validate([
+            'order' => ['array'],
+            'order.*' => ['string', 'max:200'],
+        ]);
+
+        $order = array_values(array_filter($data['order'] ?? [], fn ($v) => is_string($v) && $v !== ''));
+        $album->video_order = $order ?: null;
+        $album->save();
+
+        Cache::forget("album.public.{$album->slug}");
+
+        return response()->json(['data' => $album->video_order ?: []]);
+    }
+
+    /** Sections (root events) of an album, with their manual overrides. */
+    public function sections(Album $album): JsonResponse
+    {
+        $this->authorize('view', $album);
+
+        $events = $album->rootEvents()->orderBy('sort_order')->get()->map(fn ($e) => [
+            'id' => $e->id,
+            'name' => $e->name,
+            'slug' => $e->slug,
+            'photo_count' => $e->photo_count,
+            'cover_image_url' => $e->cover_image_url,          // auto-detected
+            'cover_override' => $e->cover_override,            // manual
+            'film_drive_id' => $e->film_drive_id ? true : false, // auto video present?
+            'film_url_override' => $e->film_url_override,      // manual
+        ]);
+
+        return response()->json(['data' => $events]);
+    }
+
+    /** Save the display order of sections (root events) by id. */
+    public function updateSectionsOrder(Request $request, Album $album): JsonResponse
+    {
+        $this->authorize('update', $album);
+
+        $data = $request->validate([
+            'order' => ['array'],
+            'order.*' => ['integer'],
+        ]);
+
+        // Assign sort_order by the given id sequence (only ids that belong to
+        // this album's root events).
+        $validIds = $album->rootEvents()->pluck('id')->all();
+        $i = 0;
+        foreach ($data['order'] ?? [] as $eventId) {
+            if (in_array((int) $eventId, $validIds, true)) {
+                \App\Models\Event::where('id', $eventId)
+                    ->where('album_id', $album->id)
+                    ->update(['sort_order' => $i++]);
+            }
+        }
+
+        Cache::forget("album.public.{$album->slug}");
+
+        return response()->json(['ok' => true]);
+    }
+
+    /** Update a single section's manual cover/film overrides. */
+    public function updateSection(Request $request, Album $album, \App\Models\Event $event): JsonResponse
+    {
+        $this->authorize('update', $album);
+        abort_if($event->album_id !== $album->id, 404);
+
+        $data = $request->validate([
+            'cover_override' => ['nullable', 'string', 'max:1000'],
+            'film_url_override' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $event->fill([
+            'cover_override' => $data['cover_override'] ?: null,
+            'film_url_override' => $data['film_url_override'] ?: null,
+        ])->save();
+
+        Cache::forget("album.public.{$album->slug}");
+
+        return response()->json(['data' => [
+            'id' => $event->id,
+            'cover_override' => $event->cover_override,
+            'film_url_override' => $event->film_url_override,
+        ]]);
     }
 }

@@ -7,8 +7,8 @@ import { usePageMeta } from '../hooks/usePageMeta';
  */
 export default function Landing() {
   usePageMeta({
-    title: 'Magic Frames — Digital Wedding Albums',
-    description: 'Premium, private, mobile-first digital wedding photo albums powered by Google Drive.',
+    title: 'Magic Frames — Digital Photo Albums',
+    description: 'Premium, private, mobile-first digital photo albums powered by Google Drive.',
   });
 
   return (
@@ -16,7 +16,7 @@ export default function Landing() {
       <div className="mx-auto flex max-w-3xl flex-col items-center px-6 py-24 text-center">
         <p className="text-xs uppercase tracking-[0.3em]" style={{ color: 'var(--muted)' }}>Magic Frames</p>
         <h1 className="font-heading mt-4 text-5xl leading-tight sm:text-6xl">
-          Premium digital wedding albums
+          Premium digital photo albums
         </h1>
         <p className="mt-5 max-w-lg text-base" style={{ color: 'var(--muted)' }}>
           Share a private, beautifully designed album with your clients — their photos stream straight

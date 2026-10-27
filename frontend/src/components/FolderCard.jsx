@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import LazyImage from './LazyImage';
+import categoryIcon from './categoryIcon';
 
 export default function FolderCard({ slug, eventSlug, folder, index = 0 }) {
   return (
@@ -15,6 +16,7 @@ export default function FolderCard({ slug, eventSlug, folder, index = 0 }) {
         className="w-full transition-transform duration-500 group-hover:scale-105"
       />
       <div className="p-3">
+        <span className="folder-cat-icon" aria-hidden="true">{categoryIcon(folder.name)}</span>
         <h4 className="font-heading text-lg leading-tight">{folder.name}</h4>
         <p className="text-xs" style={{ color: 'var(--muted)' }}>
           {folder.photo_count} Photos

@@ -75,6 +75,10 @@
 [data-theme='akhila'] .hero-title { font-family: var(--script-font); font-weight: 400; line-height: 0.95; }
 [data-theme='akhila'] .hero-rule { display: block; }
 
+/* Centered gold rule under section sub-headings (event/folder pages). Shown on
+   every theme so the editorial rhythm carries through the gallery. */
+.section-rule { display: block; width: 46px; height: 1px; margin: 12px auto 0; background: var(--accent); opacity: 0.8; }
+
 @layer base {
   html { scroll-behavior: smooth; }
   body {
@@ -112,3 +116,379 @@
 /* Hide scrollbars on filmstrip */
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* =========================================================================
+   AKHILA — cinematic dark + gold album-viewing treatment
+   Everything below is scoped to [data-theme='akhila'] so the other themes
+   are untouched. Mirrors the reference index.html: animated hero zoom,
+   gold-shaded gallery cards, hover image motion, ambient floating leaves,
+   scroll reveals and an elegant lightbox.
+   ========================================================================= */
+
+@keyframes mf-hero-zoom { from { transform: scale(1.04); } to { transform: scale(1.14); } }
+@keyframes mf-float-leaf {
+  0%   { opacity: 0; transform: translateY(70px) rotate(0); }
+  15%  { opacity: .6; }
+  85%  { opacity: .5; }
+  100% { opacity: 0; transform: translateY(-90vh) rotate(250deg); }
+}
+@keyframes mf-reveal-up { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+[data-theme='akhila'] {
+  /* richer type rhythm for the cinematic look */
+  --letter-spacing: 0.02em;
+}
+
+/* ---- Global background: deep ink with a subtle gold vignette ---- */
+[data-theme='akhila'] body {
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(217,173,96,0.10), transparent 60%),
+    var(--bg);
+  letter-spacing: 0.3px;
+}
+
+/* ---- Eyebrows / small-caps labels in gold ---- */
+[data-theme='akhila'] .text-xs.uppercase,
+[data-theme='akhila'] .text-\[0\.65rem\].uppercase { color: var(--accent) !important; opacity: .9; }
+
+/* ---- Hero: cinematic gradient + slow zoom on the cover image ---- */
+[data-theme='akhila'] section.relative > .relative.h-72,
+[data-theme='akhila'] section.relative > .relative.sm\:h-96 { background: #17130d; }
+[data-theme='akhila'] .hero-title {
+  text-shadow: 0 2px 24px rgba(0,0,0,.65);
+  font-size: clamp(3rem, 7vw, 4.75rem);
+  letter-spacing: 0;
+}
+/* slow Ken-Burns zoom on any full-bleed cover image inside a hero section */
+[data-theme='akhila'] section.relative img.object-cover {
+  animation: mf-hero-zoom 18s ease-in-out infinite alternate;
+  transform-origin: center 42%;
+}
+/* darker, more directional cinematic shade over the hero */
+[data-theme='akhila'] section.relative .bg-gradient-to-t {
+  background-image:
+    linear-gradient(0deg, rgba(0,0,0,.80), transparent 55%),
+    linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,.08) 50%, rgba(0,0,0,.35)) !important;
+}
+
+/* ---- Section headings: thin gold rule motif under "Gallery"/"The Events" ---- */
+[data-theme='akhila'] main h2.font-heading {
+  font-size: clamp(2.4rem, 4.3vw, 3.2rem);
+  line-height: 1;
+}
+
+/* ---- Gallery / Event / Folder cards: gold shade, hover zoom, gold frame ---- */
+[data-theme='akhila'] .themed-surface {
+  border: 1px solid rgba(217,173,96,0.14);
+  background: #171713;
+  position: relative;
+  isolation: isolate;
+}
+/* warm directional overlay reminiscent of the reference card shades */
+[data-theme='akhila'] a.group.themed-surface .relative::after,
+[data-theme='akhila'] a.group.themed-surface > .relative::after {
+  content: "";
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(18,12,4,.55), rgba(18,12,4,.12) 55%, transparent);
+  transition: opacity .6s ease;
+}
+[data-theme='akhila'] a.group.themed-surface:hover .relative::after { opacity: .75; }
+/* stronger, slower image zoom on hover (reference uses ~0.9s) */
+[data-theme='akhila'] .group:hover img.object-cover,
+[data-theme='akhila'] .group:focus-visible img.object-cover {
+  transform: scale(1.07);
+  transition: transform .9s cubic-bezier(.2,.7,.2,1);
+}
+/* card titles pick up the serif display weight */
+[data-theme='akhila'] .themed-surface h3.font-heading,
+[data-theme='akhila'] .themed-surface .font-heading {
+  letter-spacing: .5px;
+}
+/* gold focus ring for keyboard users, matching the reference */
+[data-theme='akhila'] a.group:focus-visible { outline: 1px solid var(--accent); outline-offset: 3px; }
+
+/* ---- Sticky header: translucent ink + gold hairline ---- */
+[data-theme='akhila'] header.sticky {
+  background: color-mix(in srgb, #0b0d0c 82%, transparent) !important;
+  border-bottom: 1px solid rgba(217,173,96,0.18);
+}
+
+/* ---- Neutralise hardcoded dark borders so they read on gold-on-black ---- */
+[data-theme='akhila'] .border-black\/10,
+[data-theme='akhila'] .border-black\/15 { border-color: rgba(217,173,96,0.22) !important; }
+
+/* ---- View-switcher pills + round nav buttons ---- */
+[data-theme='akhila'] .rounded-full.border { border-color: rgba(217,173,96,0.30); }
+
+/* ---- Buttons: squared gold with uppercase tracking (set earlier), add hover lift ---- */
+[data-theme='akhila'] .btn-accent { box-shadow: 0 6px 22px -10px rgba(217,173,96,.6); }
+[data-theme='akhila'] .btn-accent:hover { transform: translateY(-1px); opacity: 1; }
+
+/* ---- Lightbox / PhotoViewer: deep blurred ink + gold-bordered controls ---- */
+[data-theme='akhila'] .fixed.inset-0.z-\[60\] { background: rgba(4,5,4,0.97) !important; backdrop-filter: blur(18px); }
+[data-theme='akhila'] .fixed.inset-0.z-\[60\] button.rounded-full,
+[data-theme='akhila'] .fixed.inset-0.z-\[60\] .bg-white\/10 {
+  border: 1px solid rgba(217,173,96,0.65);
+  background: rgba(17,17,17,0.55) !important;
+  color: #fff;
+  transition: background .25s ease, color .25s ease;
+}
+[data-theme='akhila'] .fixed.inset-0.z-\[60\] button.rounded-full:hover { background: var(--accent) !important; color: #15110b; }
+
+/* ---- Skeletons on dark ---- */
+[data-theme='akhila'] .skeleton {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.10) 37%, rgba(255,255,255,0.04) 63%);
+  background-size: 1000px 100%;
+}
+
+/* ---- Scroll reveal (opt-in via .mf-reveal, activated by .mf-in) ---- */
+[data-theme='akhila'] .mf-reveal { opacity: 0; transform: translateY(22px); transition: opacity .8s ease, transform .8s ease; }
+[data-theme='akhila'] .mf-reveal.mf-in { opacity: 1; transform: translateY(0); }
+
+/* ===== Ambient motion effects (admin-selectable per album) ===== */
+/* Particles sit BEHIND the page content (z-index:0), so they only show through
+   the dark background and never drift over photos or text. The album content
+   paints above them via its own stacking (see .mf-content below). */
+.mf-fx { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+/* Album content paints above the particles so leaves/petals only show through
+   the dark background gaps — never over photos, cards or text. */
+.mf-content { position: relative; z-index: 1; }
+.mf-particle {
+  position: absolute; top: 100%; display: block; line-height: 1;
+  opacity: 0; will-change: transform, opacity;
+  animation-name: mf-fall; animation-timing-function: linear; animation-iteration-count: infinite;
+}
+/* Base fall: rise from below to above the viewport with a gentle horizontal drift + spin */
+@keyframes mf-fall {
+  0%   { opacity: 0; transform: translate(0, 0) rotate(0); }
+  10%  { opacity: .85; }
+  90%  { opacity: .6; }
+  100% { opacity: 0; transform: translate(var(--mf-drift, 0), -112vh) rotate(320deg); }
+}
+/* Snow / bubbles drift more slowly and sway */
+@keyframes mf-drift-soft {
+  0%   { opacity: 0; transform: translate(0, 0); }
+  12%  { opacity: .9; }
+  50%  { transform: translate(calc(var(--mf-drift, 0) * 0.6), -56vh); }
+  90%  { opacity: .5; }
+  100% { opacity: 0; transform: translate(var(--mf-drift, 0), -112vh); }
+}
+
+/* ---- Effect-specific particle styling ---- */
+/* Gold leaves: CSS-drawn teardrop (no glyph) */
+.mf-fx-leaves .mf-particle {
+  width: 9px; height: 18px; border-radius: 90% 0 90% 0;
+  background: linear-gradient(135deg, #b78643, #e7c28a); filter: blur(.5px);
+}
+/* Flowers / petals / hearts: tinted glyphs */
+.mf-fx-flowers .mf-particle { color: #f0d9a8; text-shadow: 0 1px 4px rgba(0,0,0,.35); }
+.mf-fx-petals .mf-particle { color: #e7a9ad; text-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.mf-fx-hearts .mf-particle { color: #e06a7b; text-shadow: 0 1px 4px rgba(0,0,0,.3); }
+.mf-fx-snow .mf-particle { color: #ffffff; filter: drop-shadow(0 0 2px rgba(255,255,255,.5)); animation-name: mf-drift-soft; }
+.mf-fx-balloons .mf-particle { filter: drop-shadow(0 4px 6px rgba(0,0,0,.25)); }
+/* Confetti: small bright rectangles, varied colors via nth-child */
+.mf-fx-confetti .mf-particle { width: 8px; height: 12px; border-radius: 1px; background: #d9ad60; }
+.mf-fx-confetti .mf-particle:nth-child(3n) { background: #e7a9ad; }
+.mf-fx-confetti .mf-particle:nth-child(3n+1) { background: #8fc1d4; }
+.mf-fx-confetti .mf-particle:nth-child(4n) { background: #a7d39a; }
+/* Sprinkles: thin rounded capsules */
+.mf-fx-sprinkles .mf-particle { width: 4px; height: 14px; border-radius: 999px; background: #f0b2c0; }
+.mf-fx-sprinkles .mf-particle:nth-child(3n) { background: #f4d58a; }
+.mf-fx-sprinkles .mf-particle:nth-child(3n+1) { background: #9ad0e0; }
+.mf-fx-sprinkles .mf-particle:nth-child(4n) { background: #b4e0a0; }
+/* Bubbles: translucent circles, soft rise */
+.mf-fx-bubbles .mf-particle {
+  width: 16px; height: 16px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 30%, rgba(255,255,255,.75), rgba(255,255,255,.08) 60%, transparent 70%);
+  border: 1px solid rgba(255,255,255,.35); animation-name: mf-drift-soft;
+}
+
+/* ---- Decorative category icons on event/folder cards (akhila only) ---- */
+.card-cat-icon, .folder-cat-icon { display: none; }
+[data-theme='akhila'] .folder-cat-icon {
+  display: block; font-family: 'Cormorant Garamond', serif; color: var(--accent);
+  font-size: 1.15rem; line-height: 1; margin-bottom: 0.15rem;
+}
+
+/* Interlocking gold rings under the Gallery heading (akhila theme) */
+.gallery-rings { display: none; }
+[data-theme='akhila'] .gallery-rings { display: flex; justify-content: center; align-items: center; height: 16px; margin-top: 4px; }
+[data-theme='akhila'] .gallery-rings i { width: 13px; height: 13px; border: 1px solid var(--accent); border-radius: 50%; margin-right: -3px; }
+
+/* =========================================================================
+   Gallery section cards — reference-matched (akhila theme)
+   Left-weighted cinematic shade, serif title (proper case), dotted caption,
+   gold VIEW link + gold corner arrow. First card spans full width.
+   ========================================================================= */
+/* Default (non-akhila): keep a simple, readable overlay card */
+.card-shade { background: linear-gradient(to top, rgba(0,0,0,.55), transparent 60%); }
+.card-title { font-size: 1.6rem; }
+.card-caption, .card-view, .card-arrow, .card-cat-icon { display: none; }
+
+[data-theme='akhila'] .gallery-grid { gap: 11px; }
+[data-theme='akhila'] .event-card.is-wide { grid-column: 1 / -1; }
+/* Keep cards banner-like: cap height so they never get boxy/too tall. */
+[data-theme='akhila'] .event-card { max-height: 300px; }
+[data-theme='akhila'] .event-card.is-wide { max-height: 240px; }
+[data-theme='akhila'] .event-card > .relative { height: 100%; }
+
+[data-theme='akhila'] .card-shade {
+  background:
+    linear-gradient(90deg, rgba(14,10,4,.88), rgba(14,10,4,.35) 48%, rgba(0,0,0,.02) 80%),
+    linear-gradient(0deg, rgba(0,0,0,.25), transparent 55%);
+}
+[data-theme='akhila'] .card-copy { max-width: 72%; z-index: 1; }
+[data-theme='akhila'] .card-cat-icon {
+  display: block; font-family: 'Cormorant Garamond', serif; color: var(--accent);
+  font-size: 1.8rem; line-height: 1; margin-bottom: 0.4rem;
+}
+[data-theme='akhila'] .card-title {
+  font-family: 'Cormorant Garamond', serif; font-weight: 500;
+  font-size: clamp(1.7rem, 3vw, 2.5rem); letter-spacing: .5px; margin: 0;
+  text-shadow: 0 2px 14px rgba(0,0,0,.5);
+}
+[data-theme='akhila'] .event-card.is-wide .card-title { font-size: clamp(2rem, 3.6vw, 3rem); }
+[data-theme='akhila'] .card-caption {
+  display: block; margin-top: 10px; font-size: 8px; letter-spacing: 2.6px;
+  font-weight: 500; text-transform: uppercase; color: #e2dcd3;
+}
+[data-theme='akhila'] .card-view {
+  display: inline-flex; align-items: center; gap: 12px; margin-top: 22px;
+  font-size: 8px; letter-spacing: 2px; font-weight: 500; text-transform: uppercase;
+}
+[data-theme='akhila'] .card-view b {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 24px; height: 24px; border: 1px solid rgba(255,255,255,.55); border-radius: 50%;
+  font-size: 18px; font-weight: 300; transition: background .3s ease, color .3s ease, border-color .3s ease;
+}
+[data-theme='akhila'] .group:hover .card-view b { background: var(--accent); border-color: var(--accent); color: #111; }
+[data-theme='akhila'] .card-arrow {
+  display: grid; place-items: center; position: absolute; right: 18px; bottom: 16px; z-index: 2;
+  width: 39px; height: 39px; border-radius: 50%; border: 1px solid var(--accent);
+  background: rgba(5,5,5,.6); backdrop-filter: blur(4px); color: var(--accent);
+  font-size: 18px; transition: transform .25s ease, background .25s ease, color .25s ease;
+}
+[data-theme='akhila'] .group:hover .card-arrow { background: var(--accent); color: #111; transform: rotate(35deg); }
+
+/* Centered play button on section cards that have their own film.
+   Prominent gold "view the video" affordance with a soft pulsing ring. */
+.card-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  z-index: 3; display: grid; place-items: center;
+  width: 64px; height: 64px; border-radius: 50%; cursor: pointer;
+  border: 2px solid var(--accent, #d9ad60); background: rgba(0,0,0,.32);
+  backdrop-filter: blur(5px); color: #fff;
+  box-shadow: 0 0 0 0 rgba(217,173,96,.55);
+  animation: mf-play-pulse 2.6s ease-out infinite;
+  transition: background .3s ease, color .3s ease, transform .3s ease;
+}
+.card-play span { font-size: 17px; margin-left: 3px; }
+/* On section cards the cue is non-interactive (whole card is a link); light
+   it up when the card is hovered so it reads as "open to watch". */
+.card-play:hover,
+.event-card:hover .card-play,
+.group:hover .card-play { background: var(--accent, #d9ad60); color: #111; transform: translate(-50%, -50%) scale(1.1); animation: none; }
+@keyframes mf-play-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(217,173,96,.5); }
+  70%  { box-shadow: 0 0 0 16px rgba(217,173,96,0); }
+  100% { box-shadow: 0 0 0 0 rgba(217,173,96,0); }
+}
+@media (prefers-reduced-motion: reduce) { .card-play { animation: none; } }
+
+/* Video Gallery tiles */
+.video-tile { border: 1px solid rgba(217,173,96,0.15); background: #171713; cursor: pointer; }
+.video-tile video { transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+.video-tile:hover video { transform: scale(1.06); }
+.video-tile-play {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.85); background: rgba(0,0,0,.3); color: #fff;
+  font-size: 15px; backdrop-filter: blur(4px); transition: background .3s ease, color .3s ease, transform .3s ease;
+}
+.video-tile:hover .video-tile-play { background: var(--accent); color: #111; transform: translate(-50%, -50%) scale(1.1); }
+
+/* ===== Cinematic full-viewport hero stage ===== */
+.hero-stage { height: 56vh; min-height: 360px; background: #17130d; }
+[data-theme='akhila'] .hero-stage { height: min(88vh, 780px); min-height: 520px; }
+.hero-shade {
+  background:
+    linear-gradient(0deg, rgba(0,0,0,.75), transparent 55%),
+    linear-gradient(90deg, rgba(0,0,0,.45), rgba(0,0,0,.08) 50%, rgba(0,0,0,.4));
+}
+[data-theme='akhila'] .hero-stage img { animation: mf-hero-zoom 18s ease-in-out infinite alternate; transform-origin: center 42%; }
+
+/* ---- Hero play button + flourishes ----
+   The DECORATIVE play span is akhila-only. A REAL film button
+   (.hero-play-active) is shown on every theme so clients can play the film. */
+.hero-play {
+  display: none; place-items: center; position: absolute; top: 44%; left: 50%;
+  width: 62px; height: 62px; margin: -31px 0 0 -31px;
+  border: 1px solid rgba(255,255,255,.85); border-radius: 50%;
+  background: rgba(0,0,0,.25); backdrop-filter: blur(5px); color: #fff;
+  z-index: 4; cursor: default; transition: background .3s ease, transform .3s ease, color .3s ease;
+}
+.hero-play span { font-size: 16px; margin-left: 3px; }
+.hero-play-active { display: grid; cursor: pointer; }
+.hero-play-active:hover { background: var(--accent); color: #111; transform: scale(1.08); }
+[data-theme='akhila'] .hero-play { display: grid; }
+
+/* Handwritten decorative note — akhila only, right side, vertically centered */
+.hero-note { display: none; }
+[data-theme='akhila'] .hero-note {
+  display: block; position: absolute; right: 5%; top: 42%; z-index: 3;
+  font-family: var(--script-font); font-size: 1.45rem; line-height: 1.25;
+  color: #e7c28a; transform: rotate(-8deg); opacity: .9; text-align: center; pointer-events: none;
+}
+
+/* Film scrubber strip along the bottom of the hero (akhila theme) */
+.hero-scrubber { display: none; }
+[data-theme='akhila'] .hero-scrubber {
+  display: flex; align-items: center; gap: 16px; position: absolute;
+  left: 4.5%; right: 4.5%; bottom: 0; height: 44px; z-index: 4;
+  border-top: 1px solid rgba(255,255,255,.38); background: transparent;
+  color: #fff; font-size: 10px; letter-spacing: .5px; cursor: pointer;
+}
+.hero-scrubber-play { font-size: 13px; }
+.hero-scrubber-track { position: relative; flex: 1; height: 2px; background: rgba(255,255,255,.4); }
+.hero-scrubber-track i { position: absolute; left: 0; top: 0; height: 100%; width: 14%; background: #fff; }
+.hero-scrubber-ic { font-size: 12px; opacity: .9; }
+.hero-scrubber:hover .hero-scrubber-track i { background: var(--accent); }
+
+/* "Watch the Film" text CTA — gold outline pill, works on every theme */
+.hero-film-cta {
+  color: #fff; border: 1px solid rgba(255,255,255,.7); border-radius: 999px;
+  padding: 0.55rem 1.25rem; font-weight: 500; backdrop-filter: blur(4px);
+  background: rgba(0,0,0,.25); transition: background .25s ease, color .25s ease, border-color .25s ease;
+}
+.hero-film-cta:hover { background: var(--accent); color: var(--accent-contrast); border-color: var(--accent); }
+.hero-film-cta span { font-size: 0.7em; }
+[data-theme='akhila'] .hero-film-cta { border-radius: 0; border-color: var(--accent); color: var(--accent); }
+[data-theme='akhila'] .hero-film-cta:hover { color: var(--accent-contrast); }
+
+@media (max-width: 640px) {
+  .hero-play { top: 40%; }
+  [data-theme='akhila'] .hero-note { right: 4%; top: 22%; font-size: 1.1rem; }
+  [data-theme='akhila'] .hero-scrubber { gap: 8px; }
+  [data-theme='akhila'] .hero-scrubber-ic:last-child,
+  [data-theme='akhila'] .hero-scrubber-ic:nth-last-child(2) { display: none; }
+}
+
+/* ---- Login screen flourish (akhila only) ---- */
+[data-theme='akhila'] .login-eyebrow { color: var(--accent); opacity: .95; }
+
+/* ---- Photo-grid refinement: tighter reference-style gaps + square tiles ---- */
+[data-theme='akhila'] .grid.auto-rows-\[11rem\],
+[data-theme='akhila'] .grid.sm\:auto-rows-\[12rem\] { gap: 0.55rem; }
+[data-theme='akhila'] .columns-2.sm\:columns-3 > * { margin-bottom: 0.55rem; }
+/* square the rounded tiles to match the cinematic card language */
+[data-theme='akhila'] .grid img.rounded-lg,
+[data-theme='akhila'] .grid .rounded-lg,
+[data-theme='akhila'] .columns-2 .rounded-lg { border-radius: 0 !important; }
+/* subtle gold hairline + lift on gallery tiles */
+[data-theme='akhila'] .group.relative > :first-child { outline: 1px solid rgba(217,173,96,0.10); outline-offset: -1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme='akhila'] .hero-stage img { animation: none; }
+  .mf-fx { display: none; }
+  [data-theme='akhila'] .mf-reveal { opacity: 1; transform: none; transition: none; }
+}

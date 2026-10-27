@@ -32,13 +32,17 @@ class DatabaseSeeder extends Seeder
                 'user_id' => $admin->id,
                 'client_name' => 'Rahul & Anjali',
                 'title' => 'Our Wedding Journey',
+                'category' => 'Wedding',
                 'password_hash' => Hash::make('RA2026'),
                 'google_drive_url' => 'https://drive.google.com/drive/folders/DEMO_FOLDER_ID',
                 'google_drive_folder_id' => 'DEMO_FOLDER_ID',
                 'drive_auth_mode' => $albumService->resolveAuthMode(),
                 'description' => 'A collection of memories from our wedding celebrations.',
                 'tagline' => 'Memories that last forever.',
-                'theme' => 'classic',
+                'film_url' => 'https://www.youtube.com/watch?v=aqz-KE-bpKQ',
+                // Demo video gallery (sentinel link; demo mode returns sample clips).
+                'video_gallery_url' => 'https://drive.google.com/drive/folders/DEMO_VIDEO_FOLDER',
+                'theme' => 'akhila',
                 'status' => 'active',
                 'allow_download' => true,
                 'allow_share' => true,
@@ -48,5 +52,15 @@ class DatabaseSeeder extends Seeder
 
         // Run the sync inline during seeding so the demo album is viewable at once.
         SyncAlbumFromGoogleDrive::dispatchSync($album->id);
+
+        // Demo only: give a couple of sections a sample video override so the
+        // per-section "view video" play button is visible out of the box.
+        $sectionVideos = \App\Services\DemoDriveData::sectionVideos();
+        foreach ($sectionVideos as $name => $url) {
+            \App\Models\Event::where('album_id', $album->id)
+                ->whereNull('parent_id')
+                ->where('name', $name)
+                ->update(['film_url_override' => $url]);
+        }
     }
 }

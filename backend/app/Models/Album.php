@@ -15,6 +15,8 @@ class Album extends Model
         'user_id',
         'client_name',
         'title',
+        'category',
+        'event_date',
         'slug',
         'password_hash',
         'google_drive_folder_id',
@@ -22,12 +24,22 @@ class Album extends Model
         'drive_auth_mode',
         'cover_photo_id',
         'cover_image_url',
+        'film_url',
+        'video_gallery_url',
+        'video_posters',
+        'video_order',
         'description',
         'tagline',
         'status',
         'theme',
+        'ambient_effect',
+        'ambient_speed',
+        'ambient_count',
         'allow_download',
         'allow_share',
+        'google_review_url',
+        'allow_comments',
+        'allow_enquiries',
         'sync_status',
         'sync_progress',
         'sync_message',
@@ -44,6 +56,11 @@ class Album extends Model
     protected $casts = [
         'allow_download' => 'boolean',
         'allow_share' => 'boolean',
+        'allow_comments' => 'boolean',
+        'allow_enquiries' => 'boolean',
+        'event_date' => 'date',
+        'video_posters' => 'array',
+        'video_order' => 'array',
         'last_synced_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
@@ -77,6 +94,87 @@ class Album extends Model
     public function analyticsEvents(): HasMany
     {
         return $this->hasMany(AnalyticsEvent::class);
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function enquiries(): HasMany
+    {
+        return $this->hasMany(Enquiry::class);
+    }
+
+    /**
+     * Resolve the playable film source for the public UI:
+     *  - a Google Drive file link  -> our streaming proxy route
+     *  - any other URL (YouTube/Vimeo/direct mp4) -> passed through as-is
+     *  - demo albums                -> the raw link (proxy just redirects)
+     * Returns null when the album has no film.
+     */
+    public function filmSrc(): ?string
+    {
+        if (! $this->film_url) {
+            return null;
+        }
+
+        /** @var \App\Services\GoogleDriveService $drive */
+        $drive = app(\App\Services\GoogleDriveService::class);
+
+        // Route through our streaming proxy for ANY Google Drive link — a
+        // direct file, a /file/d/ share link, OR a folder link (the proxy
+        // auto-picks the first video in the folder).
+        $isDriveLink = $drive->extractFileId($this->film_url)
+            || str_contains($this->film_url, 'drive.google.com');
+
+        if ($this->drive_auth_mode !== 'demo' && $isDriveLink) {
+            return route('public.albums.film', ['slug' => $this->slug], false);
+        }
+
+        return $this->film_url;
+    }
+
+    /**
+     * Order a list of Drive video items (each with an 'id') by the album's
+     * saved video_order. Ids not in the order keep their original relative
+     * position at the end. Pure/stable — safe for both public + admin.
+     *
+     * @param  array<int,array<string,mixed>>  $videos
+     * @return array<int,array<string,mixed>>
+     */
+    public function applyVideoOrder(array $videos): array
+    {
+        $order = $this->video_order ?: [];
+        if (empty($order)) {
+            return $videos;
+        }
+
+        $pos = array_flip($order); // id => index
+        $big = count($order) + 1;
+        usort($videos, function ($a, $b) use ($pos, $big) {
+            $pa = $pos[$a['id']] ?? $big;
+            $pb = $pos[$b['id']] ?? $big;
+            return $pa <=> $pb;
+        });
+
+        return $videos;
+    }
+
+    /**
+     * A cover image for the "Videos" gallery card. Prefers the first poster in
+     * the video_posters map, else falls back to the album cover image.
+     */
+    public function videoGalleryCover(): ?string
+    {
+        $posters = $this->video_posters ?: [];
+        foreach ($posters as $url) {
+            if (is_string($url) && $url !== '' && ! str_contains($url, 'drive.google.com')) {
+                return $url; // a directly-renderable poster
+            }
+        }
+
+        return $this->cover_image_url;
     }
 
     public function isExpired(): bool

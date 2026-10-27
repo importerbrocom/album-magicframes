@@ -153,6 +153,46 @@ class GoogleDriveService
         );
     }
 
+    /** List video files directly inside a folder (mp4, mov, webm, …). */
+    public function listVideoFiles(string $parentId): array
+    {
+        return $this->listChildren(
+            $parentId,
+            "mimeType contains 'video/'",
+            'id,name,mimeType,size,createdTime',
+        );
+    }
+
+    /**
+     * Return the first video FILE id inside a folder, or null if none.
+     * Used to auto-pick a teaser/section film from a Drive folder link.
+     */
+    public function firstVideoIdInFolder(string $folderId): ?string
+    {
+        $videos = $this->listVideoFiles($folderId);
+        // Prefer a file named like a teaser/trailer, else the first.
+        usort($videos, function ($a, $b) {
+            $pri = fn ($n) => preg_match('/teaser|trailer|highlight|film/i', $n['name'] ?? '') ? 0 : 1;
+            return $pri($a) <=> $pri($b);
+        });
+
+        return $videos[0]['id'] ?? null;
+    }
+
+    /** True if the given id/link points at a Drive FOLDER (not a file). */
+    public function isFolder(string $id): bool
+    {
+        try {
+            $data = $this->request('GET', "/files/{$id}", [
+                'query' => ['fields' => 'mimeType', 'supportsAllDrives' => 'true'],
+            ]);
+
+            return ($data['mimeType'] ?? null) === self::FOLDER_MIME;
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     /**
      * Generic paginated listing of children matching an extra query clause.
      *
@@ -203,6 +243,55 @@ class GoogleDriveService
         return $response->getBody();
     }
 
+    /**
+     * Extract a Drive FILE ID from the common share shapes used for videos:
+     *   https://drive.google.com/file/d/<ID>/view?usp=sharing
+     *   https://drive.google.com/open?id=<ID>
+     *   https://drive.google.com/uc?id=<ID>&export=download
+     * A bare ID is also accepted. Returns null if nothing recognisable.
+     */
+    public function extractFileId(string $input): ?string
+    {
+        $input = trim($input);
+        if ($input === '') {
+            return null;
+        }
+
+        if (preg_match('#/file/d/([A-Za-z0-9_-]+)#', $input, $m)) {
+            return $m[1];
+        }
+        if (preg_match('#[?&]id=([A-Za-z0-9_-]+)#', $input, $m)) {
+            return $m[1];
+        }
+        // Bare ID (URL-safe, >= 20 chars to avoid matching short words).
+        if (preg_match('/^[A-Za-z0-9_-]{20,}$/', $input)) {
+            return $input;
+        }
+
+        return null;
+    }
+
+    /**
+     * Fetch lightweight metadata (mimeType, size, name) for a file.
+     *
+     * @return array{mimeType:?string,size:?int,name:?string}
+     */
+    public function fileMeta(string $fileId): array
+    {
+        $data = $this->request('GET', "/files/{$fileId}", [
+            'query' => [
+                'fields' => 'mimeType,size,name',
+                'supportsAllDrives' => 'true',
+            ],
+        ]);
+
+        return [
+            'mimeType' => $data['mimeType'] ?? null,
+            'size' => isset($data['size']) ? (int) $data['size'] : null,
+            'name' => $data['name'] ?? null,
+        ];
+    }
+
     // --- URL derivation helpers -------------------------------------------------
 
     /**
@@ -223,6 +312,77 @@ class GoogleDriveService
     public function previewUrl(?string $thumbnailLink, int $size = 1600): ?string
     {
         return $this->thumbnailUrl($thumbnailLink, $size);
+    }
+
+    /**
+     * Fetch the raw bytes of a resized thumbnail for a file, authenticated
+     * server-side. Used by the image proxy so private Drive photos render in
+     * the browser (their googleusercontent thumbnail links are auth-gated and
+     * won't load in an anonymous <img> tag).
+     *
+     * @return array{0:string,1:string} [binary body, content-type]
+     */
+    public function fetchThumbnailBytes(string $fileId, int $size = 400): array
+    {
+        // For very large requests (full-screen / 4K viewer) skip the thumbnail
+        // CDN entirely — it won't produce that resolution — and stream the
+        // original file so quality is never downscaled. The proxy caches it.
+        if ($size >= 2560) {
+            $resp = $this->rawRequest('GET', "/files/{$fileId}", [
+                'query' => array_filter(['alt' => 'media', 'supportsAllDrives' => 'true']),
+            ]);
+
+            return [(string) $resp->getBody(), $resp->getHeaderLine('Content-Type') ?: 'image/jpeg'];
+        }
+
+        // 1) Ask the Drive API for a fresh thumbnailLink (links expire).
+        $link = null;
+        try {
+            $meta = $this->request('GET', "/files/{$fileId}", [
+                'query' => array_filter([
+                    'fields' => 'thumbnailLink',
+                    'supportsAllDrives' => 'true',
+                ]),
+            ]);
+            $link = $this->thumbnailUrl($meta['thumbnailLink'] ?? null, $size);
+        } catch (\Throwable $e) {
+            Log::warning('thumbnailLink lookup failed', ['file' => $fileId, 'err' => $e->getMessage()]);
+        }
+
+        // 2) Try the googleusercontent thumbnail with ONLY a bearer header
+        //    (no Drive-API query params — those break the CDN host). Follow
+        //    redirects. This is the fast path for sized thumbnails.
+        if ($link) {
+            $headers = [];
+            if ($this->authMode() === 'oauth') {
+                $headers['Authorization'] = 'Bearer ' . $this->accessToken();
+            }
+            try {
+                $resp = $this->http->request('GET', $link, [
+                    'headers' => $headers,
+                    'allow_redirects' => true,
+                    'http_errors' => true,
+                ]);
+                $ct = $resp->getHeaderLine('Content-Type') ?: 'image/jpeg';
+                $body = (string) $resp->getBody();
+                // Guard: sometimes the CDN returns an HTML sign-in page instead
+                // of image bytes. If so, fall through to the API media path.
+                if ($body !== '' && ! str_starts_with(strtolower($ct), 'text/html')) {
+                    return [$body, $ct];
+                }
+            } catch (GuzzleException $e) {
+                Log::warning('thumbnail CDN fetch failed, falling back to media', ['file' => $fileId, 'err' => $e->getMessage()]);
+            }
+        }
+
+        // 3) Fallback: download the original media through the Drive API itself
+        //    (always works for files the account can read). Heavier, but used
+        //    only when the thumbnail path is unavailable; the proxy caches it.
+        $resp = $this->rawRequest('GET', "/files/{$fileId}", [
+            'query' => array_filter(['alt' => 'media', 'supportsAllDrives' => 'true']),
+        ]);
+
+        return [(string) $resp->getBody(), $resp->getHeaderLine('Content-Type') ?: 'image/jpeg'];
     }
 
     // --- HTTP plumbing ----------------------------------------------------------

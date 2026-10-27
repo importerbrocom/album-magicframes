@@ -41,11 +41,17 @@ export const albumService = {
       return r.data;
     }),
 
+  // The show endpoint returns a Laravel resource wrapped in { data: {...} }.
+  // Unwrap it (fall back to the raw body if an envelope isn't present) so
+  // callers get the flat album object with theme/client_name/etc.
   show: (slug) =>
-    api.get(`/public/albums/${slug}`, { headers: albumAuth(slug) }).then((r) => r.data),
+    api.get(`/public/albums/${slug}`, { headers: albumAuth(slug) }).then((r) => r.data?.data ?? r.data),
 
   events: (slug) =>
     api.get(`/public/albums/${slug}/events`, { headers: albumAuth(slug) }).then((r) => r.data.data),
+
+  videoGallery: (slug) =>
+    api.get(`/public/albums/${slug}/video-gallery`, { headers: albumAuth(slug) }).then((r) => r.data.data),
 
   event: (slug, eventSlug) =>
     api.get(`/public/albums/${slug}/events/${eventSlug}`, { headers: albumAuth(slug) }).then((r) => r.data),
@@ -85,4 +91,14 @@ export const albumService = {
     api.post(`/public/albums/${slug}/analytics`, payload, { headers: albumAuth(slug) }).catch(() => {}),
 
   qrUrl: (slug) => `${api.defaults.baseURL}/public/albums/${slug}/qr`,
+
+  // --- Engagement (open to anyone with the shared/reshared link) ---
+  comments: (slug, page = 1) =>
+    api.get(`/public/albums/${slug}/comments`, { params: { page } }).then((r) => r.data),
+
+  addComment: (slug, payload) =>
+    api.post(`/public/albums/${slug}/comments`, payload).then((r) => r.data),
+
+  submitEnquiry: (slug, payload) =>
+    api.post(`/public/albums/${slug}/enquiries`, payload).then((r) => r.data),
 };

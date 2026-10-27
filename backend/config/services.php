@@ -51,6 +51,29 @@ return [
         'public_base_url' => env('ALBUM_PUBLIC_BASE_URL', env('FRONTEND_URL', 'http://localhost:5173')),
         'token_secret' => env('ALBUM_TOKEN_SECRET'),
         'token_ttl_hours' => (int) env('ALBUM_TOKEN_TTL_HOURS', 24),
+        // Global default Google review link (per-album value overrides this).
+        'google_review_url' => env('GOOGLE_REVIEW_URL'),
+    ],
+
+    // External CRN (CRM) lead-intake integration for album enquiries.
+    'crn' => [
+        'endpoint' => env('CRN_ENDPOINT'),            // e.g. https://magicframes.nokkoo.in/api/leads
+        'method' => env('CRN_METHOD', 'POST'),
+        'as_form' => env('CRN_AS_FORM', false),       // send form-encoded instead of JSON
+        'source' => env('CRN_SOURCE', 'web-album'),
+        'token' => env('CRN_TOKEN'),                  // optional auth token
+        'token_header' => env('CRN_TOKEN_HEADER', 'Authorization'),
+        'token_prefix' => env('CRN_TOKEN_PREFIX', 'Bearer '),
+        // Map our field names -> CRN's expected names (override individually
+        // via CRN_FIELD_* env if the CRN uses different keys).
+        'field_map' => [
+            'name' => env('CRN_FIELD_NAME', 'name'),
+            'phone' => env('CRN_FIELD_PHONE', 'phone'),
+            'email' => env('CRN_FIELD_EMAIL', 'email'),
+            'message' => env('CRN_FIELD_MESSAGE', 'message'),
+            'source' => env('CRN_FIELD_SOURCE', 'source'),
+            'album' => env('CRN_FIELD_ALBUM', 'album'),
+        ],
     ],
 
 ];

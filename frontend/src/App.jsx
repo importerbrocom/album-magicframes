@@ -9,6 +9,7 @@ const AlbumLayout = lazy(() => import('./contexts/AlbumContext'));
 const AlbumHome = lazy(() => import('./pages/AlbumHome'));
 const EventPage = lazy(() => import('./pages/EventPage'));
 const FolderGalleryPage = lazy(() => import('./pages/FolderGalleryPage'));
+const VideoGalleryPage = lazy(() => import('./pages/VideoGalleryPage'));
 
 const AdminLogin = lazy(() => import('./admin/AdminLogin'));
 const AdminLayout = lazy(() => import('./admin/AdminLayout'));
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/album/:slug/login" element={<AlbumLogin />} />
             <Route path="/album/:slug" element={<AlbumLayout />}>
               <Route index element={<AlbumHome />} />
+              <Route path="videos" element={<VideoGalleryPage />} />
               <Route path="event/:eventSlug" element={<EventPage />} />
               <Route path="event/:eventSlug/folder/:folderSlug" element={<FolderGalleryPage />} />
             </Route>

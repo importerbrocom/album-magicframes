@@ -36,6 +36,11 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
     public int $timeout = 1800;
     public int $tries = 2;
 
+    /** @var array<int,string> Drive folder ids of events seen this run. */
+    private array $seenEventDriveIds = [];
+    /** @var array<int,string> Drive folder ids of sub-folders seen this run. */
+    private array $seenFolderDriveIds = [];
+
     public function __construct(public int $albumId)
     {
     }
@@ -49,8 +54,10 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
 
         $this->setStatus($album, 'syncing', 1, 'Starting synchronization...');
 
-        // Track which Drive file IDs are seen this run to mark the rest unavailable.
+        // Track which Drive IDs are seen this run so the rest can be pruned.
         $seenFileIds = [];
+        $this->seenEventDriveIds = [];
+        $this->seenFolderDriveIds = [];
         $folderCount = 0;
         $photoCount = 0;
 
@@ -64,10 +71,23 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                 [$folderCount, $photoCount] = $this->syncDrive($album, $drive, $seenFileIds);
             }
 
-            // Mark photos not seen this run as unavailable (deleted in Drive).
+            // Prune events/folders no longer present in the source (this also
+            // removes leftover demo data when an album switches to real Drive).
+            // Deleting an event cascades to its folders + photos via FK.
+            Event::where('album_id', $album->id)
+                ->when(! empty($this->seenEventDriveIds),
+                    fn ($q) => $q->whereNotIn('google_drive_folder_id', $this->seenEventDriveIds))
+                ->delete();
+
+            Folder::where('album_id', $album->id)
+                ->when(! empty($this->seenFolderDriveIds),
+                    fn ($q) => $q->whereNotIn('google_drive_folder_id', $this->seenFolderDriveIds))
+                ->delete();
+
+            // Remove photos not seen this run (deleted in Drive / stale demo).
             Photo::where('album_id', $album->id)
                 ->when(! empty($seenFileIds), fn ($q) => $q->whereNotIn('google_drive_file_id', $seenFileIds))
-                ->update(['is_available' => false]);
+                ->delete();
 
             $this->recountAndFinalize($album, $folderCount, $photoCount);
 
@@ -99,15 +119,28 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
 
         $eventSort = 0;
         foreach ($eventFolders as $i => $ef) {
-            $event = Event::updateOrCreate(
+            $event = Event::firstOrNew(
                 ['album_id' => $album->id, 'google_drive_folder_id' => $ef['id']],
-                [
-                    'name' => $ef['name'],
-                    'slug' => $this->uniqueEventSlug($album, $ef['name']),
-                    'sort_order' => $eventSort++,
-                    'is_available' => true,
-                ],
             );
+            $event->name = $ef['name'];
+            $event->slug = $event->slug ?: $this->uniqueEventSlug($album, $ef['name'], $ef['id']);
+            $event->is_available = true;
+            // Only assign a sort_order on first creation; preserve the admin's
+            // manual order on re-sync.
+            if (! $event->exists || $event->sort_order === null) {
+                $event->sort_order = $eventSort;
+            }
+            $eventSort++;
+            $event->save();
+            $this->seenEventDriveIds[] = $ef['id'];
+
+            // Detect a video inside this section's folder -> per-section film.
+            try {
+                $event->film_drive_id = $drive->firstVideoIdInFolder($ef['id']);
+                $event->save();
+            } catch (\Throwable $e) {
+                // Non-fatal: a section simply has no film.
+            }
 
             // Photos directly inside the event folder (no sub-folder).
             $directImages = $drive->listImageFiles($ef['id']);
@@ -123,11 +156,12 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                     [
                         'album_id' => $album->id,
                         'name' => $cf['name'],
-                        'slug' => Str::slug($cf['name']) ?: 'folder-' . $folderSort,
+                        'slug' => $this->uniqueFolderSlug($event, $cf['name'], $cf['id'], $folderSort),
                         'sort_order' => $folderSort++,
                         'is_available' => true,
                     ],
                 );
+                $this->seenFolderDriveIds[] = $cf['id'];
 
                 $images = $drive->listImageFiles($cf['id']);
                 $photoCount += $this->storePhotos($album, $event, $folder, $images, $seenFileIds, $drive);
@@ -156,15 +190,18 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
 
         foreach ($tree as $eventName => $folderNames) {
             $driveId = 'demo-event-' . Str::slug($eventName);
-            $event = Event::updateOrCreate(
+            $event = Event::firstOrNew(
                 ['album_id' => $album->id, 'google_drive_folder_id' => $driveId],
-                [
-                    'name' => $eventName,
-                    'slug' => $this->uniqueEventSlug($album, $eventName),
-                    'sort_order' => $eventSort++,
-                    'is_available' => true,
-                ],
             );
+            $event->name = $eventName;
+            $event->slug = $event->slug ?: $this->uniqueEventSlug($album, $eventName, $driveId);
+            $event->is_available = true;
+            if (! $event->exists || $event->sort_order === null) {
+                $event->sort_order = $eventSort;
+            }
+            $eventSort++;
+            $event->save();
+            $this->seenEventDriveIds[] = $driveId;
 
             if (empty($folderNames)) {
                 // Event with photos directly inside it.
@@ -181,11 +218,12 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                         [
                             'album_id' => $album->id,
                             'name' => $folderName,
-                            'slug' => Str::slug($folderName) ?: 'folder-' . $folderSort,
+                            'slug' => $this->uniqueFolderSlug($event, $folderName, $driveFolderId, $folderSort),
                             'sort_order' => $folderSort++,
                             'is_available' => true,
                         ],
                     );
+                    $this->seenFolderDriveIds[] = $driveFolderId;
 
                     $seed = $eventName . '/' . $folderName;
                     $count = DemoDriveData::photoCount($seed);
@@ -226,11 +264,12 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
                     'file_size' => isset($file['size']) ? (int) $file['size'] : null,
                     'width' => $meta['width'] ?? null,
                     'height' => $meta['height'] ?? null,
-                    'thumbnail_url' => $drive->thumbnailUrl($file['thumbnailLink'] ?? null, 400),
-                    'preview_url' => $drive->previewUrl($file['thumbnailLink'] ?? null, 1600),
-                    // Originals are streamed through the Laravel download proxy
-                    // (route resolved from the DB id at serialization time),
-                    // never a raw Drive link, so no original_url is stored here.
+                    // Image URLs are served by our authenticated image proxy
+                    // (resolved from the photo id + album slug at serialization
+                    // time) — private Drive thumbnail links are auth-gated and
+                    // expire, so we never store them.
+                    'thumbnail_url' => null,
+                    'preview_url' => null,
                     'original_url' => null,
                     'sort_order' => $sort++,
                     'is_available' => true,
@@ -276,14 +315,38 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
         return count($photos);
     }
 
-    private function uniqueEventSlug(Album $album, string $name): string
+    /**
+     * Produce a slug unique within the album, ignoring the event that owns the
+     * given Drive folder id (so re-syncing the same folder keeps its slug).
+     * Collisions against OTHER events get a numeric suffix.
+     */
+    private function uniqueEventSlug(Album $album, string $name, string $driveFolderId): string
     {
         $base = Str::slug($name) ?: 'event';
         $slug = $base;
         $n = 1;
         while (Event::where('album_id', $album->id)
             ->where('slug', $slug)
-            ->where('name', '!=', $name)
+            ->where('google_drive_folder_id', '!=', $driveFolderId)
+            ->exists()) {
+            $slug = $base . '-' . (++$n);
+        }
+
+        return $slug;
+    }
+
+    /**
+     * Slug unique within an event, ignoring the folder that owns the given
+     * Drive folder id.
+     */
+    private function uniqueFolderSlug(Event $event, string $name, string $driveFolderId, int $fallback): string
+    {
+        $base = Str::slug($name) ?: ('folder-' . $fallback);
+        $slug = $base;
+        $n = 1;
+        while (Folder::where('event_id', $event->id)
+            ->where('slug', $slug)
+            ->where('google_drive_folder_id', '!=', $driveFolderId)
             ->exists()) {
             $slug = $base . '-' . (++$n);
         }
@@ -297,13 +360,15 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
         foreach ($album->events as $event) {
             $event->photo_count = Photo::where('event_id', $event->id)->where('is_available', true)->count();
             $cover = Photo::where('event_id', $event->id)->where('is_available', true)->orderBy('sort_order')->first();
-            $event->cover_image_url = $cover?->thumbnail_url;
+            // Use the higher-res 'preview' for the large banner cards so they
+            // stay crisp on big screens (was 'thumb' = 400px, too soft).
+            $event->cover_image_url = $this->coverUrl($album, $cover, 'preview');
             $event->save();
 
             foreach ($event->folders as $folder) {
                 $folder->photo_count = Photo::where('folder_id', $folder->id)->where('is_available', true)->count();
                 $fcover = Photo::where('folder_id', $folder->id)->where('is_available', true)->orderBy('sort_order')->first();
-                $folder->cover_image_url = $fcover?->thumbnail_url;
+                $folder->cover_image_url = $this->coverUrl($album, $fcover, 'preview');
                 $folder->save();
             }
         }
@@ -318,14 +383,53 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
         $album->sync_message = 'Sync completed.';
         $album->last_synced_at = now();
 
-        // Default album cover: first photo of first event, if none set.
-        if (! $album->cover_image_url) {
-            $firstPhoto = Photo::where('album_id', $album->id)->where('is_available', true)->orderBy('id')->first();
-            $album->cover_image_url = $firstPhoto?->preview_url;
-            $album->cover_photo_id = $firstPhoto?->id;
+        // Album cover: prefer the admin's explicit cover photo if they picked
+        // one that still exists; otherwise fall back to the first photo. Always
+        // emit a renderable URL (proxy for real albums) — never a raw Drive
+        // "…/view" page link, which can't load in an <img>.
+        $coverPhoto = null;
+        if ($album->cover_photo_id) {
+            $coverPhoto = Photo::where('album_id', $album->id)
+                ->where('id', $album->cover_photo_id)
+                ->where('is_available', true)
+                ->first();
+        }
+        $coverPhoto ??= Photo::where('album_id', $album->id)
+            ->where('is_available', true)
+            ->orderBy('id')
+            ->first();
+
+        // If the current cover isn't a usable image URL (e.g. a pasted Drive
+        // "/file/d/.../view" link, or now stale), replace it with a real one.
+        $current = (string) $album->cover_image_url;
+        $looksBad = $current === ''
+            || str_contains($current, 'drive.google.com/file/')
+            || str_contains($current, 'drive.google.com/open')
+            || str_contains($current, '/view');
+
+        if ($looksBad || $album->drive_auth_mode !== 'demo') {
+            $album->cover_image_url = $this->coverUrl($album, $coverPhoto, 'preview');
+            $album->cover_photo_id = $coverPhoto?->id;
         }
 
         $album->save();
+    }
+
+    /**
+     * Build a cover image URL for a photo. Demo albums use the stored public
+     * placeholder URL; real albums use the authenticated image proxy route.
+     */
+    private function coverUrl(Album $album, ?Photo $photo, string $kind): ?string
+    {
+        if (! $photo) {
+            return null;
+        }
+
+        if ($album->drive_auth_mode === 'demo') {
+            return $kind === 'preview' ? $photo->preview_url : $photo->thumbnail_url;
+        }
+
+        return route("public.photos.{$kind}", ['slug' => $album->slug, 'id' => $photo->id], false);
     }
 
     private function setStatus(Album $album, string $status, int $progress, string $message): void

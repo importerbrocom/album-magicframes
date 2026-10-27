@@ -13,7 +13,9 @@ class EventResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
-            'cover_image_url' => $this->cover_image_url,
+            // Admin overrides win over auto-detected cover / folder video.
+            'cover_image_url' => $this->effectiveCover(),
+            'film_src' => $this->effectiveFilmSrc(),
             'photo_count' => $this->photo_count,
             'sort_order' => $this->sort_order,
             'folders' => FolderResource::collection($this->whenLoaded('rootFolders')),
