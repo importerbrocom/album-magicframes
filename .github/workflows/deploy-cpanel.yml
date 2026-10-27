@@ -1,21 +1,34 @@
 name: Build & Deploy (cPanel)
 
 # Builds the backend + frontend, assembles an upload-ready release bundle, and
-# (optionally) deploys it to cPanel over FTPS.
+# deploys it to cPanel over FTPS.
 #
-# The build/bundle jobs always run. The deploy job runs ONLY when the FTP
-# secrets below are configured, so the workflow never fails for lack of
-# credentials. Add these under: Settings -> Secrets and variables -> Actions
-#   FTP_SERVER     e.g. ftp.magicframes.nokkoo.in
-#   FTP_USERNAME   cPanel / FTP account username
-#   FTP_PASSWORD   cPanel / FTP account password
-# And this repository Variable (Settings -> Variables):
-#   DEPLOY_ENABLED = true     (acts as a safety switch)
+# The `build` job always runs. The `preflight` job then decides whether to
+# deploy and REPORTS the decision in the run summary. It FAILS LOUDLY when you
+# push to a deploy branch but deploy is off/misconfigured — so a green check
+# can never again mean "built but shipped nothing". The `deploy` job uploads
+# only when preflight says so.
+#
+# To actually ship to the live site, configure (one-time):
+#   Settings -> Secrets and variables -> Actions -> Secrets
+#     FTP_SERVER     e.g. ftp.magicframes.nokkoo.in
+#     FTP_USERNAME   cPanel / FTP account username
+#     FTP_PASSWORD   cPanel / FTP account password
+#   Settings -> Secrets and variables -> Actions -> Variables
+#     DEPLOY_ENABLED = true     (safety switch that turns deploys on)
+#
+# Or run the workflow manually (Actions -> Run workflow) with
+# force_deploy = true to deploy without flipping DEPLOY_ENABLED.
 
 on:
   push:
     branches: [main, feat/wedding-album-app]
   workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Deploy to cPanel even if DEPLOY_ENABLED is not set to true'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -90,26 +103,99 @@ jobs:
           path: release/
           retention-days: 7
 
-  deploy:
+  # Decide whether we should deploy — and make the decision VISIBLE and LOUD.
+  # This job always runs, writes a summary explaining the outcome, and FAILS
+  # the workflow when a push to a deploy branch cannot actually ship (so you
+  # never again see a green check that quietly deployed nothing).
+  preflight:
     needs: build
     runs-on: ubuntu-latest
-    # Only deploy when explicitly enabled AND credentials are present.
-    if: vars.DEPLOY_ENABLED == 'true'
+    outputs:
+      should_deploy: ${{ steps.decide.outputs.should_deploy }}
+    env:
+      DEPLOY_ENABLED: ${{ vars.DEPLOY_ENABLED }}
+      FORCE_DEPLOY: ${{ github.event_name == 'workflow_dispatch' && inputs.force_deploy }}
+      HAS_SECRETS: ${{ secrets.FTP_SERVER != '' && secrets.FTP_USERNAME != '' && secrets.FTP_PASSWORD != '' }}
+    steps:
+      - name: Decide & report
+        id: decide
+        run: |
+          set -euo pipefail
+
+          enabled="${DEPLOY_ENABLED:-}"
+          forced="${FORCE_DEPLOY:-false}"
+          has_secrets="${HAS_SECRETS:-false}"
+          event="${GITHUB_EVENT_NAME}"
+
+          want_deploy="false"
+          if [ "$enabled" = "true" ] || [ "$forced" = "true" ]; then
+            want_deploy="true"
+          fi
+
+          {
+            echo "## cPanel deploy preflight"
+            echo ""
+            echo "| Check | Value |"
+            echo "|-------|-------|"
+            echo "| Event | \`$event\` |"
+            echo "| DEPLOY_ENABLED variable | \`${enabled:-<unset>}\` |"
+            echo "| force_deploy input | \`$forced\` |"
+            echo "| FTP secrets present | \`$has_secrets\` |"
+            echo "| Deploy requested | \`$want_deploy\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Not requested at all.
+          if [ "$want_deploy" != "true" ]; then
+            {
+              echo ""
+              echo "### ⏭️ Deploy NOT performed — build only"
+              echo ""
+              echo "Your code was built successfully but **was not uploaded to the live site**."
+              echo "To ship changes to album-magicframes.nokkoo.in, set the repository variable"
+              echo "**DEPLOY_ENABLED = true** (Settings → Secrets and variables → Actions → Variables),"
+              echo "or run this workflow manually with **force_deploy = true**."
+            } >> "$GITHUB_STEP_SUMMARY"
+
+            # Fail loudly on a push to a real deploy branch so the silent
+            # no-op can never masquerade as a successful deployment again.
+            if [ "$event" = "push" ]; then
+              echo "::error title=Deploy skipped::Pushed to a deploy branch but DEPLOY_ENABLED is not 'true'. The live site was NOT updated. Set DEPLOY_ENABLED=true (repo Variables) or re-run with force_deploy=true."
+              exit 1
+            fi
+
+            echo "should_deploy=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Requested, but credentials are missing — fail loudly.
+          if [ "$has_secrets" != "true" ]; then
+            {
+              echo ""
+              echo "### ❌ Deploy requested but FTP secrets are missing"
+              echo ""
+              echo "Add these under Settings → Secrets and variables → Actions → **Secrets**:"
+              echo "\`FTP_SERVER\`, \`FTP_USERNAME\`, \`FTP_PASSWORD\`."
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error title=Missing FTP secrets::Deploy was requested but one or more of FTP_SERVER / FTP_USERNAME / FTP_PASSWORD is not set. Cannot upload to cPanel."
+            exit 1
+          fi
+
+          {
+            echo ""
+            echo "### 🚀 Deploy will run"
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "should_deploy=true" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: [build, preflight]
+    runs-on: ubuntu-latest
+    if: needs.preflight.outputs.should_deploy == 'true'
     steps:
       - name: Download release artifact
         uses: actions/download-artifact@v4
         with:
           name: magicframes-release
           path: release
-
-      - name: Guard — require FTP secrets
-        env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-        run: |
-          if [ -z "$FTP_SERVER" ]; then
-            echo "DEPLOY_ENABLED=true but FTP_SERVER secret is missing. Skipping deploy."
-            exit 1
-          fi
 
       # Deploy the SPA + doc-root files to the public doc root.
       - name: Deploy doc root (SPA + front controller)
@@ -139,3 +225,22 @@ jobs:
           exclude: |
             **/.env
             **/database/database.sqlite
+
+      - name: Report deploy result
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            {
+              echo "### ✅ Uploaded to cPanel"
+              echo ""
+              echo "The SPA + Laravel app were uploaded over FTPS."
+              echo ""
+              echo "**Finish on the server** (FTP can't run PHP) — in cPanel Terminal:"
+              echo '```bash'
+              echo "cd ~/laravel/album-magicframes"
+              echo "php artisan migrate --force && php artisan config:cache && php artisan route:cache"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### ❌ Upload failed — check the FTP steps above" >> "$GITHUB_STEP_SUMMARY"
+          fi
