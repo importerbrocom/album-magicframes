@@ -16,6 +16,21 @@
 
 use Illuminate\Http\Request;
 
+/*
+ * SPA shim: on LiteSpeed/cPanel the server resolves the directory index to this
+ * index.php for the site root ("/"), which would serve Laravel's welcome page
+ * instead of the React build. Serve the SPA shell (index.html) directly for the
+ * homepage BEFORE Laravel boots. API (/api/*) and health (/up) are untouched —
+ * they have their own paths and fall through to Laravel below.
+ */
+$__spaUri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+if (($__spaUri === '/' || $__spaUri === '/index.php') && is_file(__DIR__.'/index.html')) {
+    header('Content-Type: text/html; charset=UTF-8');
+    header('Cache-Control: no-cache, no-store, must-revalidate');
+    readfile(__DIR__.'/index.html');
+    exit;
+}
+
 define('LARAVEL_START', microtime(true));
 
 // Absolute path to the Laravel app root (contains vendor/, bootstrap/, storage/).
