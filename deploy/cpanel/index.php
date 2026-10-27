@@ -8,10 +8,10 @@
  *
  * It is a copy of Laravel's public/index.php with the paths repointed at the
  * Laravel application living OUTSIDE the doc root. Adjust $APP_BASE if you
- * clone the repo somewhere other than ~/laravel/album2.
+ * clone/upload the Laravel app somewhere other than ~/laravel/album2.
  *
- * Assumes the repo is cloned to ~/laravel/album2, so the Laravel
- * app (vendor/, bootstrap/, storage/) is in its "backend" subfolder.
+ * The deploy uploads the Laravel app directly into ~/laravel/album2, so
+ * artisan/vendor/bootstrap/storage live at that path (no backend/ subfolder).
  */
 
 use Illuminate\Http\Request;
@@ -34,7 +34,9 @@ if (($__spaUri === '/' || $__spaUri === '/index.php') && is_file(__DIR__.'/index
 define('LARAVEL_START', microtime(true));
 
 // Absolute path to the Laravel app root (contains vendor/, bootstrap/, storage/).
-$APP_BASE = '/home/uddjzwrz/laravel/album2/backend';
+// The deploy workflow uploads the Laravel app directly into this folder, so
+// artisan/vendor/bootstrap live here (NOT in a backend/ subfolder).
+$APP_BASE = '/home/uddjzwrz/laravel/album2';
 
 // Maintenance mode...
 if (file_exists($maintenance = $APP_BASE.'/storage/framework/maintenance.php')) {
