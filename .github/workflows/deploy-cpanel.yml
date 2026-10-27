@@ -197,33 +197,106 @@ jobs:
           name: magicframes-release
           path: release
 
-      # Deploy the SPA + doc-root files to the public doc root.
-      - name: Deploy doc root (SPA + front controller)
+      # cPanel's FTPS endpoint tends to drop the TLS data channel mid-transfer
+      # ("Server sent FIN packet unexpectedly") when many files upload back to
+      # back. We mitigate two ways:
+      #   1) a longer per-operation `timeout` so the action waits out stalls;
+      #   2) up to three sequential attempts per target — the action keeps a
+      #      `.ftp-deploy-sync-state.json` on the server, so each retry only
+      #      re-sends the files that didn't make it last time.
+      # Each early attempt uses `continue-on-error: true`; the final attempt is
+      # the real gate that fails the job if the upload still can't complete.
+
+      # ---- Doc root (SPA + front controller) : attempts 1–3 ----
+      - name: Deploy doc root (attempt 1)
+        id: docroot1
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
+          timeout: 120000
           local-dir: ./release/docroot/
           # Doc root per DEPLOYMENT_CPANEL.md: /home/uddjzwrz/album-magicframes.nokkoo.in
           # (FTP login is rooted at the home dir, so this path is relative to it).
           server-dir: /album-magicframes.nokkoo.in/
 
-      # Deploy the Laravel application outside the doc root.
-      # NOTE: run `php artisan migrate --force && config:cache && route:cache`
-      # on the server after this (cPanel Terminal or the Step 6 cron), since
-      # FTP cannot run PHP. deploy/cpanel/setup.sh does exactly that.
-      - name: Deploy Laravel app
+      - name: Deploy doc root (attempt 2)
+        id: docroot2
+        if: steps.docroot1.outcome == 'failure'
+        continue-on-error: true
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
+          timeout: 120000
+          local-dir: ./release/docroot/
+          server-dir: /album-magicframes.nokkoo.in/
+
+      - name: Deploy doc root (final attempt)
+        if: steps.docroot1.outcome == 'failure' && steps.docroot2.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          timeout: 120000
+          local-dir: ./release/docroot/
+          server-dir: /album-magicframes.nokkoo.in/
+
+      # ---- Laravel app (outside doc root) : attempts 1–3 ----
+      # NOTE: run `php artisan migrate --force && config:cache && route:cache`
+      # on the server after this (cPanel Terminal or the Step 6 cron), since
+      # FTP cannot run PHP. deploy/cpanel/setup.sh does exactly that.
+      - name: Deploy Laravel app (attempt 1)
+        id: app1
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          timeout: 120000
           local-dir: ./release/app/
           server-dir: /laravel/album-magicframes/
-          # Never overwrite the server's secrets or local DB.
+          exclude: |
+            **/.env
+            **/database/database.sqlite
+
+      - name: Deploy Laravel app (attempt 2)
+        id: app2
+        if: steps.app1.outcome == 'failure'
+        continue-on-error: true
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          timeout: 120000
+          local-dir: ./release/app/
+          server-dir: /laravel/album-magicframes/
+          exclude: |
+            **/.env
+            **/database/database.sqlite
+
+      - name: Deploy Laravel app (final attempt)
+        if: steps.app1.outcome == 'failure' && steps.app2.outcome == 'failure'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          timeout: 120000
+          local-dir: ./release/app/
+          server-dir: /laravel/album-magicframes/
           exclude: |
             **/.env
             **/database/database.sqlite
