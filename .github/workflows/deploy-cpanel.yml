@@ -120,7 +120,7 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           protocol: ftps
           local-dir: ./release/docroot/
-          server-dir: /album.magicframes.nokkoo.in/
+          server-dir: /album-magicframes.nokkoo.in/
 
       # Deploy the Laravel application outside the doc root.
       # NOTE: run `php artisan migrate --force && config:cache && route:cache`
