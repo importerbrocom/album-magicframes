@@ -24,7 +24,9 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <Logo className="h-12 w-auto" />
+        {/* Logo shown only on mobile — the sidebar already shows it on desktop */}
+        <Logo className="h-12 w-auto md:hidden" />
+        <div className="hidden md:block" />
         <Link to="/admin/albums/create" className="btn-accent !rounded-lg text-sm">+ New Album</Link>
       </div>
 
