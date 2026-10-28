@@ -21,8 +21,11 @@ name: Build & Deploy (cPanel)
 # force_deploy = true to deploy without flipping DEPLOY_ENABLED.
 
 on:
-  push:
-    branches: [main, feat/wedding-album-app]
+  # Manual-only: the push trigger was removed because auto-deploys on every
+  # push kept overwriting the doc root with a CI build whose SPA chunk hashes
+  # collided with the committed deploy/cpanel/spa-dist bundle, producing a
+  # broken index.html + chunk mix on the server. Deploy intentionally via the
+  # Actions "Run workflow" button (or redeploy the committed spa-dist manually).
   workflow_dispatch:
     inputs:
       force_deploy:
