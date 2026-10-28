@@ -35,12 +35,7 @@ class PublicAlbumResource extends JsonResource
             'allow_comments' => $this->allow_comments,
             'allow_enquiries' => $this->allow_enquiries,
             'google_review_url' => $this->google_review_url ?: config('services.album.google_review_url'),
-            'social_links' => [
-                'instagram' => $this->instagram_url,
-                'whatsapp' => $this->whatsapp_url,
-                'facebook' => $this->facebook_url,
-                'pinterest' => $this->pinterest_url,
-            ],
+            'social_links' => $this->socialLinks(),
             'photo_count' => $this->photo_count,
             'event_count' => $this->event_count,
             'sync_status' => $this->sync_status,

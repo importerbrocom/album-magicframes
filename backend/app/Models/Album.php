@@ -69,6 +69,23 @@ class Album extends Model
         'expires_at' => 'datetime',
     ];
 
+    /**
+     * Social links shown on the public album: a per-album value overrides the
+     * studio-wide global default (set in admin Settings). Only non-empty links
+     * are returned.
+     */
+    public function socialLinks(): array
+    {
+        $global = \App\Models\Setting::socialLinks();
+
+        return [
+            'instagram' => $this->instagram_url ?: ($global['instagram'] ?? null),
+            'whatsapp' => $this->whatsapp_url ?: ($global['whatsapp'] ?? null),
+            'facebook' => $this->facebook_url ?: ($global['facebook'] ?? null),
+            'pinterest' => $this->pinterest_url ?: ($global['pinterest'] ?? null),
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

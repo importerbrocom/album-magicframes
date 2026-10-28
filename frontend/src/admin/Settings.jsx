@@ -1,6 +1,11 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { usePageMeta } from '../hooks/usePageMeta';
+import { adminService } from '../services/adminService';
+import { firstError } from './Profile';
+
+const INPUT = 'w-full rounded-lg border border-black/15 bg-white/60 px-3 py-2 text-sm outline-none focus:border-black/40';
 
 export default function Settings() {
   const { user } = useAuth();
@@ -20,7 +25,7 @@ export default function Settings() {
         </dl>
         <div className="mt-6 flex flex-wrap gap-2">
           <Link to="/admin/profile" className="rounded-lg border border-black/15 px-4 py-2 text-sm">
-            Edit profile & password
+            Edit profile &amp; password
           </Link>
           {user?.is_admin && (
             <Link to="/admin/staff" className="rounded-lg border border-black/15 px-4 py-2 text-sm">
@@ -30,16 +35,74 @@ export default function Settings() {
         </div>
       </div>
 
-      {user?.is_admin && (
-        <div className="themed-surface p-6">
-          <h2 className="font-heading mb-2 text-xl">Staff accounts</h2>
-          <p className="text-sm" style={{ color: 'var(--muted)' }}>
-            Create logins for your team. Staff get the same dashboard as you, but cannot manage
-            other staff accounts or change admin settings. New staff must set their own password on
-            first login.
-          </p>
-        </div>
-      )}
+      {user?.is_admin && <SocialLinksSettings />}
     </div>
+  );
+}
+
+function SocialLinksSettings() {
+  const [form, setForm] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  useEffect(() => {
+    adminService
+      .settings()
+      .then((r) => setForm({
+        instagram: r.social_links?.instagram || '',
+        whatsapp: r.social_links?.whatsapp || '',
+        facebook: r.social_links?.facebook || '',
+        pinterest: r.social_links?.pinterest || '',
+      }))
+      .catch(() => setForm({ instagram: '', whatsapp: '', facebook: '', pinterest: '' }));
+  }, []);
+
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const save = async (e) => {
+    e.preventDefault();
+    setMsg(null);
+    setSaving(true);
+    try {
+      const res = await adminService.updateSettings(form);
+      setMsg({ type: 'ok', text: res.message || 'Settings saved.' });
+    } catch (err) {
+      setMsg({ type: 'err', text: firstError(err, 'Could not save settings.') });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!form) return <div className="skeleton h-48 w-full rounded-xl" />;
+
+  return (
+    <form onSubmit={save} className="themed-surface space-y-4 p-6">
+      <div>
+        <h2 className="font-heading text-xl">Social Media Links</h2>
+        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
+          These icons appear on every album. A single album can still override a
+          link from its own Edit page. Only filled links are shown.
+        </p>
+      </div>
+      {msg && (
+        <p className={`rounded-lg p-3 text-sm ${msg.type === 'ok' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+          {msg.text}
+        </p>
+      )}
+      {[
+        ['instagram', 'Instagram URL', 'https://instagram.com/yourstudio'],
+        ['whatsapp', 'WhatsApp URL', 'https://wa.me/919999999999'],
+        ['facebook', 'Facebook URL', 'https://facebook.com/yourstudio'],
+        ['pinterest', 'Pinterest URL', 'https://pinterest.com/yourstudio'],
+      ].map(([k, label, ph]) => (
+        <label key={k} className="block">
+          <span className="mb-1 block text-sm" style={{ color: 'var(--muted)' }}>{label}</span>
+          <input type="url" className={INPUT} value={form[k]} onChange={set(k)} placeholder={ph} />
+        </label>
+      ))}
+      <button disabled={saving} className="btn-accent !rounded-lg text-sm disabled:opacity-50">
+        {saving ? 'Saving…' : 'Save social links'}
+      </button>
+    </form>
   );
 }

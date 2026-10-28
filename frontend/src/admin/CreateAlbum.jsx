@@ -161,9 +161,9 @@ export default function CreateAlbum() {
 
         {/* Social media links — shown as icons on the public album */}
         <div className="rounded-lg border border-black/10 p-4">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Social Media Links (optional)</p>
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Social Media Links (optional override)</p>
           <p className="mb-3 text-xs" style={{ color: 'var(--muted)' }}>
-            Only the links you fill in appear as icons on the album.
+            Leave blank to use the studio-wide links from Settings. Fill a field to override it for this album only.
           </p>
           <Field label="Instagram URL" error={err('instagram_url')}>
             <input value={form.instagram_url} onChange={set('instagram_url')} placeholder="https://instagram.com/yourstudio" className="inp" />
