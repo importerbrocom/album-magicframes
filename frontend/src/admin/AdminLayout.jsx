@@ -2,20 +2,27 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import Logo from '../components/Logo';
 
+// Nav items. `adminOnly` entries are hidden from staff accounts.
 const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: '◧' },
   { to: '/admin/albums', label: 'Albums', icon: '▦' },
   { to: '/admin/albums/create', label: 'Create', icon: '＋' },
   { to: '/admin/google', label: 'Google Drive', icon: '☁' },
+  { to: '/admin/staff', label: 'Staff', icon: '👥', adminOnly: true },
+  { to: '/admin/profile', label: 'Profile', icon: '◉' },
   { to: '/admin/settings', label: 'Settings', icon: '⚙' },
 ];
 
 /**
  * Admin chrome: sidebar on desktop, bottom nav on mobile (spec section 22).
+ * Staff accounts see the same shell minus the admin-only Staff item.
  */
 export default function AdminLayout() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+
+  // Staff don't see admin-only items (e.g. Staff management).
+  const nav = NAV.filter((item) => !item.adminOnly || user?.is_admin);
 
   const doLogout = async () => {
     await logout();
@@ -31,7 +38,7 @@ export default function AdminLayout() {
             <Logo className="h-16 w-auto" />
           </div>
           <nav className="flex-1 space-y-1">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}
@@ -62,7 +69,7 @@ export default function AdminLayout() {
 
       {/* Bottom nav (mobile) */}
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-black/10 bg-[var(--surface)] py-2 md:hidden">
-        {NAV.map((item) => (
+        {nav.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

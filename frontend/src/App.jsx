@@ -21,6 +21,9 @@ const EditAlbum = lazy(() => import('./admin/EditAlbum'));
 const Analytics = lazy(() => import('./admin/Analytics'));
 const Settings = lazy(() => import('./admin/Settings'));
 const GoogleDrive = lazy(() => import('./admin/GoogleDrive'));
+const Profile = lazy(() => import('./admin/Profile'));
+const Staff = lazy(() => import('./admin/Staff'));
+const ForcePasswordChange = lazy(() => import('./admin/ForcePasswordChange'));
 const Landing = lazy(() => import('./pages/Landing'));
 
 function Loader() {
@@ -48,8 +51,16 @@ export default function App() {
               <Route path="event/:eventSlug/folder/:folderSlug" element={<FolderGalleryPage />} />
             </Route>
 
-            {/* Admin */}
+            {/* Admin + staff (shared login) */}
             <Route path="/admin/login" element={<AdminLogin />} />
+            <Route
+              path="/admin/force-password"
+              element={
+                <RequireAuth>
+                  <ForcePasswordChange />
+                </RequireAuth>
+              }
+            />
             <Route
               path="/admin"
               element={
@@ -66,6 +77,16 @@ export default function App() {
               <Route path="albums/:id/edit" element={<EditAlbum />} />
               <Route path="albums/:id/analytics" element={<Analytics />} />
               <Route path="google" element={<GoogleDrive />} />
+              <Route path="profile" element={<Profile />} />
+              {/* Staff management — admin only */}
+              <Route
+                path="staff"
+                element={
+                  <RequireAuth adminOnly>
+                    <Staff />
+                  </RequireAuth>
+                }
+              />
               <Route path="settings" element={<Settings />} />
             </Route>
 

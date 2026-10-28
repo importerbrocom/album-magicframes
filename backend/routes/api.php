@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AlbumController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\PublicAlbum\AlbumAccessController;
 use App\Http\Controllers\PublicAlbum\AnalyticsController;
 use App\Http\Controllers\PublicAlbum\CommentController;
@@ -25,6 +26,20 @@ Route::prefix('admin')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('me', [AuthController::class, 'me']);
         Route::post('logout', [AuthController::class, 'logout']);
+
+        // Self-service profile (admin + staff): edit own name/email + password.
+        Route::match(['put', 'patch'], 'profile', [AuthController::class, 'updateProfile']);
+        Route::post('profile/password', [AuthController::class, 'changePassword']);
+
+        // Staff management — admin only.
+        Route::middleware('admin.only')->group(function () {
+            Route::get('staff', [StaffController::class, 'index']);
+            Route::post('staff', [StaffController::class, 'store']);
+            Route::get('staff/{staff}', [StaffController::class, 'show']);
+            Route::match(['put', 'patch'], 'staff/{staff}', [StaffController::class, 'update']);
+            Route::post('staff/{staff}/reset-password', [StaffController::class, 'resetPassword']);
+            Route::delete('staff/{staff}', [StaffController::class, 'destroy']);
+        });
 
         Route::get('dashboard', [DashboardController::class, 'index']);
 
