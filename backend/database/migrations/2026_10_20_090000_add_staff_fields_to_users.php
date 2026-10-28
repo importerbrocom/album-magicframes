@@ -12,24 +12,40 @@ use Illuminate\Support\Facades\Schema;
  *                         admin creates the account or resets the password).
  *  - created_by           the admin user id that created this staff account
  *                         (kept nullable + nullOnDelete so audit survives).
+ *
+ * Idempotent: guarded with hasColumn so it is safe to re-run even if some of
+ * these columns already exist on the users table.
  */
 return new class extends Migration
 {
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('status')->default('active')->after('role');
-            $table->boolean('must_change_password')->default(false)->after('status');
-            $table->foreignId('created_by')->nullable()->after('must_change_password')
-                ->constrained('users')->nullOnDelete();
+            if (! Schema::hasColumn('users', 'status')) {
+                $table->string('status')->default('active')->after('role');
+            }
+            if (! Schema::hasColumn('users', 'must_change_password')) {
+                $table->boolean('must_change_password')->default(false)->after('status');
+            }
+            if (! Schema::hasColumn('users', 'created_by')) {
+                $table->foreignId('created_by')->nullable()->after('must_change_password')
+                    ->constrained('users')->nullOnDelete();
+            }
         });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropConstrainedForeignId('created_by');
-            $table->dropColumn(['status', 'must_change_password']);
+            if (Schema::hasColumn('users', 'created_by')) {
+                $table->dropConstrainedForeignId('created_by');
+            }
+            if (Schema::hasColumn('users', 'must_change_password')) {
+                $table->dropColumn('must_change_password');
+            }
+            if (Schema::hasColumn('users', 'status')) {
+                $table->dropColumn('status');
+            }
         });
     }
 };
