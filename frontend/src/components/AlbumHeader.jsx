@@ -20,13 +20,9 @@ export default function AlbumHeader({ slug, album, back }) {
           </Link>
         ) : null}
 
-        <Link to={`/album/${slug}`} className="shrink-0" aria-label="Home">
-          <Logo className="h-9 w-auto" />
-        </Link>
-
-        <Link to={`/album/${slug}`} className="min-w-0 flex-1">
-          <h1 className="font-heading truncate text-xl leading-none">{album?.client_name}</h1>
-          <p className="truncate text-xs" style={{ color: 'var(--muted)' }}>{album?.title}</p>
+        <Link to={`/album/${slug}`} className="flex min-w-0 flex-1 items-center gap-3" aria-label="Magic Frames">
+          <Logo className="h-9 w-auto shrink-0" transparent />
+          <span className="font-heading truncate text-xl leading-none tracking-wide">MAGIC FRAMES</span>
         </Link>
 
         {album?.category && (
