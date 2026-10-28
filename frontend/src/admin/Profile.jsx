@@ -19,8 +19,83 @@ export default function Profile() {
       <h1 className="font-heading text-3xl font-semibold">My Profile</h1>
 
       <AccountInfo user={user} />
+      <AvatarForm user={user} onSaved={setUser} />
       <ProfileForm user={user} onSaved={setUser} />
       <PasswordForm />
+    </div>
+  );
+}
+
+function Avatar({ user, size = 'h-20 w-20' }) {
+  if (user?.avatar_url) {
+    return <img src={user.avatar_url} alt="" className={`${size} rounded-full object-cover`} />;
+  }
+  const initial = (user?.name || '?').trim().charAt(0).toUpperCase();
+  return (
+    <div className={`${size} flex items-center justify-center rounded-full bg-black/10 text-xl font-medium`}>
+      {initial}
+    </div>
+  );
+}
+
+function AvatarForm({ user, onSaved }) {
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState(null);
+
+  const onPick = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) {
+      setMsg({ type: 'err', text: 'Image must be 4MB or smaller.' });
+      return;
+    }
+    setMsg(null);
+    setBusy(true);
+    try {
+      const res = await adminService.uploadAvatar(file);
+      onSaved?.(res.user);
+      setMsg({ type: 'ok', text: res.message || 'Profile photo updated.' });
+    } catch (err) {
+      setMsg({ type: 'err', text: firstError(err, 'Could not upload photo.') });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const remove = async () => {
+    setMsg(null);
+    setBusy(true);
+    try {
+      const res = await adminService.removeAvatar();
+      onSaved?.(res.user);
+      setMsg({ type: 'ok', text: res.message || 'Profile photo removed.' });
+    } catch (err) {
+      setMsg({ type: 'err', text: firstError(err, 'Could not remove photo.') });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="themed-surface space-y-4 p-6">
+      <h2 className="font-heading text-xl">Profile Photo</h2>
+      <Feedback msg={msg} />
+      <div className="flex items-center gap-5">
+        <Avatar user={user} />
+        <div className="flex flex-wrap gap-2">
+          <label className={`cursor-pointer rounded-lg border border-black/15 px-4 py-2 text-sm ${busy ? 'pointer-events-none opacity-50' : ''}`}>
+            {user?.avatar_url ? 'Change photo' : 'Upload photo'}
+            <input type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onPick} disabled={busy} />
+          </label>
+          {user?.avatar_url && (
+            <button onClick={remove} disabled={busy} className="rounded-lg border border-red-200 px-4 py-2 text-sm text-red-600 disabled:opacity-50">
+              Remove
+            </button>
+          )}
+        </div>
+      </div>
+      <p className="text-xs" style={{ color: 'var(--muted)' }}>JPG, PNG or WebP. Max 4MB.</p>
     </div>
   );
 }

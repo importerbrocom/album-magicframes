@@ -26,6 +26,7 @@ class User extends Authenticatable
         'email',
         'role',
         'status',
+        'avatar_path',
         'must_change_password',
         'created_by',
         'password',
@@ -72,6 +73,19 @@ class User extends Authenticatable
         return $this->status === self::STATUS_ACTIVE;
     }
 
+    /** Public URL for the profile photo, or null if none set. */
+    public function avatarUrl(): ?string
+    {
+        if (! $this->avatar_path) {
+            return null;
+        }
+
+        // Stored on the "public" disk (storage/app/public) and served via the
+        // storage symlink at /storage/... Use a relative URL so it works on
+        // the single-origin deployment regardless of APP_URL.
+        return '/storage/'.ltrim($this->avatar_path, '/');
+    }
+
     /** Shape used in API responses for the current user and staff lists. */
     public function toAuthArray(): array
     {
@@ -81,6 +95,7 @@ class User extends Authenticatable
             'email' => $this->email,
             'role' => $this->role,
             'status' => $this->status,
+            'avatar_url' => $this->avatarUrl(),
             'is_admin' => $this->isAdmin(),
             'must_change_password' => (bool) $this->must_change_password,
             'created_at' => $this->created_at,
