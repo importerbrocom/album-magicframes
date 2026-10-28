@@ -42,37 +42,24 @@
     RewriteBase /
 
     # ---- Let's Encrypt / AutoSSL HTTP-01 validation ----
-    # Serve ACME challenge files over plain HTTP (as real files) and STOP all
-    # further rewrite processing so the HTTPS redirect below can't intercept
-    # them. [END] fully halts the rewrite engine on LiteSpeed/Apache 2.4
-    # (plain [L] can be re-entered and still hit the redirect on LiteSpeed).
     RewriteRule ^\.well-known/acme-challenge/ - [END]
 
-    # ---- Force HTTPS (recommended) ----
-    # Exclude the ACME path as a belt-and-braces guard in case [END] is not
-    # honored by the server's LiteSpeed rewrite compatibility mode.
-    RewriteCond %{HTTPS} off
-    RewriteCond %{REQUEST_URI} !^/\.well-known/acme-challenge/
-    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    # ---- API + health check go to the PHP front controller ----
+    # These are checked first; they exit the rewrite pass so Laravel handles
+    # them. Everything NOT matching these falls through to the SPA rules below.
+    RewriteRule ^api/ index.php [L]
+    RewriteRule ^up$ index.php [L]
 
-    # ---- Laravel: API + health check go to the PHP front controller ----
-    # Let the request fall through to index.php; Laravel's own routing + the
-    # standard public/.htaccess rules below handle it.
-    RewriteCond %{REQUEST_URI} ^/api/ [OR]
-    RewriteCond %{REQUEST_URI} ^/up$
-    RewriteRule ^ index.php [L]
-
-    # ---- Static files served as-is (React assets, images, etc.) ----
-    # If the request maps to a real existing file, serve it directly.
-    RewriteCond %{REQUEST_FILENAME} -f
-    RewriteRule ^ - [L]
-
-    # ---- SPA fallback: any other path returns the React shell ----
-    # Use an absolute target and the `.` pattern (match any non-empty URI) so
-    # LiteSpeed reliably rewrites deep client-side routes like /admin/albums to
-    # index.html. The earlier `^ index.html` form + a -d directory check could
-    # let LiteSpeed 404 deep paths before the fallback fired.
-    RewriteRule . /index.html [L]
+    # ---- SPA fallback ----
+    # Serve any real existing file (JS/CSS/images/index.php/etc.) as-is; for
+    # every other path, return the React shell so client-side routing works.
+    # NOTE for LiteSpeed: we match on REQUEST_FILENAME not being a real file and
+    # rewrite to the absolute /index.html. The HTTPS redirect was removed from
+    # here (AutoSSL/host already forces HTTPS) because on LiteSpeed its
+    # interaction with the fallback was terminating the rewrite pass for deep
+    # paths, causing /admin/* to 404.
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ /index.html [L]
 </IfModule>
 
 # ---- Standard Laravel public/.htaccess directives (for index.php requests) ----
