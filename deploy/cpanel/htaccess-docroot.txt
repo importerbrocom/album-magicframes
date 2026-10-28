@@ -17,6 +17,15 @@
 #   everything else   -> React SPA (index.html) for client-side routing
 # =============================================================================
 
+# ---- Serve the React SPA shell (index.html) for the directory root ----
+# Apache/LiteSpeed default DirectoryIndex prefers index.php (the Laravel front
+# controller), which has no route for "/" and returns an empty response. Force
+# index.html so a bare "/" request loads the SPA. /api/* still reaches index.php
+# via the RewriteRule below.
+<IfModule mod_dir.c>
+    DirectoryIndex index.html index.php
+</IfModule>
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
