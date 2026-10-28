@@ -31,6 +31,12 @@ export default function AdminLayout() {
 
   return (
     <div data-theme="modern" className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      {/* Top header (mobile only) — the desktop sidebar already shows the logo. */}
+      <header className="sticky top-0 z-40 flex items-center justify-between border-b border-black/10 bg-[var(--surface)] px-4 py-2.5 md:hidden">
+        <Logo className="h-9 w-auto" />
+        <button onClick={doLogout} className="text-xs font-medium text-red-600">Logout</button>
+      </header>
+
       <div className="mx-auto flex max-w-7xl">
         {/* Sidebar (desktop) */}
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-black/10 p-5 md:flex">
