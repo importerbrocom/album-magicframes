@@ -38,10 +38,6 @@ class Album extends Model
         'allow_download',
         'allow_share',
         'google_review_url',
-        'instagram_url',
-        'whatsapp_url',
-        'facebook_url',
-        'pinterest_url',
         'allow_comments',
         'allow_enquiries',
         'sync_status',
@@ -70,20 +66,12 @@ class Album extends Model
     ];
 
     /**
-     * Social links shown on the public album: a per-album value overrides the
-     * studio-wide global default (set in admin Settings). Only non-empty links
-     * are returned.
+     * Social links shown on the public album. These are studio-wide (set once
+     * in admin Settings) and identical across every album.
      */
     public function socialLinks(): array
     {
-        $global = \App\Models\Setting::socialLinks();
-
-        return [
-            'instagram' => $this->instagram_url ?: ($global['instagram'] ?? null),
-            'whatsapp' => $this->whatsapp_url ?: ($global['whatsapp'] ?? null),
-            'facebook' => $this->facebook_url ?: ($global['facebook'] ?? null),
-            'pinterest' => $this->pinterest_url ?: ($global['pinterest'] ?? null),
-        ];
+        return \App\Models\Setting::socialLinks();
     }
 
     public function user(): BelongsTo
