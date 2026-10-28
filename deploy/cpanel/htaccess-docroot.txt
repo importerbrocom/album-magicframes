@@ -1,78 +1,61 @@
 # =============================================================================
-# Magic Frames — single-origin cPanel .htaccess
+# Magic Frames — single-origin cPanel .htaccess (LiteSpeed)
 # Place this file as:  /home/uddjzwrz/album-magicframes.nokkoo.in/.htaccess
 #
-# Layout assumed:
+# Layout:
 #   DOC ROOT  = /home/uddjzwrz/album-magicframes.nokkoo.in
 #     ├── index.html, assets/, favicon.svg, manifest.webmanifest   (React build)
 #     ├── index.php, favicon.ico, robots.txt                       (Laravel public/)
 #     └── .htaccess                                                (this file)
-#   Laravel app (code + vendor + .env) lives OUTSIDE the doc root at:
+#   Laravel app lives OUTSIDE the doc root at:
 #     /home/uddjzwrz/laravel/album-magicframes/backend
 #
-# Behaviour:
-#   /.well-known/acme-challenge/* -> served over HTTP for AutoSSL validation
-#   /api/*            -> handled by Laravel (index.php)
-#   /up               -> Laravel health check
-#   everything else   -> React SPA (index.html) for client-side routing
+# IMPORTANT — this vhost does NOT honor "RewriteRule ^ index.html" SPA
+# fallbacks (LiteSpeed per-vhost rewrite restriction: even an explicit test
+# rule did not fire, so /admin/* 404'd). But index.php IS always reached.
+# So we route EVERYTHING non-file through the Laravel front controller, and
+# Laravel serves the React shell (routes/web.php catch-all) for non-API paths.
 # =============================================================================
 
 # ---- Disable LiteSpeed server-side cache for this site ----
-# The host runs LiteSpeed, which was serving a STALE cached copy of index.html
-# (ignoring the no-cache response header and ?query cache-busting). Explicitly
-# turn LiteSpeed cache OFF so new deploys are always served immediately.
 <IfModule LiteSpeed>
     CacheLookup off
     RewriteEngine On
     RewriteRule .* - [E=Cache-Control:no-cache]
-    RewriteRule .* - [E=cache-control:no-cache]
 </IfModule>
 
-# ---- Serve the React SPA shell (index.html) for the directory root ----
-# Apache/LiteSpeed default DirectoryIndex prefers index.php (the Laravel front
-# controller), which has no route for "/" and returns an empty response. Force
-# index.html so a bare "/" request loads the SPA. /api/* still reaches index.php
-# via the RewriteRule below.
+# ---- Directory index: hit index.php (Laravel) for "/" so the catch-all in
+#      routes/web.php serves the SPA shell. Works even if rewrites are off. ----
 <IfModule mod_dir.c>
-    DirectoryIndex index.html index.php
+    DirectoryIndex index.php index.html
 </IfModule>
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
 
-    # ---- Let's Encrypt / AutoSSL HTTP-01 validation ----
+    # Let's Encrypt / AutoSSL HTTP-01 validation.
     RewriteRule ^\.well-known/acme-challenge/ - [END]
 
-    # ---- API + health check go to the PHP front controller ----
-    # These are checked first; they exit the rewrite pass so Laravel handles
-    # them. Everything NOT matching these falls through to the SPA rules below.
-    RewriteRule ^api/ index.php [L]
-    RewriteRule ^up$ index.php [L]
-
-    # ---- SPA fallback ----
-    # Serve any real existing file (JS/CSS/images/index.php/etc.) as-is; for
-    # every other path, return the React shell so client-side routing works.
-    # NOTE for LiteSpeed: we match on REQUEST_FILENAME not being a real file and
-    # rewrite to the absolute /index.html. The HTTPS redirect was removed from
-    # here (AutoSSL/host already forces HTTPS) because on LiteSpeed its
-    # interaction with the fallback was terminating the rewrite pass for deep
-    # paths, causing /admin/* to 404.
+    # Everything that is NOT a real file/dir -> Laravel front controller.
+    # Laravel handles /api/* + /up, and serves the React SPA shell for every
+    # other path. Real files (assets/*.js, *.css, images, favicon) are served
+    # directly by the server and never reach this rule.
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ /index.html [L]
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
 </IfModule>
 
-# ---- Standard Laravel public/.htaccess directives (for index.php requests) ----
 <IfModule mod_negotiation.c>
     Options -MultiViews -Indexes
 </IfModule>
 
 <IfModule mod_headers.c>
-    # Long-cache fingerprinted build assets
+    # Long-cache fingerprinted build assets.
     <FilesMatch "\.(js|css|woff2|svg|png|jpg|jpeg|webp|ico)$">
         Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>
-    # Never cache the SPA shell so new deploys are picked up
+    # Never cache the SPA shell / manifest so new deploys are picked up.
     <FilesMatch "^(index\.html|manifest\.webmanifest)$">
         Header set Cache-Control "no-cache, no-store, must-revalidate"
     </FilesMatch>
