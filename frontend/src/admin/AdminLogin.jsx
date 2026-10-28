@@ -36,7 +36,8 @@ export default function AdminLogin() {
       {/* Left brand panel — solid black (matches the logo's box) so no box edge shows; no decorative circles */}
       <div className="relative flex min-h-[220px] flex-1 items-center justify-center overflow-hidden bg-black md:min-h-screen">
         <div className="relative z-10 text-center">
-          {/* invert → white script on black box; the black box blends into the black panel → no visible box */}
+          {/* Real logo.png. The login panel is black and logo.png is a black-boxed
+              wordmark, so invert makes the wordmark white and the box blends in. */}
           <Logo className="mx-auto h-44 w-auto invert" />
           <p className="mt-4 text-[0.7rem] uppercase tracking-[0.35em] text-white/70">magicframes.co.in</p>
         </div>

@@ -11,9 +11,11 @@ import { useState } from 'react';
  * `object-contain` keeps the whole wordmark visible; `rounded` → circular badge.
  */
 // Bump when a logo file is replaced on the server so browsers refetch it.
-const LOGO_VERSION = '4';
-const DEFAULT_SOURCES = ['/logo.png', '/logo.jpg', '/logo.svg'];
-const TRANSPARENT_SOURCES = ['/logotrans.png', '/logo.svg'];
+const LOGO_VERSION = '5';
+// Prefer the real uploaded logo.png, then the transparent PNG, then the SVG
+// text fallback — so whichever real image exists on the server is shown.
+const DEFAULT_SOURCES = ['/logo.png', '/logotrans.png', '/logo.jpg', '/logo.svg'];
+const TRANSPARENT_SOURCES = ['/logotrans.png', '/logo.png', '/logo.svg'];
 
 export default function Logo({ className = 'h-12 w-auto', rounded = false, transparent = false }) {
   const sources = transparent ? TRANSPARENT_SOURCES : DEFAULT_SOURCES;
