@@ -30,6 +30,17 @@ export default function AlbumHome() {
     albumService.events(slug).then(setEvents).catch(() => setEvents([]));
   }, [slug]);
 
+  // Auto-play the teaser film once when the client first opens the album
+  // (right after entering the password). Shown once per album per browser so
+  // it doesn't replay on every navigation back to the home page.
+  useEffect(() => {
+    if (!hasFilm) return;
+    const key = `mf_film_autoplayed_${slug}`;
+    if (sessionStorage.getItem(key)) return;
+    sessionStorage.setItem(key, '1');
+    setFilmOpen(true);
+  }, [slug, hasFilm]);
+
   const syncing = album.sync_status === 'syncing' || album.sync_status === 'pending';
 
   return (
@@ -63,15 +74,6 @@ export default function AlbumHome() {
           <span className="hero-rule" aria-hidden="true" />
           {album.tagline && <p className="mt-3 text-sm italic opacity-80">“{album.tagline}”</p>}
           {eventDate && <p className="mt-2 text-[0.7rem] uppercase tracking-[0.3em] opacity-70">{eventDate}</p>}
-          {hasFilm && (
-            <button
-              type="button"
-              onClick={() => setFilmOpen(true)}
-              className="hero-film-cta mt-5 inline-flex items-center gap-2 text-xs uppercase tracking-[0.25em]"
-            >
-              <span aria-hidden="true">▶</span> Watch the Film
-            </button>
-          )}
         </div>
 
         {/* Film scrubber strip (visual, akhila theme) — opens the film on click */}
