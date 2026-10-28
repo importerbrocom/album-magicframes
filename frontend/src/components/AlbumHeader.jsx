@@ -22,7 +22,7 @@ export default function AlbumHeader({ slug, album, back }) {
 
         <Link to={`/album/${slug}`} className="flex min-w-0 flex-1 items-center gap-3" aria-label="Magic Frames">
           <Logo className="h-9 w-auto shrink-0" transparent />
-          <span className="font-brand whitespace-nowrap text-2xl">Magic Frames</span>
+          <span className="font-brand whitespace-nowrap text-3xl sm:text-4xl">Magic Frames</span>
         </Link>
 
         {album?.category && (

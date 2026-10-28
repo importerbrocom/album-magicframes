@@ -69,13 +69,12 @@
 /* Script display headings (brand/thank-you flourishes) */
 .font-script { font-family: var(--script-font, var(--heading-font)); }
 
-/* Brand wordmark — elegant, light serif for the "Magic Frames" header.
-   Letters show fully (no clipping); not bold/heavy. */
+/* Brand wordmark — the elegant Great Vibes script (same as the cover name).
+   Generous line-height so the script ascenders/descenders show fully. */
 .font-brand {
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-  line-height: 1.2;
+  font-family: var(--script-font, 'Great Vibes', cursive);
+  font-weight: 400;
+  line-height: 1.35;
 }
 
 /* Hero gold rule + title — subtle by default, expressive on the Akhila theme */
