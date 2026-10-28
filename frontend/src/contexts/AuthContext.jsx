@@ -35,8 +35,14 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
+  // Keep the stored user in sync when the profile is updated elsewhere.
+  const updateUser = (next) => {
+    setUser(next);
+    if (next) localStorage.setItem('mf_admin_user', JSON.stringify(next));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, setUser: updateUser }}>
       {children}
     </AuthContext.Provider>
   );

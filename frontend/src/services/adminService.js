@@ -16,6 +16,26 @@ export const adminService = {
       localStorage.removeItem('mf_admin_user');
     }),
 
+  // --- Self-service profile (admin + staff) ---
+  updateProfile: (payload) =>
+    api.put('/admin/profile', payload).then((r) => {
+      localStorage.setItem('mf_admin_user', JSON.stringify(r.data.user));
+      return r.data;
+    }),
+  changePassword: (payload) =>
+    api.post('/admin/profile/password', payload).then((r) => {
+      if (r.data.user) localStorage.setItem('mf_admin_user', JSON.stringify(r.data.user));
+      return r.data;
+    }),
+
+  // --- Staff management (admin only) ---
+  staff: (params = {}) => api.get('/admin/staff', { params }).then((r) => r.data.data),
+  createStaff: (payload) => api.post('/admin/staff', payload).then((r) => r.data.data),
+  updateStaff: (id, payload) => api.put(`/admin/staff/${id}`, payload).then((r) => r.data.data),
+  resetStaffPassword: (id, password) =>
+    api.post(`/admin/staff/${id}/reset-password`, { password }).then((r) => r.data),
+  deleteStaff: (id) => api.delete(`/admin/staff/${id}`).then((r) => r.data),
+
   dashboard: () => api.get('/admin/dashboard').then((r) => r.data),
 
   albums: (params = {}) => api.get('/admin/albums', { params }).then((r) => r.data),

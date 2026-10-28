@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAdmin;
 use App\Http\Middleware\EnsureAlbumAccess;
 use App\Services\GoogleDriveException;
 use Illuminate\Auth\AuthenticationException;
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->alias([
             'album.access' => EnsureAlbumAccess::class,
+            'admin.only' => EnsureAdmin::class,
         ]);
 
         // NOTE: We intentionally do NOT enable statefulApi(). Admin auth is
