@@ -37,12 +37,14 @@
     # Let's Encrypt / AutoSSL HTTP-01 validation.
     RewriteRule ^\.well-known/acme-challenge/ - [END]
 
-    # Everything that is NOT a real file/dir -> Laravel front controller.
+    # Everything that is NOT a real file -> Laravel front controller.
     # Laravel handles /api/* + /up, and serves the React SPA shell for every
     # other path. Real files (assets/*.js, *.css, images, favicon) are served
     # directly by the server and never reach this rule.
+    # NOTE: we deliberately do NOT add a "!-d" condition — a request like
+    # /admin/albums must still reach index.php even though no such dir exists,
+    # and the !-d check was excluding deep client routes on this vhost.
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^ index.php [L]
 </IfModule>
 
