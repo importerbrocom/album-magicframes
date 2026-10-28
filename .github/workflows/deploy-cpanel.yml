@@ -267,25 +267,12 @@ jobs:
           local-dir: ./release/docroot/
           server-dir: /album-magicframes.nokkoo.in/
 
-      # ---- Restore control dotfiles (.htaccess) ----
-      # The doc-root deploy uses dangerous-clean-slate, which DELETES the
-      # existing .htaccess, and FTP-Deploy-Action excludes dotfiles by default
-      # so it never re-uploads it. Without .htaccess the SPA has no routing and
-      # /admin/* returns 404. This dedicated pass uploads ONLY the control files
-      # (no clean-slate, dotfiles explicitly included) so routing always
-      # survives a deploy.
-      - name: Restore .htaccess + front controller
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftps
-          timeout: 120000
-          local-dir: ./release/docroot-ctl/
-          server-dir: /album-magicframes.nokkoo.in/
-          dangerous-clean-slate: false
-          exclude: ''
+      # NOTE: The main doc-root deploy above runs with dangerous-clean-slate
+      # OFF and its local-dir (release/docroot/) already contains index.html,
+      # .htaccess and index.php — so a dedicated "restore .htaccess" pass is
+      # unnecessary. A previous separate pass that uploaded only the control
+      # files DELETED index.html (the FTP action removes remote files missing
+      # from its local-dir), which broke the whole SPA. It has been removed.
 
       # ---- Laravel app (outside doc root) : attempts 1–3 ----
       # NOTE: run `php artisan migrate --force && config:cache && route:cache`
