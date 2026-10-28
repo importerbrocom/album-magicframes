@@ -85,9 +85,10 @@ export default function PhotoGrid({
   return (
     <>
       {view === 'auto' && (
-        // Orientation-aware layout: wide images span 2 columns, tall images
-        // span 2 rows, so each photo displays in a shape suited to it.
-        <div className="grid auto-rows-[11rem] grid-cols-2 gap-2 sm:auto-rows-[12rem] sm:grid-cols-4 lg:grid-cols-6">
+        // Orientation-aware layout in a 3-column grid: wide images span 2
+        // columns, tall images span 2 rows, so each photo displays in a shape
+        // suited to it. Taller rows since columns are wider at 3-up.
+        <div className="grid auto-rows-[16rem] grid-cols-1 gap-2 sm:auto-rows-[20rem] sm:grid-cols-2 lg:auto-rows-[24rem] lg:grid-cols-3">
           {photos.map((p, i) => {
             const o = orientation(p);
             const span =
