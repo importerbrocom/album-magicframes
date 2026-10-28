@@ -149,7 +149,7 @@ export default function AlbumHome() {
 
         {/* Studio footer branding — invert the black wordmark so it reads on the dark page */}
         <footer className="mt-12 flex flex-col items-center gap-2 pb-4 text-center">
-          <Logo className="h-20 w-auto opacity-90 invert" />
+          <Logo className="h-20 w-auto opacity-90" transparent />
           <p className="text-xs" style={{ color: 'var(--muted)' }}>Captured with care</p>
         </footer>
       </main>

@@ -1,26 +1,29 @@
 import { useState } from 'react';
 
 /**
- * Magic Frames logo — the black script wordmark on a transparent background.
+ * Magic Frames logo.
  *
- * Source order: /logo.png (the real uploaded file) → /logo.jpg → /logo.svg fallback.
- * The black wordmark needs a light surface to be visible.
+ * - Default (admin, light surfaces): the black wordmark (`/logo.png` → .jpg → .svg).
+ * - `transparent` variant: the transparent-background logo (`/logotrans.png`),
+ *   used on dark public surfaces (album cover + header). It already reads
+ *   correctly on dark, so it needs NO `invert`.
  *
  * `object-contain` keeps the whole wordmark visible; `rounded` → circular badge.
  */
-// Cache-busting token: bump when the logo file is replaced on the server so
-// browsers fetch the new image instead of a stale cached copy.
-const LOGO_VERSION = '3';
-const SOURCES = ['/logo.png', '/logo.jpg', '/logo.svg'];
+// Bump when a logo file is replaced on the server so browsers refetch it.
+const LOGO_VERSION = '4';
+const DEFAULT_SOURCES = ['/logo.png', '/logo.jpg', '/logo.svg'];
+const TRANSPARENT_SOURCES = ['/logotrans.png', '/logo.svg'];
 
-export default function Logo({ className = 'h-12 w-auto', rounded = false }) {
+export default function Logo({ className = 'h-12 w-auto', rounded = false, transparent = false }) {
+  const sources = transparent ? TRANSPARENT_SOURCES : DEFAULT_SOURCES;
   const [i, setI] = useState(0);
-  const src = `${SOURCES[i]}?v=${LOGO_VERSION}`;
+  const src = `${sources[i]}?v=${LOGO_VERSION}`;
 
   return (
     <img
       src={src}
-      onError={() => setI((n) => (n < SOURCES.length - 1 ? n + 1 : n))}
+      onError={() => setI((n) => (n < sources.length - 1 ? n + 1 : n))}
       alt="Magic Frames"
       className={`${className} object-contain ${rounded ? 'rounded-full object-cover' : ''}`}
     />
