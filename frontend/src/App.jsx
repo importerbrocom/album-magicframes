@@ -20,7 +20,6 @@ const AlbumDetail = lazy(() => import('./admin/AlbumDetail'));
 const EditAlbum = lazy(() => import('./admin/EditAlbum'));
 const Analytics = lazy(() => import('./admin/Analytics'));
 const Settings = lazy(() => import('./admin/Settings'));
-const GoogleDrive = lazy(() => import('./admin/GoogleDrive'));
 const Profile = lazy(() => import('./admin/Profile'));
 const Staff = lazy(() => import('./admin/Staff'));
 const ForcePasswordChange = lazy(() => import('./admin/ForcePasswordChange'));
@@ -76,7 +75,7 @@ export default function App() {
               <Route path="albums/:id" element={<AlbumDetail />} />
               <Route path="albums/:id/edit" element={<EditAlbum />} />
               <Route path="albums/:id/analytics" element={<Analytics />} />
-              <Route path="google" element={<GoogleDrive />} />
+
               <Route path="profile" element={<Profile />} />
               {/* Staff management — admin only */}
               <Route

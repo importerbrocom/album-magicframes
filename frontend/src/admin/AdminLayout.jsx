@@ -7,7 +7,6 @@ const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard', icon: '◧' },
   { to: '/admin/albums', label: 'Albums', icon: '▦' },
   { to: '/admin/albums/create', label: 'Create', icon: '＋' },
-  { to: '/admin/google', label: 'Google Drive', icon: '☁' },
   { to: '/admin/staff', label: 'Staff', icon: '👥', adminOnly: true },
   { to: '/admin/profile', label: 'Profile', icon: '◉' },
   { to: '/admin/settings', label: 'Settings', icon: '⚙' },
