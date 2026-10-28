@@ -233,12 +233,13 @@ jobs:
           # Doc root per DEPLOYMENT_CPANEL.md: /home/uddjzwrz/album-magicframes.nokkoo.in
           # (FTP login is rooted at the home dir, so this path is relative to it).
           server-dir: /album-magicframes.nokkoo.in/
-          # Wipe the remote doc root first, then upload the full fresh build.
-          # Prevents stale/mismatched SPA chunks from accumulating (the FTP
-          # sync-state otherwise skips files it thinks are unchanged, even if
-          # they were removed on the server). This guarantees index.html and
-          # its referenced chunks always match after every deploy.
-          dangerous-clean-slate: true
+          # Clean-slate is intentionally OFF: it deletes .htaccess (a dotfile),
+          # and FTP-Deploy-Action will not re-upload dotfiles, which left the
+          # SPA with no routing (/admin/* -> 404) after every deploy. Instead we
+          # keep the existing .htaccess in place and let the fingerprinted asset
+          # filenames handle cache-busting; a periodic manual clean of old
+          # assets/ chunks is fine since each build emits new hashes.
+          dangerous-clean-slate: false
 
       - name: Deploy doc root (attempt 2)
         id: docroot2
