@@ -36,6 +36,10 @@ class CreateAlbumRequest extends FormRequest
             'allow_comments' => ['nullable', 'boolean'],
             'allow_enquiries' => ['nullable', 'boolean'],
             'google_review_url' => ['nullable', 'url', 'max:1000'],
+            'instagram_url' => ['nullable', 'url', 'max:1000'],
+            'whatsapp_url' => ['nullable', 'url', 'max:1000'],
+            'facebook_url' => ['nullable', 'url', 'max:1000'],
+            'pinterest_url' => ['nullable', 'url', 'max:1000'],
             'expires_at' => ['nullable', 'date'],
         ];
     }

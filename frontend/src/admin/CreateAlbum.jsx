@@ -43,6 +43,10 @@ export default function CreateAlbum() {
     ambient_count: '',
     allow_download: true,
     allow_share: true,
+    instagram_url: '',
+    whatsapp_url: '',
+    facebook_url: '',
+    pinterest_url: '',
     expires_at: oneYearFromToday(), // default: 1 year, editable below
   });
   const [errors, setErrors] = useState({});
@@ -62,6 +66,10 @@ export default function CreateAlbum() {
       if (!payload.video_gallery_url) delete payload.video_gallery_url;
       if (!payload.event_date) delete payload.event_date;
       if (payload.ambient_count === '') delete payload.ambient_count;
+      // Drop empty optional URL fields so they don't fail the 'url' rule.
+      for (const k of ['instagram_url', 'whatsapp_url', 'facebook_url', 'pinterest_url']) {
+        if (!payload[k]) delete payload[k];
+      }
       const res = await adminService.createAlbum(payload);
       setCreated(res);
     } catch (err) {
@@ -150,6 +158,26 @@ export default function CreateAlbum() {
         <Field label="Cover Image URL (optional)" error={err('cover_image_url')}>
           <input value={form.cover_image_url} onChange={set('cover_image_url')} placeholder="https://…" className="inp" />
         </Field>
+
+        {/* Social media links — shown as icons on the public album */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Social Media Links (optional)</p>
+          <p className="mb-3 text-xs" style={{ color: 'var(--muted)' }}>
+            Only the links you fill in appear as icons on the album.
+          </p>
+          <Field label="Instagram URL" error={err('instagram_url')}>
+            <input value={form.instagram_url} onChange={set('instagram_url')} placeholder="https://instagram.com/yourstudio" className="inp" />
+          </Field>
+          <Field label="WhatsApp URL" error={err('whatsapp_url')}>
+            <input value={form.whatsapp_url} onChange={set('whatsapp_url')} placeholder="https://wa.me/919999999999" className="inp" />
+          </Field>
+          <Field label="Facebook URL" error={err('facebook_url')}>
+            <input value={form.facebook_url} onChange={set('facebook_url')} placeholder="https://facebook.com/yourstudio" className="inp" />
+          </Field>
+          <Field label="Pinterest URL" error={err('pinterest_url')}>
+            <input value={form.pinterest_url} onChange={set('pinterest_url')} placeholder="https://pinterest.com/yourstudio" className="inp" />
+          </Field>
+        </div>
 
         <Field label="Ambient Effect">
           <select value={form.ambient_effect} onChange={set('ambient_effect')} className="inp">

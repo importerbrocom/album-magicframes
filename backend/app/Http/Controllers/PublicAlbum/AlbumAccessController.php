@@ -58,6 +58,12 @@ class AlbumAccessController extends Controller
             'allow_comments' => $album->allow_comments,
             'allow_enquiries' => $album->allow_enquiries,
             'google_review_url' => $album->google_review_url ?: config('services.album.google_review_url'),
+            'social_links' => [
+                'instagram' => $album->instagram_url,
+                'whatsapp' => $album->whatsapp_url,
+                'facebook' => $album->facebook_url,
+                'pinterest' => $album->pinterest_url,
+            ],
             'requires_password' => true,
         ]);
     }

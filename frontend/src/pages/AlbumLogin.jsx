@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { albumService, getAlbumToken } from '../services/albumService';
 import ThemeScope from '../components/ThemeScope';
+import Logo from '../components/Logo';
+import SocialLinks from '../components/SocialLinks';
 import { usePageMeta } from '../hooks/usePageMeta';
 import { HeroSkeleton } from '../components/LoadingSkeleton';
 import FilmModal from '../components/FilmModal';
@@ -89,6 +91,7 @@ export default function AlbumLogin() {
         </div>
 
         <div className="relative flex min-h-screen flex-col items-center justify-center px-6 py-16 text-center text-white">
+          <Logo className="mb-6 h-14 w-auto opacity-90 invert animate-fadeIn" />
           <p className="login-eyebrow mb-3 text-xs uppercase tracking-[0.3em] opacity-80 animate-fadeIn">{heroEyebrow(landing)}</p>
           <h1 className="hero-title text-5xl leading-tight sm:text-6xl animate-fadeUp">{landing.client_name}</h1>
           <span className="hero-rule" aria-hidden="true" />
@@ -128,6 +131,8 @@ export default function AlbumLogin() {
               {submitting ? 'Opening…' : 'VIEW ALBUM'}
             </button>
           </form>
+
+          <SocialLinks links={landing.social_links} variant="light" className="mt-8 justify-center animate-fadeIn" />
         </div>
 
         {filmOpen && <FilmModal url={filmSrc} onClose={() => setFilmOpen(false)} />}
