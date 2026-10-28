@@ -9,7 +9,6 @@ import CommentBox from '../components/CommentBox';
 import EnquiryForm from '../components/EnquiryForm';
 import GoogleReviewButton from '../components/GoogleReviewButton';
 import Logo from '../components/Logo';
-import FilmModal from '../components/FilmModal';
 import HeroFilm from '../components/HeroFilm';
 import { parseFilm } from '../components/parseFilm';
 import { heroEyebrow, galleryHeading, formatEventDate } from '../components/albumCopy';
@@ -22,7 +21,6 @@ import VideosCard from '../components/VideosCard';
 export default function AlbumHome() {
   const { album, slug } = useAlbum();
   const [events, setEvents] = useState(null);
-  const [filmOpen, setFilmOpen] = useState(false);
   const filmSrc = album.film_src || album.film_url;
   const hasFilm = !!parseFilm(filmSrc);
   const eventDate = formatEventDate(album.event_date);
@@ -53,17 +51,9 @@ export default function AlbumHome() {
         {/* Decorative script note (akhila theme only, generic) */}
         <span className="hero-note" aria-hidden="true">Love<br />Laugh<br />Forever ♡</span>
 
-        {/* Centered play button — opens the film when one exists */}
-        {hasFilm ? (
-          <button type="button" className="hero-play hero-play-active" aria-label="Play film" onClick={() => setFilmOpen(true)}>
-            <span>▶</span>
-          </button>
-        ) : (
-          <span className="hero-play" aria-hidden="true"><span>▶</span></span>
-        )}
-
-        {/* Centered title block */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
+        {/* Centered title block — pointer-events off so the video + control bar
+            underneath stay interactive (the title is just an overlay). */}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center px-6 text-center text-white">
           <p className="mb-3 text-[0.65rem] uppercase tracking-[0.4em] opacity-85">{heroEyebrow(album)}</p>
           <h1 className="hero-title animate-fadeUp text-5xl sm:text-6xl md:text-7xl">{album.client_name}</h1>
           {album.title && <p className="font-heading mt-2 text-lg uppercase tracking-[0.3em] opacity-90 sm:text-xl">{album.title}</p>}
@@ -72,22 +62,6 @@ export default function AlbumHome() {
           {eventDate && <p className="mt-2 text-[0.7rem] uppercase tracking-[0.3em] opacity-70">{eventDate}</p>}
         </div>
 
-        {/* Film scrubber strip (visual, akhila theme) — opens the film on click */}
-        {hasFilm && (
-          <button
-            type="button"
-            className="hero-scrubber"
-            aria-label="Play film"
-            onClick={() => setFilmOpen(true)}
-          >
-            <span className="hero-scrubber-play">▶</span>
-            <span className="hero-scrubber-time">0:00</span>
-            <span className="hero-scrubber-track"><i /></span>
-            <span className="hero-scrubber-ic">◖))</span>
-            <span className="hero-scrubber-ic">HD</span>
-            <span className="hero-scrubber-ic">⛶</span>
-          </button>
-        )}
       </section>
 
       <main className="mx-auto max-w-6xl px-4 pt-10">
@@ -152,7 +126,6 @@ export default function AlbumHome() {
         </footer>
       </main>
 
-      {filmOpen && <FilmModal url={filmSrc} onClose={() => setFilmOpen(false)} />}
     </div>
   );
 }
