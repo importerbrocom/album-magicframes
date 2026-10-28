@@ -10,6 +10,7 @@ import EnquiryForm from '../components/EnquiryForm';
 import GoogleReviewButton from '../components/GoogleReviewButton';
 import Logo from '../components/Logo';
 import FilmModal from '../components/FilmModal';
+import HeroFilm from '../components/HeroFilm';
 import { parseFilm } from '../components/parseFilm';
 import { heroEyebrow, galleryHeading, formatEventDate } from '../components/albumCopy';
 import VideosCard from '../components/VideosCard';
@@ -30,27 +31,22 @@ export default function AlbumHome() {
     albumService.events(slug).then(setEvents).catch(() => setEvents([]));
   }, [slug]);
 
-  // Auto-play the teaser film once when the client first opens the album
-  // (right after entering the password). Shown once per album per browser so
-  // it doesn't replay on every navigation back to the home page.
-  useEffect(() => {
-    if (!hasFilm) return;
-    const key = `mf_film_autoplayed_${slug}`;
-    if (sessionStorage.getItem(key)) return;
-    sessionStorage.setItem(key, '1');
-    setFilmOpen(true);
-  }, [slug, hasFilm]);
-
   const syncing = album.sync_status === 'syncing' || album.sync_status === 'pending';
 
   return (
     <div className="min-h-screen pb-16">
       <AlbumHeader slug={slug} album={album} />
 
-      {/* Cinematic full-viewport hero */}
+      {/* Cinematic full-viewport hero. When the album has a teaser film it plays
+          inline (muted, looping) as the hero background; otherwise the cover
+          image is shown. The play button / scrubber open the full film with sound. */}
       <section className="hero-stage relative w-full overflow-hidden">
-        {album.cover_image_url && (
-          <img src={album.cover_image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+        {hasFilm ? (
+          <HeroFilm url={filmSrc} poster={album.cover_image_url} />
+        ) : (
+          album.cover_image_url && (
+            <img src={album.cover_image_url} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          )
         )}
         <div className="hero-shade absolute inset-0" />
 
