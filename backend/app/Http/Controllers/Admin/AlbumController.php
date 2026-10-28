@@ -111,6 +111,10 @@ class AlbumController extends Controller
             'allow_comments' => $data['allow_comments'] ?? true,
             'allow_enquiries' => $data['allow_enquiries'] ?? true,
             'google_review_url' => $data['google_review_url'] ?? null,
+            'instagram_url' => $data['instagram_url'] ?? null,
+            'whatsapp_url' => $data['whatsapp_url'] ?? null,
+            'facebook_url' => $data['facebook_url'] ?? null,
+            'pinterest_url' => $data['pinterest_url'] ?? null,
             // Default to 1 year from now when the admin didn't set an expiry.
             'expires_at' => $data['expires_at'] ?? now()->addYear()->toDateString(),
             'sync_status' => 'pending',

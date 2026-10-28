@@ -36,6 +36,10 @@ export default function EditAlbum() {
         allow_comments: a.allow_comments !== false,
         allow_enquiries: a.allow_enquiries !== false,
         google_review_url: a.google_review_url || '',
+        instagram_url: a.instagram_url || '',
+        whatsapp_url: a.whatsapp_url || '',
+        facebook_url: a.facebook_url || '',
+        pinterest_url: a.pinterest_url || '',
       }),
     );
   }, [id]);
@@ -117,6 +121,26 @@ export default function EditAlbum() {
             {errors[k] && <p className="mt-1 text-xs text-red-600">{errors[k][0]}</p>}
           </div>
         ))}
+
+        {/* Social media links — shown as icons on the public album */}
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Social Media Links</p>
+          <p className="mb-3 text-xs" style={{ color: 'var(--muted)' }}>
+            Paste full profile/page URLs. Only the links you fill in appear as icons on the album.
+          </p>
+          {[
+            ['instagram_url', 'Instagram URL', 'https://instagram.com/yourstudio'],
+            ['whatsapp_url', 'WhatsApp URL', 'https://wa.me/919999999999'],
+            ['facebook_url', 'Facebook URL', 'https://facebook.com/yourstudio'],
+            ['pinterest_url', 'Pinterest URL', 'https://pinterest.com/yourstudio'],
+          ].map(([k, label, ph]) => (
+            <div key={k} className="mb-3 last:mb-0">
+              <label className="mb-1 block text-sm font-medium">{label}</label>
+              <input value={form[k]} onChange={set(k)} className="inp" placeholder={ph} />
+              {errors[k] && <p className="mt-1 text-xs text-red-600">{errors[k][0]}</p>}
+            </div>
+          ))}
+        </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="mb-1 block text-sm font-medium">Event Date (optional)</label>

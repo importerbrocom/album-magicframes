@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom';
-import ShareButton from './ShareButton';
+import Logo from './Logo';
+import SocialLinks from './SocialLinks';
 
 /**
  * Sticky album header shown across the public album (spec section 21).
+ * The old generic Share button is replaced by admin-configured social icons
+ * (Instagram / WhatsApp / Facebook / Pinterest). A logo sits on the left.
  */
 export default function AlbumHeader({ slug, album, back }) {
   return (
@@ -16,10 +19,16 @@ export default function AlbumHeader({ slug, album, back }) {
             ‹
           </Link>
         ) : null}
+
+        <Link to={`/album/${slug}`} className="shrink-0" aria-label="Home">
+          <Logo className="h-9 w-auto" />
+        </Link>
+
         <Link to={`/album/${slug}`} className="min-w-0 flex-1">
           <h1 className="font-heading truncate text-xl leading-none">{album?.client_name}</h1>
           <p className="truncate text-xs" style={{ color: 'var(--muted)' }}>{album?.title}</p>
         </Link>
+
         {album?.category && (
           <span
             className="hidden shrink-0 rounded-full px-2.5 py-0.5 text-[0.6rem] uppercase tracking-[0.25em] sm:inline-block"
@@ -28,7 +37,8 @@ export default function AlbumHeader({ slug, album, back }) {
             {album.category}
           </span>
         )}
-        {album?.allow_share && <ShareButton slug={slug} album={album} />}
+
+        <SocialLinks links={album?.social_links} className="shrink-0" />
       </div>
     </header>
   );
