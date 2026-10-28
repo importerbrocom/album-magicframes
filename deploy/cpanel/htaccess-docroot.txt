@@ -17,6 +17,17 @@
 #   everything else   -> React SPA (index.html) for client-side routing
 # =============================================================================
 
+# ---- Disable LiteSpeed server-side cache for this site ----
+# The host runs LiteSpeed, which was serving a STALE cached copy of index.html
+# (ignoring the no-cache response header and ?query cache-busting). Explicitly
+# turn LiteSpeed cache OFF so new deploys are always served immediately.
+<IfModule LiteSpeed>
+    CacheLookup off
+    RewriteEngine On
+    RewriteRule .* - [E=Cache-Control:no-cache]
+    RewriteRule .* - [E=cache-control:no-cache]
+</IfModule>
+
 # ---- Serve the React SPA shell (index.html) for the directory root ----
 # Apache/LiteSpeed default DirectoryIndex prefers index.php (the Laravel front
 # controller), which has no route for "/" and returns an empty response. Force
