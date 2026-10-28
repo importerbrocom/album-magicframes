@@ -114,6 +114,24 @@ export default function AlbumHome() {
         <div className="mt-12 space-y-6">
           {album.allow_comments !== false && <CommentBox slug={slug} />}
 
+          {/* Visit the main studio website */}
+          <div className="themed-surface flex flex-col items-center gap-3 p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+            <div>
+              <h3 className="font-heading text-xl">Visit Our Website</h3>
+              <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
+                Explore more of our work and services at Magic Frames.
+              </p>
+            </div>
+            <a
+              href="https://magicframes.co.in"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-accent !rounded-lg shrink-0 text-sm"
+            >
+              Visit magicframes.co.in →
+            </a>
+          </div>
+
           {album.allow_enquiries !== false && <EnquiryForm slug={slug} />}
 
           <GoogleReviewButton slug={slug} url={album.google_review_url} />
