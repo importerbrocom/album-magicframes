@@ -6,27 +6,28 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 | Web routes — SPA host
 |--------------------------------------------------------------------------
-| This host runs LiteSpeed with .htaccess rewrites effectively disabled for
-| this domain (per-vhost AllowOverride restriction), so the usual
-| "RewriteRule ^ index.html" SPA fallback never fires and deep client routes
-| like /admin/albums 404. Instead we serve the React shell THROUGH Laravel's
-| front controller (index.php), which IS reached for every request.
-|
-|  - /api/* is handled by routes/api.php (registered before this file wins for
-|    api-prefixed paths).
-|  - Any other path returns the built SPA index.html so React Router can take
-|    over client-side routing.
+| This host runs LiteSpeed; .htaccess routes every non-file request to the
+| Laravel front controller (index.php). Laravel serves the built React shell
+| (index.html) for any route that isn't an API route, so client-side routes
+| like /admin/albums work. API routes live in routes/api.php under /api.
 */
 
-// Serve the SPA shell for the root and every non-API path (catch-all).
-Route::get('/{any?}', function () {
-    // The compiled SPA index.html lives in the public doc root beside index.php.
+/** Serve the compiled SPA shell (index.html) from the public doc root. */
+$serveSpa = function () {
     $index = public_path('index.html');
 
-    abort_unless(is_file($index), 404);
+    abort_unless(is_file($index), 404, 'SPA shell not found.');
 
     return response(file_get_contents($index), 200)
         ->header('Content-Type', 'text/html; charset=UTF-8')
-        // Never cache the shell so new deploys are picked up immediately.
         ->header('Cache-Control', 'no-cache, no-store, must-revalidate');
-})->where('any', '^(?!api/).*$');
+};
+
+// Root.
+Route::get('/', $serveSpa);
+
+// Everything else that reaches Laravel and matched no API/web route above.
+// Route::fallback runs for any unmatched path, which is exactly the SPA's
+// deep client routes (/admin/*, /album/*, etc.). API 404s still return JSON
+// because api.php routes are matched first under the /api prefix.
+Route::fallback($serveSpa);
