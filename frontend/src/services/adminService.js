@@ -43,6 +43,10 @@ export const adminService = {
       return r.data;
     }),
 
+  // --- Studio settings (global social links, admin only) ---
+  settings: () => api.get('/admin/settings').then((r) => r.data),
+  updateSettings: (payload) => api.put('/admin/settings', payload).then((r) => r.data),
+
   // --- Staff management (admin only) ---
   staff: (params = {}) => api.get('/admin/staff', { params }).then((r) => r.data.data),
   createStaff: (payload) => api.post('/admin/staff', payload).then((r) => r.data.data),

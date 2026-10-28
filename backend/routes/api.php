@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AlbumController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\SettingsController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\PublicAlbum\AlbumAccessController;
 use App\Http\Controllers\PublicAlbum\AnalyticsController;
@@ -32,6 +33,12 @@ Route::prefix('admin')->group(function () {
         Route::post('profile/password', [AuthController::class, 'changePassword']);
         Route::post('profile/avatar', [AuthController::class, 'uploadAvatar']);
         Route::delete('profile/avatar', [AuthController::class, 'removeAvatar']);
+
+        // Studio-wide settings (global social links) — admin only.
+        Route::middleware('admin.only')->group(function () {
+            Route::get('settings', [SettingsController::class, 'index']);
+            Route::match(['put', 'patch'], 'settings', [SettingsController::class, 'update']);
+        });
 
         // Staff management — admin only.
         Route::middleware('admin.only')->group(function () {

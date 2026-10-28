@@ -126,7 +126,8 @@ export default function EditAlbum() {
         <div className="rounded-lg border border-black/10 p-4">
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Social Media Links</p>
           <p className="mb-3 text-xs" style={{ color: 'var(--muted)' }}>
-            Paste full profile/page URLs. Only the links you fill in appear as icons on the album.
+            Optional per-album override. Leave blank to use the studio-wide links
+            from Settings. Anything you enter here replaces the global link for this album.
           </p>
           {[
             ['instagram_url', 'Instagram URL', 'https://instagram.com/yourstudio'],
