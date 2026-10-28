@@ -37,10 +37,6 @@ class UpdateAlbumRequest extends FormRequest
             'allow_comments' => ['sometimes', 'boolean'],
             'allow_enquiries' => ['sometimes', 'boolean'],
             'google_review_url' => ['nullable', 'url', 'max:1000'],
-            'instagram_url' => ['nullable', 'url', 'max:1000'],
-            'whatsapp_url' => ['nullable', 'url', 'max:1000'],
-            'facebook_url' => ['nullable', 'url', 'max:1000'],
-            'pinterest_url' => ['nullable', 'url', 'max:1000'],
             'expires_at' => ['nullable', 'date'],
         ];
     }
