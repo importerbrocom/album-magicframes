@@ -27,6 +27,21 @@ export const adminService = {
       if (r.data.user) localStorage.setItem('mf_admin_user', JSON.stringify(r.data.user));
       return r.data;
     }),
+  uploadAvatar: (file) => {
+    const form = new FormData();
+    form.append('avatar', file);
+    return api
+      .post('/admin/profile/avatar', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      .then((r) => {
+        if (r.data.user) localStorage.setItem('mf_admin_user', JSON.stringify(r.data.user));
+        return r.data;
+      });
+  },
+  removeAvatar: () =>
+    api.delete('/admin/profile/avatar').then((r) => {
+      if (r.data.user) localStorage.setItem('mf_admin_user', JSON.stringify(r.data.user));
+      return r.data;
+    }),
 
   // --- Staff management (admin only) ---
   staff: (params = {}) => api.get('/admin/staff', { params }).then((r) => r.data.data),

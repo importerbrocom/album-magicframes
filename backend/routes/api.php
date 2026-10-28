@@ -30,6 +30,8 @@ Route::prefix('admin')->group(function () {
         // Self-service profile (admin + staff): edit own name/email + password.
         Route::match(['put', 'patch'], 'profile', [AuthController::class, 'updateProfile']);
         Route::post('profile/password', [AuthController::class, 'changePassword']);
+        Route::post('profile/avatar', [AuthController::class, 'uploadAvatar']);
+        Route::delete('profile/avatar', [AuthController::class, 'removeAvatar']);
 
         // Staff management — admin only.
         Route::middleware('admin.only')->group(function () {

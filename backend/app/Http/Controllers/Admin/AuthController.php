@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 
@@ -110,6 +111,50 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Password changed.',
+            'user' => $user->fresh()->toAuthArray(),
+        ]);
+    }
+
+    /**
+     * Upload/replace the authenticated user's profile photo. Stored on the
+     * public disk (served via the /storage symlink). Replaces any existing one.
+     */
+    public function uploadAvatar(Request $request): JsonResponse
+    {
+        $request->validate([
+            'avatar' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:4096'],
+        ]);
+
+        $user = $request->user();
+
+        // Remove the previous avatar file if present.
+        if ($user->avatar_path) {
+            Storage::disk('public')->delete($user->avatar_path);
+        }
+
+        // Store under avatars/ with a unique name; keep the original extension.
+        $path = $request->file('avatar')->store('avatars', 'public');
+
+        $user->update(['avatar_path' => $path]);
+
+        return response()->json([
+            'message' => 'Profile photo updated.',
+            'user' => $user->fresh()->toAuthArray(),
+        ]);
+    }
+
+    /** Remove the authenticated user's profile photo. */
+    public function removeAvatar(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        if ($user->avatar_path) {
+            Storage::disk('public')->delete($user->avatar_path);
+            $user->update(['avatar_path' => null]);
+        }
+
+        return response()->json([
+            'message' => 'Profile photo removed.',
             'user' => $user->fresh()->toAuthArray(),
         ]);
     }
