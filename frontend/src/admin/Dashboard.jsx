@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
+import Logo from '../components/Logo';
 
 const Stat = ({ label, value }) => (
   <div className="themed-surface p-5">
@@ -23,7 +24,7 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="font-heading text-3xl font-semibold">Dashboard</h1>
+        <Logo className="h-12 w-auto" />
         <Link to="/admin/albums/create" className="btn-accent !rounded-lg text-sm">+ New Album</Link>
       </div>
 
