@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { adminService } from '../services/adminService';
 import { usePageMeta } from '../hooks/usePageMeta';
-import Logo from '../components/Logo';
 
 const Stat = ({ label, value }) => (
   <div className="themed-surface p-5">
@@ -24,9 +23,7 @@ export default function Dashboard() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        {/* Logo shown only on mobile; on desktop the sidebar already shows it (avoids a duplicate logo) */}
-        <Logo className="h-12 w-auto md:hidden" />
-        <h1 className="font-heading hidden text-2xl font-semibold md:block">Dashboard</h1>
+        <h1 className="font-heading text-2xl font-semibold">Dashboard</h1>
         <Link to="/admin/albums/create" className="btn-accent !rounded-lg text-sm">+ New Album</Link>
       </div>
 
