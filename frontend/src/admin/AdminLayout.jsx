@@ -35,6 +35,7 @@ export default function AdminLayout() {
         {/* Sidebar (desktop) */}
         <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-black/10 p-5 md:flex">
           <div className="mb-8">
+            {/* Real logo.png (black wordmark) on the light sidebar. */}
             <Logo className="h-16 w-auto" />
           </div>
           <nav className="flex-1 space-y-1">
