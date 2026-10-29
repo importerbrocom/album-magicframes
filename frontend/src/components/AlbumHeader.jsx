@@ -28,7 +28,7 @@ export default function AlbumHeader({ slug, album, back }) {
           className="flex min-w-0 flex-1 items-center gap-3"
           aria-label="Visit Magic Frames website"
         >
-          <Logo className="h-9 w-auto shrink-0" transparent />
+          <Logo className="h-12 w-auto shrink-0 sm:h-14" transparent />
           <span
             className="whitespace-nowrap text-2xl leading-none tracking-wide"
             style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 100, color: 'var(--accent)' }}
