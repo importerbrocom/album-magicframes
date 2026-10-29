@@ -26,6 +26,7 @@ class AdminAlbumResource extends JsonResource
             'cover_image_url' => $this->cover_image_url,
             'film_url' => $this->film_url,
             'video_gallery_url' => $this->video_gallery_url,
+            'video_links' => $this->video_links ?: [],
             'description' => $this->description,
             'tagline' => $this->tagline,
             'status' => $this->status,

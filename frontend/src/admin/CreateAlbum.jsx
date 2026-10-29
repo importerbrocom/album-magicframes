@@ -43,6 +43,7 @@ export default function CreateAlbum() {
     ambient_count: '',
     allow_download: true,
     allow_share: true,
+    video_links: [],
     expires_at: oneYearFromToday(), // default: 1 year, editable below
   });
   const [errors, setErrors] = useState({});
@@ -50,6 +51,17 @@ export default function CreateAlbum() {
   const [created, setCreated] = useState(null);
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  // YouTube video-gallery repeater handlers.
+  const addVideoLink = () =>
+    setForm((f) => ({ ...f, video_links: [...(f.video_links || []), { title: '', youtube_url: '' }] }));
+  const removeVideoLink = (idx) =>
+    setForm((f) => ({ ...f, video_links: (f.video_links || []).filter((_, i) => i !== idx) }));
+  const setVideoLink = (idx, key, value) =>
+    setForm((f) => ({
+      ...f,
+      video_links: (f.video_links || []).map((row, i) => (i === idx ? { ...row, [key]: value } : row)),
+    }));
 
   const submit = async (e) => {
     e.preventDefault();
@@ -62,6 +74,8 @@ export default function CreateAlbum() {
       if (!payload.video_gallery_url) delete payload.video_gallery_url;
       if (!payload.event_date) delete payload.event_date;
       if (payload.ambient_count === '') delete payload.ambient_count;
+      payload.video_links = (payload.video_links || []).filter((r) => r.youtube_url?.trim());
+      if (payload.video_links.length === 0) delete payload.video_links;
       const res = await adminService.createAlbum(payload);
       setCreated(res);
     } catch (err) {
@@ -136,6 +150,35 @@ export default function CreateAlbum() {
               A separate folder of videos shown as their own “Video Gallery” section (distinct from the photos and the teaser). All videos in the folder are listed.
             </p>
           </Field>
+
+          {/* YouTube videos — each with its own heading */}
+          <div className="mt-4 border-t border-black/10 pt-3">
+            <p className="mb-2 text-sm font-medium">YouTube Videos</p>
+            {(form.video_links || []).map((row, idx) => (
+              <div key={idx} className="mb-3 rounded-lg border border-black/10 p-3">
+                <input
+                  value={row.title}
+                  onChange={(e) => setVideoLink(idx, 'title', e.target.value)}
+                  className="inp mb-2"
+                  placeholder="Heading (e.g. Wedding Highlights)"
+                />
+                <div className="flex gap-2">
+                  <input
+                    value={row.youtube_url}
+                    onChange={(e) => setVideoLink(idx, 'youtube_url', e.target.value)}
+                    className="inp flex-1"
+                    placeholder="https://youtu.be/… or https://youtube.com/watch?v=…"
+                  />
+                  <button type="button" onClick={() => removeVideoLink(idx)} className="rounded-lg border border-red-200 px-3 text-sm text-red-600">
+                    Remove
+                  </button>
+                </div>
+              </div>
+            ))}
+            <button type="button" onClick={addVideoLink} className="rounded-lg border border-black/15 px-3 py-1.5 text-sm">
+              ＋ Add YouTube video
+            </button>
+          </div>
         </div>
 
         <Field label="Access Password" error={err('password')}>

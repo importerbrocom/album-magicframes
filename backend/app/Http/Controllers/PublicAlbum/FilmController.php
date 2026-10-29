@@ -49,7 +49,10 @@ class FilmController extends Controller
     {
         $album = Album::where('slug', $slug)->first();
         abort_if(! $album || ! $album->isAccessible(), 404);
-        abort_if(! $album->video_gallery_url, 404);
+        abort_if(! $album->hasVideoGallery(), 404);
+
+        // Admin-added YouTube videos (each with its own heading) come first.
+        $youtube = $album->youtubeGalleryItems();
 
         if ($album->drive_auth_mode === 'demo') {
             // Demo albums: return public sample clips (played directly).
@@ -62,7 +65,12 @@ class FilmController extends Controller
                 'poster' => $posters[$v['id']] ?? $v['poster'],
             ], $album->applyVideoOrder($videos));
 
-            return response()->json(['data' => $data]);
+            return response()->json(['data' => array_merge($youtube, $data)]);
+        }
+
+        // No Drive folder set → the gallery is just the YouTube videos.
+        if (! $album->video_gallery_url) {
+            return response()->json(['data' => $youtube]);
         }
 
         // Resolve the folder id from the saved link.
@@ -77,7 +85,7 @@ class FilmController extends Controller
         try {
             $videos = $drive->listVideoFiles($folderId);
         } catch (GoogleDriveException $e) {
-            return response()->json(['data' => []]);
+            return response()->json(['data' => $youtube]);
         }
 
         $videos = $album->applyVideoOrder($videos);
@@ -99,7 +107,8 @@ class FilmController extends Controller
             ];
         }, $videos);
 
-        return response()->json(['data' => $data]);
+        // YouTube videos (with their headings) listed first, then Drive videos.
+        return response()->json(['data' => array_merge($youtube, $data)]);
     }
 
     /** Stream a single video from the album's video-gallery folder by file id. */
