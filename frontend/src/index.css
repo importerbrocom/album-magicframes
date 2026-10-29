@@ -346,6 +346,21 @@
     linear-gradient(0deg, rgba(0,0,0,.25), transparent 55%);
 }
 [data-theme='akhila'] .card-copy { max-width: 72%; z-index: 1; }
+
+/* Tablet / mobile: keep the card copy clear of the centered play button and
+   stop the caption / VIEW from being clipped on shorter cards. */
+@media (max-width: 1024px) {
+  [data-theme='akhila'] .event-card { max-height: 260px; }
+  [data-theme='akhila'] .event-card.is-wide { max-height: 220px; }
+  [data-theme='akhila'] .card-copy { max-width: 60%; padding: 1rem 1.1rem !important; }
+  [data-theme='akhila'] .card-title,
+  [data-theme='akhila'] .event-card.is-wide .card-title { font-size: clamp(1.4rem, 5vw, 2rem); }
+  [data-theme='akhila'] .card-view { margin-top: 12px; }
+}
+@media (max-width: 640px) {
+  [data-theme='akhila'] .card-copy { max-width: 66%; }
+  [data-theme='akhila'] .card-caption { letter-spacing: 1.6px; }
+}
 [data-theme='akhila'] .card-cat-icon {
   display: block; font-family: 'Cormorant Garamond', serif; color: var(--accent);
   font-size: 1.8rem; line-height: 1; margin-bottom: 0.4rem;
