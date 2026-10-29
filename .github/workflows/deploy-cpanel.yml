@@ -90,10 +90,13 @@ jobs:
           # Doc root: React build output
           cp -r frontend/dist/. release/docroot/
 
-          # Doc root: Laravel front controller + routing + static assets
+          # Doc root: Laravel front controller + routing + static assets.
+          # NOTE: we intentionally do NOT copy a favicon.ico — browsers request
+          # /favicon.ico by default and prefer it over the <link> tags, which
+          # was overriding our logotrans.png favicon. index.html points the icon
+          # at logotrans.png instead.
           cp deploy/cpanel/index.php            release/docroot/index.php
           cp deploy/cpanel/htaccess-docroot.txt release/docroot/.htaccess
-          cp backend/public/favicon.ico         release/docroot/favicon.ico || true
           cp backend/public/robots.txt          release/docroot/robots.txt  || true
 
           # Control-files-only dir for the dedicated post-deploy restore step.
