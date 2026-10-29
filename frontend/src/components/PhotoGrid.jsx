@@ -85,10 +85,11 @@ export default function PhotoGrid({
   return (
     <>
       {view === 'auto' && (
-        // Orientation-aware layout in a 3-column grid: wide images span 2
-        // columns, tall images span 2 rows, so each photo displays in a shape
-        // suited to it. Taller rows since columns are wider at 3-up.
-        <div className="grid auto-rows-[16rem] grid-cols-1 gap-2 sm:auto-rows-[20rem] sm:grid-cols-2 lg:auto-rows-[24rem] lg:grid-cols-3">
+        // Orientation-aware layout: 2 columns on phones/tablets, 3 on larger
+        // screens. Wide images span 2 columns, tall images span 2 rows, so each
+        // photo displays in a shape suited to it. Uses the high-res preview
+        // image (not the small thumbnail) so large cells stay sharp.
+        <div className="grid auto-rows-[14rem] grid-cols-2 gap-2 sm:auto-rows-[18rem] md:auto-rows-[22rem] md:grid-cols-3 lg:auto-rows-[24rem]">
           {photos.map((p, i) => {
             const o = orientation(p);
             const span =
@@ -100,7 +101,7 @@ export default function PhotoGrid({
             return (
               <div key={p.id} className={`group relative ${span}`}>
                 <LazyImage
-                  src={p.thumbnail_url}
+                  src={p.preview_url || p.thumbnail_url}
                   alt={p.file_name}
                   className="h-full w-full rounded-lg"
                   onClick={() => onOpen(i)}
