@@ -347,19 +347,31 @@
 }
 [data-theme='akhila'] .card-copy { max-width: 72%; z-index: 1; }
 
-/* Tablet / mobile: keep the card copy clear of the centered play button and
-   stop the caption / VIEW from being clipped on shorter cards. */
+/* Tablet / mobile: give cards enough height and compact the copy so the
+   caption and VIEW are never clipped, and the text stays clear of the
+   centered play button. */
 @media (max-width: 1024px) {
-  [data-theme='akhila'] .event-card { max-height: 260px; }
-  [data-theme='akhila'] .event-card.is-wide { max-height: 220px; }
-  [data-theme='akhila'] .card-copy { max-width: 60%; padding: 1rem 1.1rem !important; }
+  [data-theme='akhila'] .event-card,
+  [data-theme='akhila'] .event-card.is-wide { max-height: none; min-height: 210px; }
+  [data-theme='akhila'] .card-copy {
+    max-width: 62%; padding: 0.9rem 1rem !important; justify-content: center;
+  }
   [data-theme='akhila'] .card-title,
   [data-theme='akhila'] .event-card.is-wide .card-title { font-size: clamp(1.4rem, 5vw, 2rem); }
+  [data-theme='akhila'] .card-caption {
+    margin-top: 8px; letter-spacing: 1.4px; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
   [data-theme='akhila'] .card-view { margin-top: 12px; }
 }
 @media (max-width: 640px) {
-  [data-theme='akhila'] .card-copy { max-width: 66%; }
-  [data-theme='akhila'] .card-caption { letter-spacing: 1.6px; }
+  [data-theme='akhila'] .event-card,
+  [data-theme='akhila'] .event-card.is-wide { min-height: 180px; }
+  [data-theme='akhila'] .card-copy { max-width: 68%; padding: 0.75rem 0.85rem !important; }
+  [data-theme='akhila'] .card-title,
+  [data-theme='akhila'] .event-card.is-wide .card-title { font-size: clamp(1.25rem, 6vw, 1.7rem); }
+  [data-theme='akhila'] .card-caption { letter-spacing: 1px; }
+  [data-theme='akhila'] .card-view { margin-top: 8px; }
 }
 [data-theme='akhila'] .card-cat-icon {
   display: block; font-family: 'Cormorant Garamond', serif; color: var(--accent);
