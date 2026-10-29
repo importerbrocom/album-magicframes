@@ -28,6 +28,7 @@ class Album extends Model
         'video_gallery_url',
         'video_posters',
         'video_order',
+        'video_links',
         'description',
         'tagline',
         'status',
@@ -61,6 +62,7 @@ class Album extends Model
         'event_date' => 'date',
         'video_posters' => 'array',
         'video_order' => 'array',
+        'video_links' => 'array',
         'last_synced_at' => 'datetime',
         'expires_at' => 'datetime',
     ];
@@ -72,6 +74,47 @@ class Album extends Model
     public function socialLinks(): array
     {
         return \App\Models\Setting::socialLinks();
+    }
+
+    /** True when the album has either a Drive video folder or YouTube links. */
+    public function hasVideoGallery(): bool
+    {
+        return ! empty($this->video_gallery_url) || ! empty($this->video_links);
+    }
+
+    /**
+     * Admin-added YouTube videos as public gallery items, shaped like the Drive
+     * videos ({id, name, src, poster}) so the frontend renders them uniformly.
+     * A YouTube thumbnail is derived for the tile poster.
+     */
+    public function youtubeGalleryItems(): array
+    {
+        $out = [];
+        foreach ($this->video_links ?? [] as $i => $link) {
+            $url = $link['youtube_url'] ?? null;
+            if (! $url) {
+                continue;
+            }
+            $out[] = [
+                'id' => 'yt_'.$i,
+                'name' => $link['title'] ?? 'Video',
+                'src' => $url,
+                'poster' => $this->youtubeThumb($url),
+                'kind' => 'youtube',
+            ];
+        }
+
+        return $out;
+    }
+
+    /** Best-effort YouTube thumbnail URL from a watch/short/embed link. */
+    private function youtubeThumb(string $url): ?string
+    {
+        if (preg_match('#(?:youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/|v/)|youtu\.be/)([\w-]{11})#', $url, $m)) {
+            return 'https://img.youtube.com/vi/'.$m[1].'/hqdefault.jpg';
+        }
+
+        return null;
     }
 
     public function user(): BelongsTo
