@@ -6,7 +6,6 @@ import EventCard from '../components/EventCard';
 import { CardSkeleton } from '../components/LoadingSkeleton';
 import EmptyState from '../components/EmptyState';
 import CommentBox from '../components/CommentBox';
-import EnquiryForm from '../components/EnquiryForm';
 import GoogleReviewButton from '../components/GoogleReviewButton';
 import Logo from '../components/Logo';
 import HeroFilm from '../components/HeroFilm';
@@ -114,33 +113,13 @@ export default function AlbumHome() {
         <div className="mt-12 space-y-6">
           {album.allow_comments !== false && <CommentBox slug={slug} />}
 
-          {/* Visit the main studio website */}
-          <div className="themed-surface flex flex-col items-center gap-3 p-6 text-center sm:flex-row sm:justify-between sm:text-left">
-            <div>
-              <h3 className="font-heading text-xl">Visit Our Website</h3>
-              <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
-                Explore more of our work and services at Magic Frames.
-              </p>
-            </div>
-            <a
-              href="https://magicframes.co.in"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-accent !rounded-lg shrink-0 text-sm"
-            >
-              Visit magicframes.co.in →
-            </a>
-          </div>
-
-          {album.allow_enquiries !== false && <EnquiryForm slug={slug} />}
-
           <GoogleReviewButton slug={slug} url={album.google_review_url} />
         </div>
 
         {/* Studio footer branding — invert the black wordmark so it reads on the dark page */}
         <footer className="mt-12 flex flex-col items-center gap-2 pb-4 text-center">
           <Logo className="h-20 w-auto opacity-90" transparent />
-          <p className="text-xs" style={{ color: 'var(--muted)' }}>Captured with care</p>
+          <p className="text-xs" style={{ color: 'var(--muted)' }}>Captured with love</p>
         </footer>
       </main>
 

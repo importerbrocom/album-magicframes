@@ -20,7 +20,14 @@ export default function AlbumHeader({ slug, album, back }) {
           </Link>
         ) : null}
 
-        <Link to={`/album/${slug}`} className="flex min-w-0 flex-1 items-center gap-3" aria-label="Magic Frames">
+        {/* Logo + name link to the company website (opens in a new tab). */}
+        <a
+          href="https://magicframes.co.in"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex min-w-0 flex-1 items-center gap-3"
+          aria-label="Visit Magic Frames website"
+        >
           <Logo className="h-9 w-auto shrink-0" transparent />
           <span
             className="whitespace-nowrap text-2xl leading-none tracking-wide"
@@ -28,7 +35,7 @@ export default function AlbumHeader({ slug, album, back }) {
           >
             Magic Frames
           </span>
-        </Link>
+        </a>
 
         {album?.category && (
           <span
