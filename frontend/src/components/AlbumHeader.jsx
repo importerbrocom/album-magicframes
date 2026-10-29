@@ -13,24 +13,26 @@ export default function AlbumHeader({ slug, album, back }) {
       className="sticky top-0 z-40 backdrop-blur-md"
       style={{ background: 'color-mix(in srgb, var(--surface) 85%, transparent)' }}
     >
-      <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
+      <div className="mx-auto flex max-w-6xl items-center gap-2 px-3 py-2.5 sm:gap-3 sm:px-4 sm:py-3">
         {back ? (
-          <Link to={back} className="flex h-9 w-9 items-center justify-center rounded-full border border-black/10 text-lg" aria-label="Back">
+          <Link to={back} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/10 text-lg" aria-label="Back">
             ‹
           </Link>
         ) : null}
 
-        {/* Logo + name link to the company website (opens in a new tab). */}
+        {/* Logo + name link to the company website (opens in a new tab).
+            min-w-0 + truncate keeps the name from overflowing into the icons on
+            small screens; the font scales down on mobile. */}
         <a
           href="https://magicframes.co.in"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex min-w-0 flex-1 items-center gap-3"
+          className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3"
           aria-label="Visit Magic Frames website"
         >
-          <Logo className="h-16 w-auto shrink-0 sm:h-20" transparent />
+          <Logo className="h-10 w-auto shrink-0 sm:h-16 lg:h-20" transparent />
           <span
-            className="whitespace-nowrap text-2xl leading-none tracking-wide"
+            className="truncate text-sm leading-none tracking-wide sm:text-xl lg:text-2xl"
             style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 100, color: 'var(--accent)' }}
           >
             magicframes.co.in
@@ -39,7 +41,7 @@ export default function AlbumHeader({ slug, album, back }) {
 
         {album?.category && (
           <span
-            className="hidden shrink-0 rounded-full px-2.5 py-0.5 text-[0.6rem] uppercase tracking-[0.25em] sm:inline-block"
+            className="hidden shrink-0 rounded-full px-2.5 py-0.5 text-[0.6rem] uppercase tracking-[0.25em] lg:inline-block"
             style={{ color: 'var(--accent)', border: '1px solid color-mix(in srgb, var(--accent) 45%, transparent)' }}
           >
             {album.category}

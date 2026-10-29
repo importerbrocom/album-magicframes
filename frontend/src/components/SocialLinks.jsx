@@ -24,7 +24,7 @@ export default function SocialLinks({ links, variant = 'dark', className = '' })
       : 'border-black/15 hover:border-black/40';
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
+    <div className={`flex items-center gap-1.5 sm:gap-2 ${className}`}>
       {items.map(({ key, label, url, Icon }) => (
         <a
           key={key}
@@ -33,10 +33,10 @@ export default function SocialLinks({ links, variant = 'dark', className = '' })
           rel="noopener noreferrer"
           aria-label={label}
           title={label}
-          className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${border} ${color}`}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition sm:h-9 sm:w-9 ${border} ${color}`}
           style={variant === 'light' ? undefined : { color: 'var(--accent, #111)' }}
         >
-          <Icon className="h-[18px] w-[18px]" />
+          <Icon className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
         </a>
       ))}
     </div>
