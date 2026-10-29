@@ -33,7 +33,7 @@ export default function AlbumHeader({ slug, album, back }) {
             className="whitespace-nowrap text-2xl leading-none tracking-wide"
             style={{ fontFamily: "'Montserrat', sans-serif", fontWeight: 100, color: 'var(--accent)' }}
           >
-            Magic Frames
+            magicframes.co.in
           </span>
         </a>
 
