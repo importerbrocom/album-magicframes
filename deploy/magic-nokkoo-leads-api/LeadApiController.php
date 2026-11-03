@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Lead;
 use App\Models\LeadStatusLog;
-use App\Rules\PhoneNumber;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -31,9 +30,12 @@ class LeadApiController extends Controller
         }
 
         // --- 2. Validate the incoming payload ----------------------------
+        // Keep phone validation self-contained (don't depend on the app's
+        // App\Rules\PhoneNumber class). Accept 7-15 digits, optionally with a
+        // leading +, spaces, or dashes; store the raw value.
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'phone' => ['required', new PhoneNumber],
+            'phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9\s\-]{7,20}$/'],
             'email' => 'nullable|email|max:255',
             'notes' => 'nullable|string',
             'source' => 'nullable|in:website,referral,social_media,walk_in,other',
