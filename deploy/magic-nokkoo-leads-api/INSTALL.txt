@@ -36,25 +36,38 @@ mkdir -p app/Http/Controllers/Api
 # contents of LeadApiController.php from this folder (use nano or scp).
 
 --------------------------------------------------------------------------
-STEP 2 — Register the route
+STEP 2 — Create routes/api.php  (it does NOT exist yet on this app)
 --------------------------------------------------------------------------
-# If routes/api.php EXISTS, append the route line below to it.
-# If it does NOT exist, see STEP 2b.
+# Create the file ~/magic.nokkoo.in/routes/api.php with EXACTLY:
 
-# --- route line (goes in routes/api.php) ---
-# use App\Http\Controllers\Api\LeadApiController;
-# Route::post('/leads', [LeadApiController::class, 'store']);
+<?php
+
+use App\Http\Controllers\Api\LeadApiController;
+use Illuminate\Support\Facades\Route;
+
+Route::post('/leads', [LeadApiController::class, 'store']);
+
+# Routes in api.php are auto-prefixed with /api, so this is POST /api/leads.
+
+--------------------------------------------------------------------------
+STEP 2b — Register the api file in bootstrap/app.php  (REQUIRED here)
+--------------------------------------------------------------------------
+# This app's withRouting() does NOT list an api: file. Edit bootstrap/app.php
+# and add the api: line inside ->withRouting( ... ) so it reads:
 #
-# NOTE: routes in api.php are auto-prefixed with /api, so this becomes
-# POST /api/leads  -> exactly what the album app is configured to call.
-
---------------------------------------------------------------------------
-STEP 2b — ONLY if bootstrap/app.php does not register api routes
---------------------------------------------------------------------------
-# In bootstrap/app.php, inside ->withRouting(...), add:
-#     api: __DIR__.'/../routes/api.php',
-# (next to the existing web: ... line), then run:
-#   /opt/alt/php83/usr/bin/php artisan route:clear
+#     ->withRouting(
+#         web: __DIR__.'/../routes/web.php',
+#         api: __DIR__.'/../routes/api.php',        <-- ADD THIS LINE
+#         commands: __DIR__.'/../routes/console.php',
+#         channels: __DIR__.'/../routes/channels.php',
+#         health: '/up',
+#     )
+#
+# Then clear route cache (STEP 5 does this).
+#
+# NOTE: api routes get the "api" middleware group automatically, which does
+# NOT include the web group's CSRF / Inertia / Spatie middleware — so the
+# album's token-only POST is accepted. No extra middleware config needed.
 
 --------------------------------------------------------------------------
 STEP 3 — Add the shared secret + system user to .env
