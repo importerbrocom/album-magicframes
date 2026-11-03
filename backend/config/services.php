@@ -56,12 +56,14 @@ return [
     ],
 
     // External CRN (CRM) lead-intake integration for album enquiries.
+    // Points at the Leads API on https://magic.nokkoo.in (POST /api/leads).
     'crn' => [
-        'endpoint' => env('CRN_ENDPOINT'),            // e.g. https://magicframes.nokkoo.in/api/leads
+        'endpoint' => env('CRN_ENDPOINT'),            // e.g. https://magic.nokkoo.in/api/leads
         'method' => env('CRN_METHOD', 'POST'),
         'as_form' => env('CRN_AS_FORM', false),       // send form-encoded instead of JSON
-        'source' => env('CRN_SOURCE', 'web-album'),
-        'token' => env('CRN_TOKEN'),                  // optional auth token
+        'source' => env('CRN_SOURCE', 'website'),     // must match the Leads source enum
+        'event_type' => env('CRN_EVENT_TYPE', 'Enquiry'), // default event for the lead
+        'token' => env('CRN_TOKEN'),                  // shared-secret token for the API
         'token_header' => env('CRN_TOKEN_HEADER', 'Authorization'),
         'token_prefix' => env('CRN_TOKEN_PREFIX', 'Bearer '),
         // Map our field names -> CRN's expected names (override individually
@@ -70,9 +72,9 @@ return [
             'name' => env('CRN_FIELD_NAME', 'name'),
             'phone' => env('CRN_FIELD_PHONE', 'phone'),
             'email' => env('CRN_FIELD_EMAIL', 'email'),
-            'message' => env('CRN_FIELD_MESSAGE', 'message'),
+            'notes' => env('CRN_FIELD_NOTES', 'notes'),
             'source' => env('CRN_FIELD_SOURCE', 'source'),
-            'album' => env('CRN_FIELD_ALBUM', 'album'),
+            'event_type' => env('CRN_FIELD_EVENT_TYPE', 'event_type'),
         ],
     ],
 

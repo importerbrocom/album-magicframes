@@ -8,8 +8,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
 
 /**
- * Forwards album enquiries to the external CRN system
- * (https://magicframes.nokkoo.in). The endpoint, HTTP method, auth header and
+ * Forwards album enquiries to the external CRN/Leads system
+ * (https://magic.nokkoo.in/api/leads). The endpoint, HTTP method, auth header and
  * field mapping are all configurable via config/services.php (env), so this
  * works with whatever lead-intake API the CRN exposes without code changes.
  *
@@ -50,25 +50,37 @@ class CrnService
 
         $endpoint = (string) config('services.crn.endpoint');
         $method = strtoupper((string) config('services.crn.method', 'POST'));
-        $source = (string) config('services.crn.source', 'web-album');
+        $source = (string) config('services.crn.source', 'website');
+        $eventType = (string) config('services.crn.event_type', 'Enquiry');
 
         // Map our fields to the CRN's expected field names (configurable).
         $map = config('services.crn.field_map', [
             'name' => 'name',
             'phone' => 'phone',
             'email' => 'email',
-            'message' => 'message',
+            'notes' => 'notes',
             'source' => 'source',
-            'album' => 'album',
+            'event_type' => 'event_type',
         ]);
+
+        // The Leads system has no "message" or "album" field, so we fold the
+        // enquiry message and the album it came from into the lead's notes.
+        $noteParts = [];
+        if ($enquiry->message) {
+            $noteParts[] = trim((string) $enquiry->message);
+        }
+        if ($enquiry->album_slug) {
+            $noteParts[] = 'Album: ' . $enquiry->album_slug;
+        }
+        $notes = implode("\n\n", $noteParts) ?: null;
 
         $payload = [
             $map['name'] => $enquiry->name,
             $map['phone'] => $enquiry->phone,
             $map['email'] => $enquiry->email,
-            $map['message'] => $enquiry->message,
+            $map['notes'] => $notes,
             $map['source'] => $source,
-            $map['album'] => $enquiry->album_slug,
+            $map['event_type'] => $eventType,
         ];
 
         $headers = ['Accept' => 'application/json'];
