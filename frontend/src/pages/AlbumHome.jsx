@@ -6,6 +6,7 @@ import EventCard from '../components/EventCard';
 import { CardSkeleton } from '../components/LoadingSkeleton';
 import EmptyState from '../components/EmptyState';
 import CommentBox from '../components/CommentBox';
+import EnquiryForm from '../components/EnquiryForm';
 import GoogleReviewButton from '../components/GoogleReviewButton';
 import Logo from '../components/Logo';
 import HeroFilm from '../components/HeroFilm';
@@ -112,6 +113,8 @@ export default function AlbumHome() {
             (older album rows may return null/undefined for these flags). */}
         <div className="mt-12 space-y-6">
           {album.allow_comments !== false && <CommentBox slug={slug} />}
+
+          {album.allow_enquiries !== false && <EnquiryForm slug={slug} />}
 
           <GoogleReviewButton slug={slug} url={album.google_review_url} />
         </div>
