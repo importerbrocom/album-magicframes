@@ -38,6 +38,42 @@ rewrite — both broke deep routes on this LiteSpeed vhost.
 - The build job emits content-hashed chunks, so stale chunks are not a concern
   without clean-slate.
 
+## Standard change -> live flow
+
+Cannot build/lint locally (no npm registry, PHP lacks libgd), so CI is the build.
+
+1. Branch off fresh `main` (never reuse a branch whose PR already merged).
+2. Edit, commit, `git push -u origin <branch>`.
+3. Open PR via REST: `gh api repos/importerbrocom/album-magicframes/pulls -f title=... -f head=<branch> -f base=main`
+   (`gh pr create` is GraphQL-backed and fails in the sandbox).
+4. Merge via `gh api -X PUT repos/.../pulls/<n>/merge -f merge_method=squash`.
+5. Dispatch the deploy workflow (next section) and run the post-deploy steps.
+
+Backend-only or `.env` changes do not need a frontend rebuild, but the
+workflow still ships the PHP files. Steering/docs/`deploy/` reference files are
+never deployed to the server.
+
+## Server environment gotchas
+
+- The album's real env file is **`~/laravel/album-magicframes/backend/.env`**.
+  The repo-root `.env` is a stub. Always run artisan as `php backend/artisan ...`
+  from `~/laravel/album-magicframes`; running a bare `artisan` falls back to
+  sqlite and fails with "database/database.sqlite does not exist".
+- PHP binaries differ per app: album = `/opt/cpanel/ea-php74/root/usr/bin/php`,
+  magic.nokkoo.in = `/opt/alt/php83/usr/bin/php`.
+- After editing any `.env`, run `config:clear` (or `config:cache`) with that
+  app's own PHP binary. A stale `bootstrap/cache/config.php` silently ignores
+  `.env` changes.
+- The old per-minute cron doing `git pull && setup.sh` was removed because it
+  reverted deploys. Do not re-add any cron that overwrites the doc root.
+- Migrations must stay idempotent (`Schema::hasColumn` guards): production
+  already had columns from a reverted build, and plain `add column` migrations
+  failed with "Duplicate column name".
+- Favicon: CI no longer copies `favicon.ico`. A leftover
+  `~/album-magicframes.nokkoo.in/favicon.ico` overrides the `<link>` icon, so
+  delete it by hand once; the icon is `logo2.png` (bump `?v=` in
+  `frontend/index.html` when it changes). Confirm `logo2.png` is in the doc root.
+
 ## Trigger + verify a deploy
 
 ```bash
@@ -81,7 +117,8 @@ Expected: `/` and `/admin/albums` → 200 (SPA), `/api/...` → 200 (JSON).
 ## Related integrations
 
 - Enquiry forwarding to magic.nokkoo.in Leads: see `crn-leads-integration.md`.
-  The album's server env file is `backend/.env`.
+  magic.nokkoo.in is a separate app and is NOT deployed by this repo's CI; its
+  files are installed by hand from `deploy/magic-nokkoo-leads-api/`.
 
 ## Do NOT
 
