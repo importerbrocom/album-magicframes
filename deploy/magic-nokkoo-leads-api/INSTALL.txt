@@ -1,0 +1,111 @@
+==========================================================================
+ INSTALL: Leads API endpoint on magic.nokkoo.in
+ Run every command inside ~/magic.nokkoo.in on the server.
+ PHP CLI for this app: /opt/alt/php83/usr/bin/php
+==========================================================================
+
+--------------------------------------------------------------------------
+STEP 0 — Pre-flight checks (paste the output back if anything looks off)
+--------------------------------------------------------------------------
+
+# 0a. Is there an api route file, and is it registered?
+cat routes/api.php 2>/dev/null || echo "NO routes/api.php"
+grep -n "api" bootstrap/app.php
+
+# 0b. Confirm the Lead model's fillable + helpers the controller relies on
+grep -n "fillable\|DEFAULT_PRIORITY\|function leadEvents" app/Models/Lead.php
+
+# 0c. Confirm LeadStatusLog exists and is fillable
+grep -n "fillable" app/Models/LeadStatusLog.php
+
+# 0d. Find a user id to attribute album leads to (pick an admin/owner)
+/opt/alt/php83/usr/bin/php artisan tinker --execute="foreach(\App\Models\User::limit(5)->get(['id','name','email']) as \$u){echo \$u->id.' | '.\$u->name.' | '.\$u->email.PHP_EOL;}"
+
+>>> STOP HERE and send me the output of STEP 0 if:
+    - routes/api.php does NOT exist, OR
+    - bootstrap/app.php does NOT mention api, OR
+    - Lead has no leadEvents()/DEFAULT_PRIORITY, OR
+    - notes/source are NOT in Lead $fillable
+    I'll adjust the controller/route accordingly.
+
+--------------------------------------------------------------------------
+STEP 1 — Add the controller
+--------------------------------------------------------------------------
+mkdir -p app/Http/Controllers/Api
+# then create app/Http/Controllers/Api/LeadApiController.php with the
+# contents of LeadApiController.php from this folder (use nano or scp).
+
+--------------------------------------------------------------------------
+STEP 2 — Create routes/api.php  (it does NOT exist yet on this app)
+--------------------------------------------------------------------------
+# Create the file ~/magic.nokkoo.in/routes/api.php with EXACTLY:
+
+<?php
+
+use App\Http\Controllers\Api\LeadApiController;
+use Illuminate\Support\Facades\Route;
+
+Route::post('/leads', [LeadApiController::class, 'store']);
+
+# Routes in api.php are auto-prefixed with /api, so this is POST /api/leads.
+
+--------------------------------------------------------------------------
+STEP 2b — Register the api file in bootstrap/app.php  (REQUIRED here)
+--------------------------------------------------------------------------
+# This app's withRouting() does NOT list an api: file. Edit bootstrap/app.php
+# and add the api: line inside ->withRouting( ... ) so it reads:
+#
+#     ->withRouting(
+#         web: __DIR__.'/../routes/web.php',
+#         api: __DIR__.'/../routes/api.php',        <-- ADD THIS LINE
+#         commands: __DIR__.'/../routes/console.php',
+#         channels: __DIR__.'/../routes/channels.php',
+#         health: '/up',
+#     )
+#
+# Then clear route cache (STEP 5 does this).
+#
+# NOTE: api routes get the "api" middleware group automatically, which does
+# NOT include the web group's CSRF / Inertia / Spatie middleware — so the
+# album's token-only POST is accepted. No extra middleware config needed.
+
+--------------------------------------------------------------------------
+STEP 3 — Add the shared secret + system user to .env
+--------------------------------------------------------------------------
+# Generate a strong token:
+openssl rand -hex 32
+# Add these two lines to ~/magic.nokkoo.in/.env  (use the id from STEP 0d):
+#   LEADS_API_TOKEN=<the-token-from-above>
+#   LEADS_API_SYSTEM_USER_ID=<a-real-user-id>
+
+--------------------------------------------------------------------------
+STEP 4 — (recommended) expose them via config/services.php
+--------------------------------------------------------------------------
+# Add this block to the array in config/services.php:
+#   'leads_api' => [
+#       'token' => env('LEADS_API_TOKEN'),
+#       'system_user_id' => env('LEADS_API_SYSTEM_USER_ID', 1),
+#   ],
+
+--------------------------------------------------------------------------
+STEP 5 — Clear caches
+--------------------------------------------------------------------------
+/opt/alt/php83/usr/bin/php artisan config:clear
+/opt/alt/php83/usr/bin/php artisan route:clear
+# Confirm the route now exists:
+/opt/alt/php83/usr/bin/php artisan route:list | grep -i "api/leads"
+
+--------------------------------------------------------------------------
+STEP 6 — Smoke test the endpoint directly (replace TOKEN)
+--------------------------------------------------------------------------
+curl -i -X POST https://magic.nokkoo.in/api/leads \
+  -H "Authorization: Bearer TOKEN" \
+  -H "Accept: application/json" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"API Test","phone":"9876543210","email":"test@example.com","notes":"smoke test\n\nAlbum: demo","source":"website","event_type":"Enquiry"}'
+# Expect: HTTP/1.1 201 Created  with {"message":"Lead created.","id":...}
+# 401 = token mismatch; 422 = validation (check phone format); 404 = route not registered.
+
+==========================================================================
+ Then set CRN_TOKEN=<same token> in the ALBUM app's .env (see album side).
+==========================================================================
