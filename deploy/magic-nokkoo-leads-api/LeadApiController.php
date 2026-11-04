@@ -56,18 +56,27 @@ class LeadApiController extends Controller
         $systemUserId = (int) config('services.leads_api.system_user_id', env('LEADS_API_SYSTEM_USER_ID', 1));
 
         // --- 4. Create the lead ------------------------------------------
-        $lead = Lead::create([
-            'name' => $data['name'],
-            'phone' => $data['phone'],
-            'email' => $data['email'] ?? null,
-            'notes' => $data['notes'] ?? null,
-            'source' => $data['source'] ?? 'website',
-            'status' => 'new',
-            'priority' => Lead::DEFAULT_PRIORITY,
-            'package' => null,
-            'assigned_to' => null,
-            'created_by' => $systemUserId,
-        ]);
+        // Create WITHOUT firing model events. LeadObserver::created() sends a
+        // WhatsApp "lead_welcome" message via NotificationDispatcher, which is
+        // a blocking outbound HTTP call with no timeout — over the web it
+        // stalls the request until the proxy/Cloudflare times out (HTTP 522).
+        // Suppressing events keeps album-enquiry intake fast and avoids
+        // auto-messaging every enquiry. (The CLI doesn't exhibit the stall, so
+        // this only manifested over HTTP.)
+        $lead = Lead::withoutEvents(function () use ($data, $systemUserId) {
+            return Lead::create([
+                'name' => $data['name'],
+                'phone' => $data['phone'],
+                'email' => $data['email'] ?? null,
+                'notes' => $data['notes'] ?? null,
+                'source' => $data['source'] ?? 'website',
+                'status' => 'new',
+                'priority' => Lead::DEFAULT_PRIORITY,
+                'package' => null,
+                'assigned_to' => null,
+                'created_by' => $systemUserId,
+            ]);
+        });
 
         // --- 5. The Leads domain requires at least one event -------------
         $eventType = trim((string) ($data['event_type'] ?? 'Enquiry')) ?: 'Enquiry';
