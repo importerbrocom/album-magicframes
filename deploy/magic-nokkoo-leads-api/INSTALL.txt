@@ -79,8 +79,11 @@ openssl rand -hex 32
 #   LEADS_API_SYSTEM_USER_ID=<a-real-user-id>
 
 --------------------------------------------------------------------------
-STEP 4 — (recommended) expose them via config/services.php
+STEP 4 — REQUIRED: expose them via config/services.php
 --------------------------------------------------------------------------
+# Required, not optional: magic caches its config, and env() returns null
+# when cached (-> 401 on every call). The controller reads config() only.
+# After a new class file also run: composer dump-autoload -o
 # Add this block to the array in config/services.php:
 #   'leads_api' => [
 #       'token' => env('LEADS_API_TOKEN'),

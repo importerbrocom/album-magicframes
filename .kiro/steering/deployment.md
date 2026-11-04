@@ -78,6 +78,11 @@ Expected: `/` and `/admin/albums` → 200 (SPA), `/api/...` → 200 (JSON).
   no separate LiteSpeed page cache active for this vhost (a `.htaccess`
   `<IfModule LiteSpeed>CacheLookup off</IfModule>` block is present as a guard).
 
+## Related integrations
+
+- Enquiry forwarding to magic.nokkoo.in Leads: see `crn-leads-integration.md`.
+  The album's server env file is `backend/.env`.
+
 ## Do NOT
 
 - Do not run `npm run build` on the server — Rolldown panics there (resource
