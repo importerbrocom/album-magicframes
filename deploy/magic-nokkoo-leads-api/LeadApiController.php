@@ -22,7 +22,7 @@ class LeadApiController extends Controller
     public function store(Request $request): JsonResponse
     {
         // --- 1. Authenticate the caller with a shared secret -------------
-        $expected = (string) config('services.leads_api.token', env('LEADS_API_TOKEN'));
+        $expected = (string) config('services.leads_api.token');
         $provided = $this->bearerToken($request);
 
         if ($expected === '' || ! hash_equals($expected, (string) $provided)) {
@@ -53,7 +53,7 @@ class LeadApiController extends Controller
 
         // --- 3. Resolve the "system" user the lead is attributed to ------
         // created_by is NOT nullable and references users.id.
-        $systemUserId = (int) config('services.leads_api.system_user_id', env('LEADS_API_SYSTEM_USER_ID', 1));
+        $systemUserId = (int) config('services.leads_api.system_user_id', 1);
 
         // --- 4. Create the lead ------------------------------------------
         // Create WITHOUT firing model events. LeadObserver::created() sends a
