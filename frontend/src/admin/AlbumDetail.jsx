@@ -19,6 +19,16 @@ export default function AlbumDetail() {
 
   const loadAlbum = () => adminService.album(id).then(setAlbum);
 
+  const removeEnquiry = async (e) => {
+    if (!window.confirm(`Delete the enquiry from ${e.name}? This cannot be undone.`)) return;
+    try {
+      await adminService.deleteEnquiry(id, e.id);
+      setEnquiries((list) => (list || []).filter((x) => x.id !== e.id));
+    } catch {
+      window.alert('Could not delete the enquiry. Please try again.');
+    }
+  };
+
   useEffect(() => {
     loadAlbum();
     adminService.share(id).then(setShare).catch(() => {});
@@ -170,6 +180,13 @@ export default function AlbumDetail() {
                     </div>
                     <p style={{ color: 'var(--muted)' }}>{[e.phone, e.email].filter(Boolean).join(' · ')}</p>
                     {e.message && <p className="mt-1">{e.message}</p>}
+                    <button
+                      type="button"
+                      onClick={() => removeEnquiry(e)}
+                      className="mt-2 rounded-md border border-red-200 px-2.5 py-1 text-xs text-red-600 hover:bg-red-50"
+                    >
+                      Delete
+                    </button>
                   </li>
                 ))}
               </ul>
