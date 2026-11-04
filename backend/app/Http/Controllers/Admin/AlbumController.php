@@ -251,6 +251,20 @@ class AlbumController extends Controller
         );
     }
 
+    /**
+     * Delete one enquiry from this album. Only removes the album's own copy;
+     * a lead already forwarded to the CRN (magic.nokkoo.in) is not touched.
+     */
+    public function destroyEnquiry(Album $album, \App\Models\Enquiry $enquiry): JsonResponse
+    {
+        $this->authorize('update', $album);
+        abort_if($enquiry->album_id !== $album->id, 404);
+
+        $enquiry->delete();
+
+        return response()->json(['message' => 'Enquiry deleted.']);
+    }
+
     /** Comments left on this album (admin view). */
     public function comments(Album $album): JsonResponse
     {

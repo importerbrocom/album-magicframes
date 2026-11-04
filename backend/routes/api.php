@@ -63,6 +63,7 @@ Route::prefix('admin')->group(function () {
         Route::get('albums/{album}/analytics', [AlbumController::class, 'analytics']);
         Route::get('albums/{album}/share', [AlbumController::class, 'share']);
         Route::get('albums/{album}/enquiries', [AlbumController::class, 'enquiries']);
+        Route::delete('albums/{album}/enquiries/{enquiry}', [AlbumController::class, 'destroyEnquiry']);
         Route::get('albums/{album}/comments', [AlbumController::class, 'comments']);
         Route::get('albums/{album}/sections', [AlbumController::class, 'sections']);
         Route::match(['put', 'patch'], 'albums/{album}/sections/order', [AlbumController::class, 'updateSectionsOrder']);

@@ -68,6 +68,8 @@ export const adminService = {
   analytics: (id) => api.get(`/admin/albums/${id}/analytics`).then((r) => r.data),
   share: (id) => api.get(`/admin/albums/${id}/share`).then((r) => r.data),
   enquiries: (id) => api.get(`/admin/albums/${id}/enquiries`).then((r) => r.data),
+  deleteEnquiry: (id, enquiryId) =>
+    api.delete(`/admin/albums/${id}/enquiries/${enquiryId}`).then((r) => r.data),
   comments: (id) => api.get(`/admin/albums/${id}/comments`).then((r) => r.data),
   sections: (id) => api.get(`/admin/albums/${id}/sections`).then((r) => r.data.data),
   updateSection: (id, eventId, payload) =>
