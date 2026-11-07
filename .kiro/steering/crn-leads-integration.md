@@ -36,6 +36,18 @@ Installed by hand from `deploy/magic-nokkoo-leads-api/`:
 Why a custom API route: the app's `POST /leads` is a web route (CSRF + login,
 uses `auth()->id()`), so it cannot accept server-to-server calls.
 
+## Admin management of enquiries
+
+- Panel: `frontend/src/admin/AlbumDetail.jsx` (Enquiries card) shows the 10
+  newest, each with a `CRN: sent|failed|skipped` badge and a **Delete** button
+  (confirm dialog). Service call: `adminService.deleteEnquiry(albumId, id)`.
+- Endpoint: `DELETE /admin/albums/{album}/enquiries/{enquiry}` ->
+  `AlbumController@destroyEnquiry`, authorized with the album **`update`**
+  policy (admin + owning staff), 404 if the enquiry is not on that album.
+- Delete removes only the album's local copy. A lead already forwarded to
+  magic.nokkoo.in is a separate record and is NOT deleted; clean those up on the
+  Leads board directly.
+
 ## Hard-won rules (each one caused a real outage)
 
 1. **Read the token via `config()`, never `env()`** in the magic controller.
