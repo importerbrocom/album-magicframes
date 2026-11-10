@@ -11,6 +11,7 @@ use App\Services\GoogleDriveException;
 use App\Services\GoogleDriveService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PhotoController extends Controller
@@ -80,6 +81,51 @@ class PhotoController extends Controller
         /** @var Album $album */
         $album = $request->attributes->get('album');
 
+        return $this->serveDownload($request, $drive, $album, $id);
+    }
+
+    /** Issue a short-lived signed URL (relative path) for a native browser download. */
+    public function downloadLink(Request $request, string $slug, int $id): JsonResponse
+    {
+        /** @var Album $album */
+        $album = $request->attributes->get('album');
+
+        if (! $album->allow_download) {
+            return response()->json(['message' => 'Downloads are disabled for this album.'], 403);
+        }
+
+        $album->photos()->where('id', $id)->where('is_available', true)->firstOrFail();
+
+        $path = URL::temporarySignedRoute(
+            'public.photos.file',
+            now()->addMinutes(10),
+            ['slug' => $slug, 'id' => $id],
+            absolute: false,
+        );
+
+        return response()->json(['path' => $path]);
+    }
+
+    /** Signed-URL download (signature verified by middleware). */
+    public function downloadSigned(Request $request, GoogleDriveService $drive, string $slug, int $id): mixed
+    {
+        $album = Album::where('slug', $slug)->first();
+        if (! $album || ! $album->isAccessible()) {
+            return response()->json(['message' => 'Album not found.'], 404);
+        }
+
+        $result = $this->serveDownload($request, $drive, $album, $id);
+
+        // Demo albums answer with a public URL; send the browser straight there.
+        if ($result instanceof JsonResponse && ($url = ($result->getData(true)['url'] ?? null))) {
+            return redirect()->away($url);
+        }
+
+        return $result;
+    }
+
+    private function serveDownload(Request $request, GoogleDriveService $drive, Album $album, int $id): StreamedResponse|JsonResponse
+    {
         if (! $album->allow_download) {
             return response()->json(['message' => 'Downloads are disabled for this album.'], 403);
         }

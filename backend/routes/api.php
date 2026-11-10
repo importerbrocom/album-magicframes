@@ -132,6 +132,13 @@ Route::prefix('public')->group(function () {
         Route::get('albums/{slug}/photos/{id}', [PhotoController::class, 'show']);
         Route::get('albums/{slug}/photos/{id}/download', [PhotoController::class, 'download'])
             ->name('public.photos.download');
+        Route::post('albums/{slug}/photos/{id}/download-link', [PhotoController::class, 'downloadLink'])
+            ->middleware('throttle:120,1');
         Route::post('albums/{slug}/analytics', [AnalyticsController::class, 'store']);
     });
+
+    // Short-lived signed download (no bearer header needed) so the browser can
+    // download natively — works for large files and on mobile.
+    Route::get('albums/{slug}/photos/{id}/file', [PhotoController::class, 'downloadSigned'])
+        ->name('public.photos.file')->middleware(['signed:relative', 'throttle:120,1']);
 });

@@ -67,6 +67,35 @@ export const albumService = {
   // Fetches an original as a blob through the authorized proxy, then triggers save.
   // Throws an Error with a user-friendly message on failure.
   downloadPhoto: async (slug, id, fileName) => {
+    // Preferred: ask for a short-lived signed link and let the browser download
+    // it natively (no memory blob; works on mobile and for large originals).
+    try {
+      const { data } = await api.post(
+        `/public/albums/${slug}/photos/${id}/download-link`,
+        {},
+        { headers: albumAuth(slug) },
+      );
+      if (data?.path) {
+        // `path` is the app-relative URL (e.g. /api/public/...). Resolve against
+        // the API origin when VITE_API_URL is absolute, else the current origin.
+        const base = api.defaults.baseURL || '/api';
+        const origin = /^https?:\/\//i.test(base) ? new URL(base).origin : window.location.origin;
+        const a = document.createElement('a');
+        a.href = origin + data.path;
+        a.download = fileName || 'photo.jpg';
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return;
+      }
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 401) throw new Error('Your session expired. Please re-open the album and enter the password.');
+      if (status === 403) throw new Error('Downloads are disabled for this album.');
+      // Otherwise fall through to the blob method below.
+    }
+
     const saveBlob = (blob, name) => {
       const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement('a');
