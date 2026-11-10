@@ -94,11 +94,32 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
             Cache::forget("album.public.{$album->slug}");
         } catch (GoogleDriveException $e) {
             Log::warning('Album sync failed (Drive)', ['album' => $album->id, 'msg' => $e->getMessage()]);
-            $this->setStatus($album, 'failed', $album->sync_progress, $e->userMessage);
+            $this->setStatus($album, 'failed', $album->sync_progress,
+                $this->withDetail($e->userMessage, $e->getMessage()));
         } catch (Throwable $e) {
             Log::error('Album sync failed', ['album' => $album->id, 'msg' => $e->getMessage()]);
-            $this->setStatus($album, 'failed', $album->sync_progress, 'Album synchronization failed. Please try again.');
+            $this->setStatus($album, 'failed', $album->sync_progress,
+                $this->withDetail('Album synchronization failed.', $e->getMessage()));
         }
+    }
+
+    /**
+     * Append a short, credential-redacted technical reason so admins can see
+     * WHY a sync failed (sync_message is admin-only). Fits a VARCHAR(255).
+     */
+    private function withDetail(string $userMessage, string $technical): string
+    {
+        $technical = trim($technical);
+        if ($technical === '' || $technical === $userMessage) {
+            return mb_substr($userMessage, 0, 255);
+        }
+
+        // Never leak API keys / tokens embedded in request URLs.
+        $technical = preg_replace('/(key|access_token|refresh_token|client_secret)=[^&\s"\']+/i', '$1=***', $technical);
+        $technical = preg_replace('/Bearer\s+[A-Za-z0-9._\-]+/i', 'Bearer ***', $technical);
+        $technical = preg_replace('/\s+/', ' ', $technical);
+
+        return mb_substr($userMessage . ' [' . $technical . ']', 0, 255);
     }
 
     /**
@@ -445,7 +466,8 @@ class SyncAlbumFromGoogleDrive implements ShouldQueue
     {
         $album = Album::find($this->albumId);
         if ($album) {
-            $this->setStatus($album, 'failed', $album->sync_progress, 'Album synchronization failed. Please try again.');
+            $this->setStatus($album, 'failed', $album->sync_progress,
+                $this->withDetail('Album synchronization failed. Please try again.', $e->getMessage()));
         }
     }
 }
