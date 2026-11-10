@@ -65,26 +65,66 @@ export const albumService = {
   downloadUrl: (slug, id) => `${api.defaults.baseURL}/public/albums/${slug}/photos/${id}/download`,
 
   // Fetches an original as a blob through the authorized proxy, then triggers save.
+  // Throws an Error with a user-friendly message on failure.
   downloadPhoto: async (slug, id, fileName) => {
-    const res = await api.get(`/public/albums/${slug}/photos/${id}/download`, {
-      headers: albumAuth(slug),
-      responseType: 'blob',
-    });
-    // Demo mode returns JSON with a url; detect that.
-    if (res.data?.type === 'application/json') {
-      const text = await res.data.text();
-      const { url } = JSON.parse(text);
-      window.open(url, '_blank');
+    const saveBlob = (blob, name) => {
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = name || 'photo.jpg';
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      // Revoking immediately cancels the save in Safari/Firefox; wait a bit.
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+    };
+
+    let res;
+    try {
+      res = await api.get(`/public/albums/${slug}/photos/${id}/download`, {
+        headers: albumAuth(slug),
+        responseType: 'blob',
+      });
+    } catch (err) {
+      // With responseType 'blob', error bodies are blobs too — decode the message.
+      let message = 'Download failed. Please try again.';
+      const status = err.response?.status;
+      try {
+        const text = await err.response?.data?.text?.();
+        if (text) message = JSON.parse(text).message || message;
+      } catch {
+        /* keep default message */
+      }
+      if (status === 401) message = 'Your session expired. Please re-open the album and enter the password.';
+      throw new Error(message);
+    }
+
+    const contentType = res.headers?.['content-type'] || res.data?.type || '';
+
+    // Demo mode returns JSON with a public url instead of bytes.
+    if (contentType.includes('application/json')) {
+      const { url } = JSON.parse(await res.data.text());
+      if (!url) throw new Error('Download link unavailable.');
+      try {
+        const r = await fetch(url);
+        if (!r.ok) throw new Error('fetch failed');
+        saveBlob(await r.blob(), fileName);
+      } catch {
+        // Cross-origin without CORS: fall back to a direct link navigation.
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName || 'photo.jpg';
+        a.target = '_blank';
+        a.rel = 'noopener';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      }
       return;
     }
-    const blobUrl = URL.createObjectURL(res.data);
-    const a = document.createElement('a');
-    a.href = blobUrl;
-    a.download = fileName || 'photo.jpg';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(blobUrl);
+
+    saveBlob(res.data, fileName);
   },
 
   trackAnalytics: (slug, payload) =>

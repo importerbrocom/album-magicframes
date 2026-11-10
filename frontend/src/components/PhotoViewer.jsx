@@ -20,6 +20,7 @@ export default function PhotoViewer({
   onToggleFavorite,
 }) {
   const [zoom, setZoom] = useState(1);
+  const [downloading, setDownloading] = useState(false);
   const touchStart = useRef(null);
   const photo = photos[index];
 
@@ -70,6 +71,18 @@ export default function PhotoViewer({
     touchStart.current = null;
   };
 
+  const handleDownload = async () => {
+    if (downloading) return;
+    try {
+      setDownloading(true);
+      await albumService.downloadPhoto(slug, photo.id, photo.file_name);
+    } catch (e) {
+      window.alert(e.message || 'Download failed. Please try again.');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   if (!photo) return null;
 
   return (
@@ -89,11 +102,17 @@ export default function PhotoViewer({
           </button>
           {allowDownload && (
             <button
-              onClick={() => albumService.downloadPhoto(slug, photo.id, photo.file_name)}
-              className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10"
+              onClick={handleDownload}
+              disabled={downloading}
+              className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-white/10 disabled:opacity-60"
               aria-label="Download"
+              title="Download original"
             >
-              ⬇️
+              {downloading ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              ) : (
+                '⬇️'
+              )}
             </button>
           )}
           <button
