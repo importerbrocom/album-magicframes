@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ClientException;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -405,11 +406,17 @@ class GoogleDriveService
 
         try {
             return $this->http->request($method, self::API_BASE . $path, $options);
-        } catch (ClientException $e) {
+        } catch (BadResponseException $e) {
+            // Covers both 4xx (ClientException) and 5xx (ServerException) so
+            // transient Google 5xx errors are actually retried.
             $status = $e->getResponse()?->getStatusCode();
 
             // Rate limited / transient: exponential backoff then retry.
-            if (in_array($status, [429, 500, 502, 503], true) && $attempt <= 4) {
+            // Drive also signals quota limits as 403 rateLimitExceeded.
+            $isRateLimit403 = $status === 403
+                && preg_match('/rateLimitExceeded|userRateLimitExceeded/', (string) $e->getResponse()?->getBody());
+
+            if ((in_array($status, [429, 500, 502, 503, 504], true) || $isRateLimit403) && $attempt <= 4) {
                 $delay = (int) (pow(2, $attempt - 1) * 500_000); // 0.5s, 1s, 2s, 4s
                 usleep($delay);
 
@@ -430,7 +437,11 @@ class GoogleDriveService
                 throw GoogleDriveException::notFound('Resource not found (404).');
             }
 
-            Log::warning('Google Drive API client error', ['status' => $status, 'path' => $path]);
+            Log::warning('Google Drive API error', [
+                'status' => $status,
+                'path' => $path,
+                'body' => mb_substr((string) $e->getResponse()?->getBody(), 0, 500),
+            ]);
             throw GoogleDriveException::cannotConnect("HTTP {$status} from Drive API.");
         } catch (ConnectException $e) {
             if ($attempt <= 3) {
@@ -483,7 +494,34 @@ class GoogleDriveService
                         'grant_type' => 'refresh_token',
                     ],
                 ]);
+            } catch (ClientException $e) {
+                // Google answered 4xx: credentials rejected (not a network issue).
+                $body = json_decode((string) $e->getResponse()?->getBody(), true) ?? [];
+                $code = $body['error'] ?? 'unknown';
+                Log::error('Google OAuth token refresh rejected', [
+                    'status' => $e->getResponse()?->getStatusCode(),
+                    'error' => $code,
+                    'description' => $body['error_description'] ?? null,
+                ]);
+
+                if ($code === 'invalid_grant') {
+                    throw new GoogleDriveException(
+                        'Google Drive authorization has expired or was revoked. Generate a new refresh token (and set the Google OAuth app to "In production" so it stops expiring), then update GOOGLE_REFRESH_TOKEN.',
+                        'invalid_grant: ' . ($body['error_description'] ?? ''),
+                        401,
+                    );
+                }
+                if (in_array($code, ['invalid_client', 'unauthorized_client'], true)) {
+                    throw new GoogleDriveException(
+                        'Google Drive client ID/secret are invalid. Check GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET.',
+                        $code,
+                        401,
+                    );
+                }
+
+                throw GoogleDriveException::cannotConnect("Token refresh failed: {$code}");
             } catch (GuzzleException $e) {
+                Log::error('Google OAuth token refresh network error', ['err' => $e->getMessage()]);
                 throw GoogleDriveException::cannotConnect('Failed to refresh Google token: ' . $e->getMessage());
             }
 
