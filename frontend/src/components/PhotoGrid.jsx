@@ -58,6 +58,8 @@ export default function PhotoGrid({
           try {
             setDownloadingId(p.id);
             await albumService.downloadPhoto(slug, p.id, p.file_name);
+          } catch (err) {
+            window.alert(err.message || 'Download failed. Please try again.');
           } finally {
             setDownloadingId(null);
           }
@@ -241,6 +243,8 @@ function Slideshow({ photos, onOpen, slug, allowDownload }) {
             try {
               setBusy(true);
               await albumService.downloadPhoto(slug, p.id, p.file_name);
+            } catch (err) {
+              window.alert(err.message || 'Download failed. Please try again.');
             } finally {
               setBusy(false);
             }

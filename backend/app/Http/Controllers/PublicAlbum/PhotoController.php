@@ -100,15 +100,34 @@ class PhotoController extends Controller
             $stream = $drive->downloadStream($photo->google_drive_file_id);
         } catch (GoogleDriveException $e) {
             return response()->json(['message' => $e->userMessage], 502);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json(['message' => 'Unable to download this photo right now. Please try again.'], 502);
+        }
+
+        $fileName = $photo->file_name ?: ('photo-' . $photo->id . '.jpg');
+        $asciiName = str_replace(['"', '\\', '/'], '', preg_replace('/[^\x20-\x7E]/', '_', $fileName));
+
+        $headers = [
+            'Content-Type' => $photo->mime_type ?: 'application/octet-stream',
+            'Content-Disposition' => 'attachment; filename="' . $asciiName . '"; filename*=UTF-8\'\'' . rawurlencode($fileName),
+            'Cache-Control' => 'private, no-store',
+            'X-Accel-Buffering' => 'no', // stop nginx buffering the whole file
+        ];
+        if (($size = $stream->getSize()) !== null) {
+            $headers['Content-Length'] = (string) $size;
         }
 
         return response()->stream(function () use ($stream) {
+            // Drop any active output buffers so chunks are sent immediately.
+            while (ob_get_level() > 0) {
+                @ob_end_clean();
+            }
             while (! $stream->eof()) {
                 echo $stream->read(1024 * 64);
+                flush();
             }
-        }, 200, [
-            'Content-Type' => $photo->mime_type ?: 'application/octet-stream',
-            'Content-Disposition' => 'attachment; filename="' . addslashes($photo->file_name) . '"',
-        ]);
+        }, 200, $headers);
     }
 }
