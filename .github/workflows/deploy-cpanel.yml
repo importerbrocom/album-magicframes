@@ -70,7 +70,7 @@ jobs:
 
       # ---- Assemble the upload-ready release bundle ----
       # Mirrors the cPanel layout:
-      #   release/app/      -> Laravel app (goes to ~/laravel/album-magicframes)
+      #   release/app/      -> Laravel app (goes to ~/laravel/album-magicframes/backend, the $APP_BASE in index.php)
       #   release/docroot/  -> doc-root contents (SPA + front controller + .htaccess)
       - name: Assemble release bundle
         run: |
@@ -292,7 +292,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album-magicframes/
+          server-dir: /laravel/album-magicframes/backend/
           exclude: |
             **/.env
             **/database/database.sqlite
@@ -309,7 +309,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album-magicframes/
+          server-dir: /laravel/album-magicframes/backend/
           exclude: |
             **/.env
             **/database/database.sqlite
@@ -324,7 +324,7 @@ jobs:
           protocol: ftps
           timeout: 120000
           local-dir: ./release/app/
-          server-dir: /laravel/album-magicframes/
+          server-dir: /laravel/album-magicframes/backend/
           exclude: |
             **/.env
             **/database/database.sqlite
