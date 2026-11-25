@@ -10,10 +10,25 @@ export default function EditAlbum() {
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
+  const [currentPassword, setCurrentPassword] = useState(null);
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [copied, setCopied] = useState(false);
   usePageMeta({ title: 'Edit Album | Admin' });
 
+  const copyCurrent = async () => {
+    try {
+      await navigator.clipboard.writeText(currentPassword);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setShowCurrent(true); // clipboard blocked: reveal so it can be copied manually
+    }
+  };
+
   useEffect(() => {
-    adminService.album(id).then((a) =>
+    adminService.album(id).then((a) => {
+      setCurrentPassword(a.current_password || null);
       setForm({
         client_name: a.client_name || '',
         title: a.title || '',
@@ -37,8 +52,8 @@ export default function EditAlbum() {
         allow_enquiries: a.allow_enquiries !== false,
         google_review_url: a.google_review_url || '',
         video_links: Array.isArray(a.video_links) ? a.video_links : [],
-      }),
-    );
+      });
+    });
   }, [id]);
 
   if (!form) return <div className="skeleton h-96 w-full rounded-xl" />;
@@ -176,9 +191,57 @@ export default function EditAlbum() {
             {errors.expires_at && <p className="mt-1 text-xs text-red-600">{errors.expires_at[0]}</p>}
           </div>
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">New Password (leave blank to keep)</label>
-          <input value={form.password} onChange={set('password')} className="inp" placeholder="••••••" />
+        <div className="rounded-lg border border-black/10 p-4">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide" style={{ color: 'var(--muted)' }}>Album Password</p>
+
+          <label className="mb-1 block text-sm font-medium">Current Password</label>
+          {currentPassword ? (
+            <div className="flex gap-2">
+              <input
+                readOnly
+                type={showCurrent ? 'text' : 'password'}
+                value={currentPassword}
+                className="inp flex-1"
+                aria-label="Current album password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent((v) => !v)}
+                className="rounded-lg border border-black/15 px-3 text-sm"
+                aria-label={showCurrent ? 'Hide password' : 'Show password'}
+              >
+                {showCurrent ? 'Hide' : 'View'}
+              </button>
+              <button type="button" onClick={copyCurrent} className="rounded-lg border border-black/15 px-3 text-sm">
+                {copied ? 'Copied' : 'Copy'}
+              </button>
+            </div>
+          ) : (
+            <p className="text-xs" style={{ color: 'var(--muted)' }}>
+              Not available. This password was set before passwords could be viewed. Set a new password below and it will be viewable from then on.
+            </p>
+          )}
+
+          <label className="mb-1 mt-4 block text-sm font-medium">New Password (leave blank to keep)</label>
+          <div className="flex gap-2">
+            <input
+              type={showNew ? 'text' : 'password'}
+              value={form.password}
+              onChange={set('password')}
+              className="inp flex-1"
+              placeholder="••••••"
+              autoComplete="new-password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowNew((v) => !v)}
+              className="rounded-lg border border-black/15 px-3 text-sm"
+              aria-label={showNew ? 'Hide new password' : 'Show new password'}
+            >
+              {showNew ? 'Hide' : 'View'}
+            </button>
+          </div>
+          {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password[0]}</p>}
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium">Description</label>

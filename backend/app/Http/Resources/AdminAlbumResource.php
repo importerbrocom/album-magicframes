@@ -11,10 +11,15 @@ use Illuminate\Http\Resources\Json\JsonResource;
  */
 class AdminAlbumResource extends JsonResource
 {
+    /** When true, include the decrypted album password (single-album admin view only). */
+    public bool $withViewablePassword = false;
+
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
+            // null = password was set before viewable storage existed.
+            'current_password' => $this->when($this->withViewablePassword, fn () => $this->resource->viewablePassword()),
             'client_name' => $this->client_name,
             'title' => $this->title,
             'category' => $this->category,

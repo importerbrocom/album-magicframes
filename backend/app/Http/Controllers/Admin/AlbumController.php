@@ -117,6 +117,10 @@ class AlbumController extends Controller
             'sync_status' => 'pending',
         ]);
 
+        // Keep an encrypted, admin-viewable copy of the password.
+        $album->setPlainPassword($plainPassword);
+        $album->save();
+
         // Kick off background synchronization.
         SyncAlbumFromGoogleDrive::dispatch($album->id);
 
@@ -149,7 +153,10 @@ class AlbumController extends Controller
     {
         $this->authorize('view', $album);
 
-        return (new AdminAlbumResource($album))->response();
+        $resource = new AdminAlbumResource($album);
+        $resource->withViewablePassword = true; // only on the single-album view
+
+        return $resource->response();
     }
 
     public function update(UpdateAlbumRequest $request, Album $album): JsonResponse
@@ -159,7 +166,7 @@ class AlbumController extends Controller
         $data = $request->validated();
 
         if (! empty($data['password'])) {
-            $album->password_hash = Hash::make($data['password']);
+            $album->setPlainPassword($data['password']);
         }
         unset($data['password']);
 

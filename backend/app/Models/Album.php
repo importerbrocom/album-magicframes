@@ -52,7 +52,44 @@ class Album extends Model
 
     protected $hidden = [
         'password_hash',
+        'password_encrypted',
     ];
+
+    /**
+     * Set the album password: hash for visitor verification, plus an
+     * encrypted copy so admins can view it later. The copy is skipped if the
+     * migration that adds the column hasn't been run yet.
+     */
+    public function setPlainPassword(string $plain): void
+    {
+        $this->password_hash = \Illuminate\Support\Facades\Hash::make($plain);
+
+        if (static::hasEncryptedPasswordColumn()) {
+            $this->password_encrypted = \Illuminate\Support\Facades\Crypt::encryptString($plain);
+        }
+    }
+
+    /** Decrypted album password for admins, or null if not stored/undecryptable. */
+    public function viewablePassword(): ?string
+    {
+        $value = $this->getAttributes()['password_encrypted'] ?? null;
+        if (! $value) {
+            return null;
+        }
+
+        try {
+            return \Illuminate\Support\Facades\Crypt::decryptString($value);
+        } catch (\Throwable) {
+            return null; // e.g. APP_KEY changed
+        }
+    }
+
+    public static function hasEncryptedPasswordColumn(): bool
+    {
+        static $has = null;
+
+        return $has ??= \Illuminate\Support\Facades\Schema::hasColumn('albums', 'password_encrypted');
+    }
 
     protected $casts = [
         'allow_download' => 'boolean',
