@@ -53,6 +53,23 @@ Backend-only or `.env` changes do not need a frontend rebuild, but the
 workflow still ships the PHP files. Steering/docs/`deploy/` reference files are
 never deployed to the server.
 
+## Backend code goes live via `git pull`, not FTP (CRITICAL)
+
+- `~/laravel/album-magicframes` on the server is a **git clone**, and the live
+  app runs from its `backend/` subfolder (`$APP_BASE` in `deploy/cpanel/index.php`).
+- The CI FTP step for the Laravel app uploads to `/laravel/album-magicframes/`
+  (the clone root), **not** `backend/`. A green deploy run does **not** update
+  the running PHP code. After merging backend changes, someone must run
+  `git pull origin main` in `~/laravel/album-magicframes` on the server.
+- **Do not point the FTP app upload at `backend/`.** It was tried (PR #75) and
+  reverted:
+  - FTP and git then write the same files, and `git pull` refuses with
+    "untracked working tree files would be overwritten".
+  - The first full upload of `vendor/` takes over 25 minutes, and the host
+    dropped the FTPS connection ("Server sent FIN packet unexpectedly").
+- Symptom of a missed pull: `php artisan migrate --force` says "Nothing to
+  migrate" and new routes or behaviour are absent, even though CI shows success.
+
 ## Server environment gotchas
 
 - The album's real env file is **`~/laravel/album-magicframes/backend/.env`**.

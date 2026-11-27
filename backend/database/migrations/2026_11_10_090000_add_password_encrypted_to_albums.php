@@ -8,11 +8,17 @@ use Illuminate\Support\Facades\Schema;
  * Stores an APP_KEY-encrypted copy of the album password so admins can view
  * it again in Edit Album. The hash in password_hash is still what verifies
  * visitors. Albums created before this have no copy until the password is set.
+ *
+ * Idempotent (hasColumn guard) per the project's migration rule.
  */
 return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasColumn('albums', 'password_encrypted')) {
+            return;
+        }
+
         Schema::table('albums', function (Blueprint $table) {
             $table->text('password_encrypted')->nullable()->after('password_hash');
         });
@@ -20,6 +26,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (! Schema::hasColumn('albums', 'password_encrypted')) {
+            return;
+        }
+
         Schema::table('albums', function (Blueprint $table) {
             $table->dropColumn('password_encrypted');
         });
